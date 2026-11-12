@@ -1,0 +1,3014 @@
+{
+  "description": "Actual experimental Code128 engine on labelled pixels; selects Code128 positives and all negatives. Strict text/format tuples come from the corpus, never predictions. Host times exclude image import, HTTP, camera capture and UI confirmation. Synthetic examples do not establish phone accuracy or Scanbot parity.",
+  "engineDir": "C:\\Users\\1jyer\\Documents\\Codex\\2026-11-12\\what\\outputs\\barcode-api\\web\\engine",
+  "split": "eval",
+  "corpusVersion": 1,
+  "selection": {
+    "corpusCases": 219,
+    "includedCases": 105,
+    "excludedOtherFormatCases": 114
+  },
+  "engineSha256": "75844eb9efb2d85465599d4fd761c1a1a510949de1009dd476d76f8836ae5d3d",
+  "engineFiles": {
+    "code128-decoder.js": "1953cb75f517582fdeb5db691c2c96d089bec71cc3aa44100957aa13e14d2d43",
+    "code128-detector.js": "efc84087d8e8cc589379af0a9fbfc768eff7b1906e18fbb50d938342dfd93bb6",
+    "code128-engine.js": "442e0aeb62fca712df6c39823551da8a2b8420bad1ce6dafa7848bfa7f802751"
+  },
+  "engineHashMethod": "SHA256 of ordered filename + NUL + UTF-8 source for decoder, detector and engine, with CRLF normalized to LF",
+  "corpusSha256": "06b4ca68c481cac1a70b6ab638d3e464774677b5f2651a5481d50457d8c2ded0",
+  "provenance": {
+    "generator": "tools/generate-damage-stress.py",
+    "generatorSha256": "c805ff52d4cbb0001245f6d6735aae17079e4432766d103cc5cbdcc4ec0b1b84",
+    "generatorHashMethod": "SHA256 of UTF-8 source with CRLF normalized to LF",
+    "dependencies": {
+      "Pillow": "12.3.0",
+      "zxing-cpp": "3.1.1"
+    },
+    "seed": 57422093,
+    "grouping": "Every transform of one payload is confined to one split; dev/eval payload groups are disjoint.",
+    "evaluationPolicy": "Freeze evaluation fixture before algorithm changes. Do not inspect its decoding results while tuning development cases.",
+    "positiveGroupsPerFormat": 3,
+    "variantsPerPositiveGroup": 19,
+    "negativeFamilies": 8,
+    "negativeVariantsPerFamily": 6,
+    "maximumPixelsPerCase": 1500000,
+    "negativePolicy": "No valid encoded labels. Deliberately invalid checksum symbols and unencoded textures. No decoder filtering: any decoder output remains an unexpected result.",
+    "severityMeaning": {
+      "0": "clean positive or constructed negative",
+      "1": "milder damage",
+      "2": "stronger damage; not guaranteed recoverable"
+    }
+  },
+  "nodeVersion": "v24.14.0",
+  "summary": {
+    "total": 105,
+    "positives": 57,
+    "exactPositiveReads": 45,
+    "negatives": 48,
+    "negativesCorrectlyRejected": 48,
+    "unexpectedResults": 0,
+    "errors": 0,
+    "medianMs": 7.257,
+    "p95Ms": 15.555
+  },
+  "cases": [
+    {
+      "name": "code128/eval-code128-label-1/clean-0",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "clean",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 18.251,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 18.1059
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 10.365,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 10.358999999999995
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/motion-blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "motion-blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 12.596,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 12.585200000000007
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "shading-lowcontrast",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.132,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 7.126000000000005
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/perspective-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "perspective",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 11.429,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 11.41510000000001
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/angled-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "angled",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 13.692,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 13.682500000000005
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/scratches-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "scratches",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.18,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 7.175900000000013
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/missing-patch-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "missing-patch",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.836,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.831299999999999
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/small-in-frame-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "small-in-frame",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.773,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 7.767899999999997
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/clipping-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "clipping",
+      "severity": 1,
+      "exact": false,
+      "missing": [
+        "BOX-EVAL-989390"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.342,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 8.339200000000005
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "BOX-EVAL-989390"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.176,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 9.1738
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/motion-blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "motion-blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "BOX-EVAL-989390"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.743,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 12.741000000000014
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "shading-lowcontrast",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.343,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 6.337099999999992
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/perspective-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "perspective",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 2.968,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 2.9610000000000127
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/angled-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "angled",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.274,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 6.269499999999994
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/scratches-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "scratches",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.52,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.515500000000003
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/missing-patch-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "missing-patch",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-EVAL-989390",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.479,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.474900000000019
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/small-in-frame-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "small-in-frame",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "BOX-EVAL-989390"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.623,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 13.619799999999998
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-1/clipping-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-EVAL-989390",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-1",
+      "condition": "clipping",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "BOX-EVAL-989390"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.245,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 8.241500000000002
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/clean-0",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "clean",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.434,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 3.430300000000017
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.191,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 4.1869000000000085
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/motion-blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "motion-blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.722,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 3.7184000000000026
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "shading-lowcontrast",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.607,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 3.60329999999999
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/perspective-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "perspective",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.643,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.639399999999995
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/angled-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "angled",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 8.101,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 8.097499999999997
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/scratches-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "scratches",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.242,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.237900000000025
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/missing-patch-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "missing-patch",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.137,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 6.133399999999995
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/small-in-frame-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "small-in-frame",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 17.645,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 17.640899999999988
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/clipping-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "clipping",
+      "severity": 1,
+      "exact": false,
+      "missing": [
+        "482254918954665957284969"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.039,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 7.03589999999997
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "blur",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.362,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 3.3582000000000107
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/motion-blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "motion-blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "482254918954665957284969"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.972,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 9.969100000000026
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "shading-lowcontrast",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.014,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.009900000000016
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/perspective-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "perspective",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 12.03,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "elapsedMs": 12.025900000000036
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/angled-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "angled",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.125,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 6.117899999999963
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/scratches-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "scratches",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.125,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 4.1173
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/missing-patch-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "missing-patch",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "482254918954665957284969",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.539,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 4.535200000000032
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/small-in-frame-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "small-in-frame",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "482254918954665957284969"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.974,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 12.97139999999996
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-2/clipping-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "482254918954665957284969",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-2",
+      "condition": "clipping",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "482254918954665957284969"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.52,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 7.518000000000029
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/clean-0",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "clean",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.808,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 3.804499999999962
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.152,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 4.1480999999999995
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/motion-blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "motion-blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.67,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 3.6667000000000485
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "shading-lowcontrast",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.014,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 6.009799999999984
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/perspective-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "perspective",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.986,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 6.980899999999963
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/angled-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "angled",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.637,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.633800000000008
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/scratches-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "scratches",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.986,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 3.981800000000021
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/missing-patch-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "missing-patch",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.299,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.294600000000003
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/small-in-frame-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "small-in-frame",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.257,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 7.253399999999999
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/clipping-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "clipping",
+      "severity": 1,
+      "exact": false,
+      "missing": [
+        "bx:e-291431/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 10.078,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 10.074400000000026
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "blur",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.88,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 6.8764999999999645
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/motion-blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "motion-blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "bx:e-291431/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.582,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "elapsedMs": 12.5779
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "shading-lowcontrast",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.418,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.4114999999999895
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/perspective-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "perspective",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 2.645,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 2.640899999999988
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/angled-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "angled",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.029,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 7.022500000000036
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/scratches-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "scratches",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.591,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 5.587400000000002
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/missing-patch-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "missing-patch",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.374,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 4.370499999999993
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/small-in-frame-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "small-in-frame",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:e-291431/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 14.722,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 14.718500000000006
+      }
+    },
+    {
+      "name": "code128/eval-code128-label-3/clipping-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:e-291431/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "eval-code128-label-3",
+      "condition": "clipping",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "bx:e-291431/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.107,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 8.103999999999985
+      }
+    },
+    {
+      "name": "negative/receipt-text/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-receipt-text-1",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 3.074,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "elapsedMs": 3.0720000000000027
+      }
+    },
+    {
+      "name": "negative/woven-texture/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-woven-texture-1",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 19.696,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 19.69319999999999
+      }
+    },
+    {
+      "name": "negative/short-random-bars/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-short-random-bars-1",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.843,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.840100000000007
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-finder-lookalikes-1",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 4.859,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 3,
+        "attempted": 3,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "elapsedMs": 4.856100000000083
+      }
+    },
+    {
+      "name": "negative/noise-texture/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-noise-texture-1",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 11.738,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 11.73599999999999
+      }
+    },
+    {
+      "name": "negative/circles/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-circles-1",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.035,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 7,
+        "attempted": 7,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.032199999999989
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-code128-checksum-1",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.877,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 13.857499999999959
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-ean13-checksum-1",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 10.081,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 10.077300000000037
+      }
+    },
+    {
+      "name": "negative/receipt-text/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-receipt-text-2",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 1.485,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 1.4837999999999738
+      }
+    },
+    {
+      "name": "negative/woven-texture/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-woven-texture-2",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 2.635,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 2.6321000000000367
+      }
+    },
+    {
+      "name": "negative/short-random-bars/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-short-random-bars-2",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.847,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.843900000000076
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-finder-lookalikes-2",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 5.579,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 3,
+        "elapsedMs": 5.575900000000047
+      }
+    },
+    {
+      "name": "negative/noise-texture/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-noise-texture-2",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.741,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.73759999999993
+      }
+    },
+    {
+      "name": "negative/circles/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-circles-2",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 5.455,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 5,
+        "attempted": 5,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 5.452800000000025
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-code128-checksum-2",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 15.555,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 15.551500000000033
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-ean13-checksum-2",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.24,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 9.237300000000005
+      }
+    },
+    {
+      "name": "negative/receipt-text/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-receipt-text-3",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 2.271,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "elapsedMs": 2.2690999999999804
+      }
+    },
+    {
+      "name": "negative/woven-texture/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-woven-texture-3",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 10.034,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 10.03189999999995
+      }
+    },
+    {
+      "name": "negative/short-random-bars/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-short-random-bars-3",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.687,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.68470000000002
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-finder-lookalikes-3",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 3.26,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 3.25750000000005
+      }
+    },
+    {
+      "name": "negative/noise-texture/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-noise-texture-3",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 11.227,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 11.223899999999958
+      }
+    },
+    {
+      "name": "negative/circles/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-circles-3",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 4.425,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 3,
+        "attempted": 3,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 4.422199999999975
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-code128-checksum-3",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.654,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 13.651099999999929
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-ean13-checksum-3",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 10.039,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 10.037000000000035
+      }
+    },
+    {
+      "name": "negative/receipt-text/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-receipt-text-4",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 3.137,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "elapsedMs": 3.133699999999976
+      }
+    },
+    {
+      "name": "negative/woven-texture/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-woven-texture-4",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 17.911,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 6,
+        "attempted": 6,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 17.90840000000003
+      }
+    },
+    {
+      "name": "negative/short-random-bars/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-short-random-bars-4",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.702,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.699499999999944
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-finder-lookalikes-4",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 4.102,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 3,
+        "attempted": 3,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "elapsedMs": 4.100099999999998
+      }
+    },
+    {
+      "name": "negative/noise-texture/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-noise-texture-4",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 15.473,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "elapsedMs": 15.469299999999976
+      }
+    },
+    {
+      "name": "negative/circles/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-circles-4",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 6.317,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 7,
+        "attempted": 7,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 6.313199999999938
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-code128-checksum-4",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.405,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 13.402299999999968
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-ean13-checksum-4",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.112,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 9.109300000000076
+      }
+    },
+    {
+      "name": "negative/receipt-text/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-receipt-text-5",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 2.559,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "elapsedMs": 2.556500000000028
+      }
+    },
+    {
+      "name": "negative/woven-texture/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-woven-texture-5",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.972,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "elapsedMs": 12.968899999999962
+      }
+    },
+    {
+      "name": "negative/short-random-bars/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-short-random-bars-5",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.69,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.6871000000001
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-finder-lookalikes-5",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 5.878,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 3,
+        "elapsedMs": 5.87620000000004
+      }
+    },
+    {
+      "name": "negative/noise-texture/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-noise-texture-5",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 14.212,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "elapsedMs": 14.20920000000001
+      }
+    },
+    {
+      "name": "negative/circles/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-circles-5",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 6.643,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 7,
+        "attempted": 7,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 6.640599999999949
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-code128-checksum-5",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.086,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 13.08280000000002
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-ean13-checksum-5",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.571,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 8.567999999999984
+      }
+    },
+    {
+      "name": "negative/receipt-text/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-receipt-text-6",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 1.338,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "elapsedMs": 1.337099999999964
+      }
+    },
+    {
+      "name": "negative/woven-texture/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-woven-texture-6",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 31.357,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 7,
+        "horizontalRetries": 3,
+        "elapsedMs": 31.353999999999928
+      }
+    },
+    {
+      "name": "negative/short-random-bars/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-short-random-bars-6",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.111,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "elapsedMs": 9.108600000000024
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-finder-lookalikes-6",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 3.057,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 3.0550000000000637
+      }
+    },
+    {
+      "name": "negative/noise-texture/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-noise-texture-6",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.29,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 3,
+        "horizontalRetries": 3,
+        "elapsedMs": 13.28690000000006
+      }
+    },
+    {
+      "name": "negative/circles/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-circles-6",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.768,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 7,
+        "attempted": 7,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "elapsedMs": 8.7654
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-code128-checksum-6",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.227,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "elapsedMs": 13.22320000000002
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "eval-negative-invalid-ean13-checksum-6",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.659,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "elapsedMs": 9.656299999999987
+      }
+    }
+  ]
+}

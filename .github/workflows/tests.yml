@@ -19,3 +19,8 @@ jobs:
       - run: node --test tests/*.test.mjs
       - name: Benchmark the Code 128 development examples
         run: node tools/benchmark-code128.mjs --fixtures data/synthetic/dev-pixels.json --output benchmark-results/ci-code128.json
+      - name: Benchmark damaged development images
+        run: |
+          node tools/benchmark-accuracy.mjs --corpus tests/fixtures/damage-stress-dev.json --output benchmark-results/ci-damage-browser.json
+          python tools/benchmark-damage-api.py --corpus tests/fixtures/damage-stress-dev.json --output benchmark-results/ci-damage-api.json
+          node tools/benchmark-damage-custom.mjs --corpus tests/fixtures/damage-stress-dev.json --output benchmark-results/ci-damage-custom.json

@@ -2,6 +2,8 @@
 
 A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
 
+Version 0.5.0 adds broader damage testing and Android/iPhone capability simulations. See [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for measured improvements, examples, and an unresolved extra UPC-E reading on an angled EAN-13. [MOBILE-TESTING.md](MOBILE-TESTING.md) describes 35 application simulations; these do not run real Android/iPhone browsers or cameras.
+
 An [experimental Code 128 lab](CODE128-LAB.md) adds a custom decoder, local photo/video collection, and comparison with ZXing. Open `/scan/lab/` when using the API server, or `/lab/` when hosting the `web/` contents directly. The regular scanner and API continue to use ZXing. The lab includes synthetic development examples; real-phone accuracy and Scanbot parity have not been established.
 
 ## Scan live through the camera
@@ -12,7 +14,9 @@ The scanner is a separate browser app. It does not need your API key. The existi
 
 ### Reading difficult labels
 
-The scanner preserves more camera detail, retries selected center crops, and asks for continuous autofocus when the camera supports it. When the initial decode fails, it can retry contrast normalization, sharpening, a diagonal rotation, and light/dark inversion. The browser image reader and uploaded-image API have bounded recovery passes; neither reconstructs completely missing barcode data.
+The scanner preserves more camera detail, retries selected center crops, and asks for continuous autofocus when the camera supports it. When the initial decode fails, it can retry contrast normalization, sharpening, a diagonal rotation, light/dark inversion, local illumination correction, and bounded 2× resampling. The browser's illumination retry also straightens coherently oriented bars. The browser image reader and uploaded-image API have at most six recovery passes within their existing time and pixel limits; neither reconstructs completely missing barcode data.
+
+Transformed recovery only accepts formats with mandatory checksums or error correction, and linear results must agree with the visible source-bar direction. Formats such as unchecked ITF, Codabar and Code 39 remain available on the untouched initial pass. This reduces specific false readings found in testing; it does not eliminate all false readings from the underlying decoder. Live scanning runs at most one recovery strategy per frame.
 
 Live results need matching payload bytes and format in two separate video frames before appearing. Formats without a known mandatory checksum require three. This adds a short confirmation delay and helps reject transient mistakes; it cannot rule out a persistent wrong reading. Modern browsers use presented-frame callbacks or decoded-frame counters. Browsers without either use playback timestamps, which cannot reliably distinguish a frozen video image from a new frame.
 

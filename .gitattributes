@@ -1,0 +1,9 @@
+# Keep frozen fixtures and source provenance stable on Windows checkouts.
+*.py text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.wasm binary
+*.png binary
+*.woff2 binary

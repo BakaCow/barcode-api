@@ -173,17 +173,20 @@ function finishRecording(discard = false) {
 function captureVideo() {
   if (recording) { finishRecording(); return; }
   clearError();
+  let pendingStream = null;
   try {
     const label = details();
     if (!window.MediaRecorder || !canvas.captureStream) throw new Error('Video capture is unavailable in this browser. Capture photos instead.');
     const mime = ['video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find((value) => MediaRecorder.isTypeSupported(value));
     if (!mime) throw new Error('This browser cannot save a supported recording. Capture photos instead.');
     const recordCanvas = document.createElement('canvas'), recordContext = recordCanvas.getContext('2d');
-    const size = paint(recordCanvas, recordContext), mediaStream = recordCanvas.captureStream(15);
-    const recorder = new MediaRecorder(mediaStream, { mimeType: mime, videoBitsPerSecond: 2_500_000 });
-    const entry = { recorder, mediaStream, label, size, chunks: [], bytes: 0, started: performance.now(), discard: false,
+    const size = paint(recordCanvas, recordContext);
+    pendingStream = recordCanvas.captureStream(15);
+    const recorder = new MediaRecorder(pendingStream, { mimeType: mime, videoBitsPerSecond: 2_500_000 });
+    const entry = { recorder, mediaStream: pendingStream, label, size, chunks: [], bytes: 0, started: performance.now(), discard: false,
       identity: sampleIdentity(mime.includes('mp4') ? 'mp4' : 'webm'), paintTimer: null, stopTimer: null };
     recording = entry;
+    pendingStream = null;
     recorder.ondataavailable = (event) => {
       if (!event.data.size) return;
       entry.bytes += event.data.size;
@@ -209,7 +212,12 @@ function captureVideo() {
     entry.paintTimer = setInterval(() => { try { if (!camera || video.readyState < 2) throw new Error('Camera interrupted'); recordContext.drawImage(video, 0, 0, size.width, size.height); $('recording-state').textContent = `Recording · ${Math.min(10, Math.floor((performance.now() - entry.started) / 1000))} / 10 s`; } catch { finishRecording(true); } }, 67);
     entry.stopTimer = setTimeout(() => finishRecording(), 10000);
     $('recording-state').hidden = false; $('recording-state').textContent = 'Recording · 0 / 10 s'; controls();
-  } catch (cause) { if (recording) { recording.mediaStream.getTracks().forEach((track) => track.stop()); recording = null; } error(cause.message); controls(); }
+  } catch (cause) {
+    // Recorder construction can fail before recording takes ownership of the stream.
+    pendingStream?.getTracks().forEach((track) => track.stop());
+    if (recording) { recording.mediaStream.getTracks().forEach((track) => track.stop()); recording = null; }
+    error(cause.message); controls();
+  }
 }
 function resetWorker(reason = 'The decoder stopped. Start another comparison.') {
   worker?.terminate(); worker = null; workerReady = null;

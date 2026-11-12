@@ -18,29 +18,44 @@
     const started=performance.now(),gray=grayscale(image),{width,height}=image;
     const candidates=detector.detect(gray,width,height),results=[],seen=new Set();
     const add=(result,map)=>{
-      if(!result)return;
+      if(!result)return false;
       // A warped search region may extend beyond the image. Its white fill must
       // never manufacture the required blank border of a clipped label.
       if(map){
         const p=result.position;
         const border=[{x:p.topLeft.x-(result.quietLeft||0),y:p.topLeft.y},{x:p.topRight.x+(result.quietRight||0),y:p.topRight.y},
           {x:p.bottomLeft.x-(result.quietLeft||0),y:p.bottomLeft.y},{x:p.bottomRight.x+(result.quietRight||0),y:p.bottomRight.y}].map(map);
-        if(border.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<-.75||p.y<-.75||p.x>width+.75||p.y>height+.75))return;
+        if(border.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<-.75||p.y<-.75||p.x>width+.75||p.y>height+.75))return false;
       }
-      const key=JSON.stringify([result.bytes,result.gs1]);if(seen.has(key))return;seen.add(key);
+      const key=JSON.stringify([result.bytes,result.gs1]);if(seen.has(key))return true;seen.add(key);
       const position=Object.fromEntries(Object.entries(result.position).map(([key,p])=>{const point=map?map(p):p;return[key,{x:Math.max(0,Math.min(width,point.x)),y:Math.max(0,Math.min(height,point.y))}];}));
       results.push({...result,position,engine:'custom-code128-v1'});
+      return true;
     };
-    let attempted=0;
+    let attempted=0,sourceRowRetries=0,horizontalRetries=0;
     for(const candidate of candidates){
       if(performance.now()-started>1200)break;
       const crop=detector.rectify(gray,width,height,candidate.corners);
-      add(decoder.decodeRows(crop.gray,crop.width,crop.height),crop.map);attempted++;
+      let accepted=add(decoder.decodeRows(crop.gray,crop.width,crop.height),crop.map);attempted++;
+      if(!accepted&&Math.abs(candidate.angle)<0.05&&performance.now()-started<1200){
+        // Avoid resampling thin, nearly horizontal bars. Sample distinct original
+        // rows across the locator's vertical extent; retain the full real border.
+        const top=Math.max(0,Math.floor(Math.min(...candidate.corners.map(p=>p.y))));
+        const bottom=Math.min(height,Math.ceil(Math.max(...candidate.corners.map(p=>p.y))));
+        if(bottom-top>=2){
+          accepted=add(decoder.decodeRows(gray.subarray(top*width,bottom*width),width,bottom-top),p=>({x:p.x,y:p.y+top}));
+          sourceRowRetries++;
+        }
+      }
+      if(!accepted&&attempted<=3&&crop.width<600&&crop.height<=512&&performance.now()-started<1200){
+        const fine=detector.rectify(gray,width,height,candidate.corners,500_000,2);
+        add(decoder.decodeRows(fine.gray,fine.width,fine.height),fine.map);horizontalRetries++;
+      }
       if(results.length>=8)break;
     }
     // Fallback preserves straightforward reads if the heuristic locator has no proposal.
     if(!results.length&&performance.now()-started<1200)add(decoder.decodeRows(gray,width,height));
-    lastDiagnostics={version:'custom-code128-v1',candidates:candidates.length,attempted,elapsedMs:performance.now()-started};
+    lastDiagnostics={version:'custom-code128-v1',candidates:candidates.length,attempted,sourceRowRetries,horizontalRetries,elapsedMs:performance.now()-started};
     return results;
   }
   const api={read,grayscale,getDiagnostics:()=>({...lastDiagnostics})};

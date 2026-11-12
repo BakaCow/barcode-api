@@ -74,7 +74,9 @@ def test_native_successes_keep_bytes_format_and_coordinates_without_retries(read
 
 
 @pytest.mark.parametrize("name", ["qr/weak-contrast", "code128/weak-contrast", "datamatrix/weak-contrast",
-                                  "code128/inverted", "ean13/inverted"])
+                                  "code128/inverted", "ean13/inverted", "qr/blur-1.4",
+                                  "code128/weak-shaded", "ean13/weak-shaded", "code128/downsampled",
+                                  "ean13/downsampled", "datamatrix/downsampled"])
 def test_api_recovers_known_cases_that_the_original_decoder_misses(client, name):
     with fixture_image(name) as image:
         assert zxingcpp.read_barcodes(image) == [], "fixture must exercise a fallback"
@@ -110,6 +112,28 @@ def test_rotated_fallback_coordinates_land_on_the_original_label(client):
             assert top - 3 <= y <= bottom + 3
 
 
+def test_upscaled_recovery_coordinates_match_the_small_uploaded_label(client, monkeypatch):
+    native_read = zxingcpp.read_barcodes
+    sizes = []
+
+    def observed_read(candidate, **options):
+        sizes.append(candidate.size)
+        return native_read(candidate, **options)
+
+    monkeypatch.setattr(zxingcpp, "read_barcodes", observed_read)
+    with fixture_image("ean13/downsampled") as image:
+        response = upload(client, image)
+        assert [item["text"] for item in response["barcodes"]] == ["5901234123457"]
+        assert sizes[-1] == (image.width * 2, image.height * 2), "fixture exercises the resampling pass"
+        with image.convert("L") as gray:
+            with gray.point(lambda value: 255 if value < 96 else 0) as dark_pixels:
+                left, top, right, bottom = dark_pixels.getbbox()
+        points = response["barcodes"][0]["position"]
+        assert min(point["x"] for point in points) <= left + 4
+        assert max(point["x"] for point in points) >= right - 4
+        assert all(left - 3 <= point["x"] <= right + 3 and top - 3 <= point["y"] <= bottom + 3 for point in points)
+
+
 @pytest.mark.parametrize("name", [name for name in CASES if name.startswith("negative/")])
 def test_recovery_does_not_invent_codes_in_negative_images(reader, name):
     with fixture_image(name) as image:
@@ -134,5 +158,5 @@ def test_every_fallback_allocation_stays_within_four_megapixels(reader, monkeypa
     with Image.new("L", size, 255) as image:
         assert reader.read_barcodes(image) == []
     assert calls[0] == size, "original full-resolution pass is preserved"
-    assert 1 < len(calls) <= 5
+    assert 1 < len(calls) <= 7
     assert all(width * height <= 4_000_000 for width, height in calls[1:])

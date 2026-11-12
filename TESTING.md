@@ -1,4 +1,17 @@
-# Verification for the Code 128 lab
+# Verification for the damage-testing update
+
+Version 0.5.0, verified on 12 November 2026:
+
+- **88 Python tests passed, 1 skipped** (Windows symlink creation unavailable).
+- **174 Node tests passed**, including **35 Android/iPhone capability simulations** and actual bundled-decoder regressions.
+- Generated and tested **657 synthetic images** across development, debugging and fresh verification sets. The final fresh verification contains 171 positives and 48 negatives. Browser exact reads improved 107 → 124; API reads improved 109 → 121. The custom Code 128 subset improved 39 → 46 of 57. All final readers rejected all 48 verification negatives.
+- **The broader verification still fails on one known ambiguity**: both the browser and API's unchanged first decoder pass return a correct EAN-13 plus a wrong UPC-E on one angled image. That case is counted as unsuccessful, and the benchmark exits nonzero. Passing unit/regression tests does not mean the stress suite is error-free. See [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for the full results and per-case reports.
+- Simulations execute the shipped app/lab event handlers with specified browser capabilities; they do not run actual Android Chrome, iPhone Safari or mobile camera hardware. They found and now cover cleanup of a canvas stream when MediaRecorder construction throws. Details: [MOBILE-TESTING.md](MOBILE-TESTING.md).
+- New recovery checks cover shaded and small codes, source-coordinate mapping, checked-format restrictions, source-bar direction, bounded sampling and allocation, and the two demonstrated false-reading families. The offline cache version is 1.3.0 so browsers can receive the changed worker and lab code. Its asset/update lifecycle is covered by the automated service-worker tests; no new physical-device or browser-rendering claim is made for this update.
+
+GitHub Actions runs the development damage benchmarks for browser, API and custom readers after the suites. The separate final-verification commands are documented with their known failing result rather than quietly reclassifying that image or removing it.
+
+## Previous Code 128 lab verification (0.4.0)
 
 Verified on 12 November 2026.
 

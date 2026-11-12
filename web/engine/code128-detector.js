@@ -75,18 +75,22 @@
     return proposals.sort((a,b)=>b.score-a.score).slice(0,10);
   }
 
-  function rectify(gray, width, height, corners, maxPixels = 1_500_000) {
+  function rectify(gray, width, height, corners, maxPixels = 1_500_000, horizontalScale = 1) {
     validate(gray,width,height);
     if (!Array.isArray(corners) || corners.length !== 4 || corners.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)) ||
-        !Number.isInteger(maxPixels) || maxPixels < 4 || maxPixels > MAX_PIXELS) throw new Error('Invalid crop geometry.');
+        !Number.isInteger(maxPixels) || maxPixels < 4 || maxPixels > MAX_PIXELS ||
+        !Number.isFinite(horizontalScale) || horizontalScale < 1 || horizontalScale > 2) throw new Error('Invalid crop geometry.');
     const crosses=corners.map((p,i)=>{const q=corners[(i+1)%4],r=corners[(i+2)%4];return(q.x-p.x)*(r.y-q.y)-(q.y-p.y)*(r.x-q.x);});
     if(crosses.some(value=>!Number.isFinite(value)||Math.abs(value)<1e-8)||crosses.some(value=>Math.sign(value)!==Math.sign(crosses[0])))throw new Error('Crop corners must form a convex ordered quadrilateral.');
     const [p0,p1,p2,p3]=corners;
     const length=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
     const naturalWidth=Math.max(length(p0,p1),length(p3,p2)), naturalHeight=Math.max(length(p0,p3),length(p1,p2));
     if (naturalWidth < 2 || naturalHeight < 2) throw new Error('Crop is too small.');
-    const scale=Math.min(1,4096/naturalWidth,2048/naturalHeight,Math.sqrt(maxPixels/(naturalWidth*naturalHeight)));
-    const outWidth=Math.max(2,Math.min(Math.floor(maxPixels/2),Math.floor(naturalWidth*scale)));
+    // Extra horizontal samples reduce edge quantization for narrow modules.
+    // Keep vertical sampling unchanged so retries do not multiply source rows.
+    const sampleWidth=naturalWidth*horizontalScale;
+    const scale=Math.min(1,4096/sampleWidth,2048/naturalHeight,Math.sqrt(maxPixels/(sampleWidth*naturalHeight)));
+    const outWidth=Math.max(2,Math.min(Math.floor(maxPixels/2),Math.floor(sampleWidth*scale)));
     const outHeight=Math.max(2,Math.min(Math.floor(maxPixels/outWidth),Math.floor(naturalHeight*scale)));
     const dx1=p1.x-p2.x, dx2=p3.x-p2.x, dx3=p0.x-p1.x+p2.x-p3.x;
     const dy1=p1.y-p2.y, dy2=p3.y-p2.y, dy3=p0.y-p1.y+p2.y-p3.y;

@@ -1,5 +1,7 @@
 # Recognition improvements and measured limits
 
+This page records the earlier 0.3.0 recognition update. For the latest 0.5.0 damage tests, broader recovery changes, mobile simulations and remaining false-reading case, see [DAMAGE-TESTING.md](DAMAGE-TESTING.md) and [MOBILE-TESTING.md](MOBILE-TESTING.md). The older counts below remain historical evidence, not the latest results.
+
 Measured on 12 November 2026. This update improves the bundled ZXing-based scanner; it does not demonstrate parity with Scanbot. Scanbot was not run in these tests.
 
 ## What changed

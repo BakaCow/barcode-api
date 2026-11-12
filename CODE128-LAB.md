@@ -2,6 +2,8 @@
 
 This project now includes a custom Code 128 prototype, a camera collection page, and tools for comparing it with ZXing. The lab is for developing and measuring the engine. The regular camera scanner and `/v1` API continue to use ZXing. No real phone dataset or physical-phone benchmark is included, and these results do not establish Scanbot-equivalent accuracy.
 
+The 0.5.0 update adds source-row sampling, local thresholding and bounded horizontal resampling to the custom engine. See [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for the larger damage suite and remaining failures, and [MOBILE-TESTING.md](MOBILE-TESTING.md) for simulated mobile camera behavior. The custom lab baseline remains a single-pass Code 128 ZXing comparison; the regular scanner uses the separate enhanced worker.
+
 ## Open the lab
 
 From the project folder in PowerShell, start the self-contained browser app:

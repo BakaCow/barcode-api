@@ -60,6 +60,31 @@
     return runs;
   }
 
+  function localThreshold(gray, radius) {
+    const prefix = new Float64Array(gray.length + 1), binary = new Uint8Array(gray.length);
+    for (let i = 0; i < gray.length; i++) prefix[i + 1] = prefix[i] + gray[i];
+    for (let i = 0; i < gray.length; i++) {
+      const left = Math.max(0, i - radius), right = Math.min(gray.length, i + radius + 1);
+      binary[i] = gray[i] < (prefix[right] - prefix[left]) / (right - left) - 2 ? 0 : 255;
+    }
+    return binary;
+  }
+
+  function hasSourceQuietZones(gray, result) {
+    const mean = (from, to) => {
+      const left = Math.max(0, Math.floor(from)), right = Math.min(gray.length, Math.ceil(to));
+      if (right <= left) return NaN;
+      let sum = 0; for (let i = left; i < right; i++) sum += gray[i];
+      return sum / (right - left);
+    };
+    // Adaptive thresholding must not turn a dark obstruction into a false blank
+    // border. Compare both claimed quiet regions with the real adjacent bars.
+    const leftContrast = mean(result.left - result.quietLeft, result.left) - mean(result.left, result.left + result.quietLeft / 5);
+    const rightContrast = mean(result.right, result.right + result.quietRight) - mean(result.right - result.quietRight / 5, result.right);
+    const sign = result.inverted ? -1 : 1;
+    return leftContrast * sign >= 3 && rightContrast * sign >= 3;
+  }
+
   function patternError(runs, offset, pattern, count = pattern.length) {
     if (offset + count > runs.length) return null;
     let pixels = 0, modules = 0;
@@ -168,6 +193,15 @@
             if (!previous || result.meanPatternError < previous.meanPatternError) found.set(key, { ...result, reversed: reverse, inverted: invert });
           }
         }
+      }
+    }
+    if (!found.size && options.tryLocalThreshold !== false) {
+      // Global thresholds can lose one end of a shaded label. Two fixed local
+      // scales provide bounded retries; all symbol, checksum and border tests
+      // still run, and different plausible values remain ambiguous.
+      for (const radius of [8, 32]) {
+        const result = decodeScanline(localThreshold(gray, radius), { ...options, tryLocalThreshold: false });
+        if (result && hasSourceQuietZones(gray, result)) found.set(identity(result), { ...result, thresholdMethod: `local-mean-${radius}` });
       }
     }
     if (found.size !== 1) return null;

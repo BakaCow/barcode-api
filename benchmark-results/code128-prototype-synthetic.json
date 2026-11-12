@@ -9,7 +9,7 @@
   "scope": "One pass per labelled still image. Host decoding time excludes capture, startup and live-frame confirmation. A real source label describes the supplied media, not proof of phone performance or label quality. No Scanbot comparison.",
   "manifestSha256": "12144863942284b2b1ef7efac76ee216641b865a57c2ce4dbbec2090a4be14b1",
   "fixtureSha256": "6badc65b68a4fbb04e9e2a483a022c88045082177de24ff5320fb4d53c738951",
-  "experimentalSourceSha256": "5829903c200404093b2891961cfcf5c567da184f506bee115e5287dd1cd32f3e",
+  "experimentalSourceSha256": "75844eb9efb2d85465599d4fd761c1a1a510949de1009dd476d76f8836ae5d3d",
   "zxingWasmSha256": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e",
   "hashMethods": {
     "experimentalSourceSha256": "SHA-256 of ordered filename + NUL + UTF-8 source, with CRLF normalized to LF, for decoder/detector/engine.",
@@ -29,8 +29,8 @@
       "imagesWithWrongRead": 0,
       "wrongReadImageRate": 0,
       "errors": 0,
-      "medianDecodeMs": 132.526,
-      "p95DecodeMs": 234.654,
+      "medianDecodeMs": 163.653,
+      "p95DecodeMs": 256.547,
       "timeToConfirmedResultMs": null
     },
     "zxing": {
@@ -44,8 +44,8 @@
       "imagesWithWrongRead": 0,
       "wrongReadImageRate": 0,
       "errors": 0,
-      "medianDecodeMs": 1.033,
-      "p95DecodeMs": 7.151,
+      "medianDecodeMs": 1.171,
+      "p95DecodeMs": 7.908,
       "timeToConfirmedResultMs": null
     }
   },
@@ -94,8 +94,8 @@
         "imagesWithWrongRead": 0,
         "wrongReadImageRate": 0,
         "errors": 0,
-        "medianDecodeMs": 132.526,
-        "p95DecodeMs": 234.654,
+        "medianDecodeMs": 163.653,
+        "p95DecodeMs": 256.547,
         "timeToConfirmedResultMs": null
       },
       "zxing": {
@@ -109,8 +109,8 @@
         "imagesWithWrongRead": 0,
         "wrongReadImageRate": 0,
         "errors": 0,
-        "medianDecodeMs": 1.033,
-        "p95DecodeMs": 7.151,
+        "medianDecodeMs": 1.171,
+        "p95DecodeMs": 7.908,
         "timeToConfirmedResultMs": null
       }
     }
@@ -143,7 +143,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 135.496
+          "durationMs": 166.155
         },
         "zxing": {
           "exact": true,
@@ -155,7 +155,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 7.151
+          "durationMs": 7.908
         }
       }
     },
@@ -186,7 +186,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 234.654
+          "durationMs": 235.545
         },
         "zxing": {
           "exact": false,
@@ -195,7 +195,7 @@
           ],
           "unexpected": [],
           "results": [],
-          "durationMs": 1.864
+          "durationMs": 2.12
         }
       }
     },
@@ -226,7 +226,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 132.526
+          "durationMs": 163.653
         },
         "zxing": {
           "exact": true,
@@ -238,7 +238,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 0.995
+          "durationMs": 0.976
         }
       }
     },
@@ -269,7 +269,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 115.632
+          "durationMs": 121.459
         },
         "zxing": {
           "exact": true,
@@ -281,7 +281,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 1.33
+          "durationMs": 1.214
         }
       }
     },
@@ -312,7 +312,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 91.431
+          "durationMs": 96.045
         },
         "zxing": {
           "exact": true,
@@ -324,7 +324,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 0.814
+          "durationMs": 0.79
         }
       }
     },
@@ -355,7 +355,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 138.508
+          "durationMs": 147.219
         },
         "zxing": {
           "exact": true,
@@ -367,7 +367,7 @@
               "format": "Code128"
             }
           ],
-          "durationMs": 1.033
+          "durationMs": 1.171
         }
       }
     },
@@ -386,14 +386,14 @@
           "missing": [],
           "unexpected": [],
           "results": [],
-          "durationMs": 60.046
+          "durationMs": 63.963
         },
         "zxing": {
           "exact": true,
           "missing": [],
           "unexpected": [],
           "results": [],
-          "durationMs": 0.525
+          "durationMs": 0.443
         }
       }
     },
@@ -412,14 +412,14 @@
           "missing": [],
           "unexpected": [],
           "results": [],
-          "durationMs": 104.82
+          "durationMs": 256.547
         },
         "zxing": {
           "exact": true,
           "missing": [],
           "unexpected": [],
           "results": [],
-          "durationMs": 0.675
+          "durationMs": 0.572
         }
       }
     }
