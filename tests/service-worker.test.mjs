@@ -70,7 +70,9 @@ test('precache is complete before offline-ready; failed install never claims rea
   assert.equal([...app.stores.values()][0].size, 0);
   app.state.failURL = null;
   await app.lifecycle('install');
-  assert.equal((await app.message('OFFLINE_STATUS')).ready, true);
+  const status = await app.message('OFFLINE_STATUS');
+  assert.equal(status.ready, true);
+  assert.deepEqual(Array.from(status.features), ['code128-lab']);
   assert.equal(app.state.skipped, false);
 });
 
@@ -91,6 +93,7 @@ test('explicit repair restores files after partial cache eviction', async () => 
   assert.equal((await app.message('OFFLINE_STATUS')).ready, false);
   const repaired = await app.message('REPAIR_OFFLINE');
   assert.equal(repaired.ready, true);
+  assert.deepEqual(Array.from(repaired.features), ['code128-lab']);
   assert.equal(repaired.error, undefined);
   assert.equal(items.size, total);
   app.state.offline = true;
@@ -135,6 +138,18 @@ test('offline credits and license navigations return the document rather than th
     'ZXING-CPP-LICENSE.txt', 'ZXING-WASM-CPP-LICENSE.txt', 'PUBLIC-SANS-LICENSE.txt']) {
     const response = await app.request(`./vendor/${filename}`, { mode: 'navigate' });
     assert.equal(await response.text(), `asset:https://example.test/scan/vendor/${filename}`);
+  }
+  assert.equal(app.state.fetched.length, before);
+});
+
+test('cached lab navigation serves lab pages rather than the main scanner shell', async () => {
+  const app = harness('https://example.test/barcode-api/');
+  await app.lifecycle('install');
+  app.state.offline = true;
+  const before = app.state.fetched.length;
+  for (const path of ['./lab/', './lab/index.html']) {
+    const response = await app.request(path, { mode: 'navigate' });
+    assert.equal(await response.text(), `asset:${new URL(path, 'https://example.test/barcode-api/').href}`);
   }
   assert.equal(app.state.fetched.length, before);
 });

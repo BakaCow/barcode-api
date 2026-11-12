@@ -38,6 +38,8 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
     [
         ("app.js", "application/javascript"),
         ("scanner-worker.js", "application/javascript"),
+        ("code128-lab-worker.js", "application/javascript"),
+        ("engine/code128-engine.js", "application/javascript"),
         ("vendor/zxing-reader.js", "application/javascript"),
         ("vendor/zxing_reader.wasm", "application/wasm"),
         ("manifest.webmanifest", "application/manifest+json"),
@@ -64,6 +66,14 @@ def test_service_worker_is_revalidated_and_has_only_scanner_scope(client):
 def test_unknown_asset_is_not_replaced_with_the_app_shell(client):
     response = client.get("/scan/vendor/missing.wasm")
     assert response.status_code == 404
+
+
+def test_experimental_lab_is_served_independently_from_default_scanner(client):
+    response = client.get("/scan/lab/")
+    assert response.status_code == 200
+    assert "Code 128 lab" in response.text
+    assert "./lab-policy.js" in response.text
+    assert "./lab/" in client.get("/scan/").text
 
 
 def test_static_mount_does_not_expose_backend_source(client):

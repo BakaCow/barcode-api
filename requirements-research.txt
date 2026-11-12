@@ -1,0 +1,3 @@
+# Optional: local extraction of frames from captured videos. Not needed by the API or browser scanner.
+-r requirements-dev.txt
+opencv-python-headless==5.0.0.93

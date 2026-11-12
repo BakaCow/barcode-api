@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "description": "Schema example only. This image is not supplied and is not real collected data.",
+  "entries": [
+    {
+      "id": "example-001",
+      "path": "media/example-001.png",
+      "mediaType": "image",
+      "expected": [{"text": "DEMO-123", "format": "Code128"}],
+      "negative": false,
+      "groupId": "physical-label-001",
+      "split": "dev",
+      "conditions": ["angled", "lowlight"],
+      "device": "Example device; replace with actual phone and browser",
+      "source": "synthetic"
+    }
+  ]
+}

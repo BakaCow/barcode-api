@@ -116,6 +116,14 @@ Primary actions use green and white; secondary actions use white, a thin line bo
 
 The camera stage contains the preview, detected-code outlines, state labels, and the initial permission explanation. Result and history areas preserve arbitrary payload text, distinguish format from value, and expose explicit copy/export actions. Camera selection and zoom appear only when applicable. Status and errors use live-region semantics; the skip link provides direct access to the scanner.
 
+## Experimental lab flow
+
+The Code 128 lab reuses the same self-hosted typography, paper and green palette, camera surface, buttons, field styling and focus treatment. An Experimental label identifies its scope and a persistent Back to scanner link returns to the regular app. The wider desktop layout pairs capture controls with label details, then places comparison results below; phone layouts stack these sections in the same reading order.
+
+The primary sequence is open camera, enter a known value and group, capture a sample, then save its media and label file. Dataset split, device and conditions stay visible next to the value. Prepared samples show explicit download actions and a notice that unsaved files disappear on leaving. Collection does not silently accept a scanner prediction as the expected value.
+
+A separate Start comparison action begins a bounded trial with label details locked. The results table aligns the custom engine and ZXing by measurement, retains misses and wrong readings, and exposes report download. Empty, loading, camera-off, recording, comparison and offline-readiness states use plain text. Long barcode values wrap, tables scroll within their container on phones, and errors remain actionable. Timing and experimental limits are explained beside the measurements without interrupting the capture flow.
+
 ## Do's and Don'ts
 
 - **Do** use the established green, paper, and ink roles consistently.

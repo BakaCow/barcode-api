@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#142d28">
+  <meta name="description" content="Collect labelled Code 128 samples and compare an experimental decoder on this device.">
+  <title>Code 128 Lab · Barcode Camera</title>
+  <link rel="icon" href="../icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="./lab.css">
+  <script src="./lab-policy.js" defer></script>
+  <script src="./lab.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#lab">Skip to lab</a>
+  <header class="topbar"><a class="brand" href="../"><img src="../icon.svg" width="34" height="34" alt=""><span>Barcode Camera</span></a><a class="back-link" href="../">Back to scanner</a></header>
+  <main id="lab">
+    <div class="page-heading"><div><h1>Code 128 lab.</h1><p>Collect real examples. Test your engine. Measure what improves.</p></div><span class="experimental">Experimental</span></div>
+    <p class="intro">This lab compares the custom Code 128 engine with ZXing on the same camera frames. It runs on this device. Enter the label’s known value yourself; a scanner result is not ground truth.</p>
+    <div id="error" class="notice error" role="alert" hidden><p id="error-message"></p><button id="dismiss-error" class="text-button" type="button">Dismiss</button></div>
+    <div class="lab-layout">
+      <section class="capture-section" aria-labelledby="capture-title">
+        <div class="section-heading"><h2 id="capture-title">Camera &amp; sample collection</h2><span id="camera-state" class="muted">Camera off</span></div>
+        <div class="camera-stage lab-stage"><video id="video" playsinline muted hidden aria-label="Lab camera preview"></video><div id="camera-placeholder" class="camera-placeholder"><h2>Start with a real label</h2><p>Open the camera, then record its known value.<br>Photos and videos stay here until you save them.</p></div><span id="recording-state" class="recording-label" hidden>Recording</span></div>
+        <div class="lab-toolbar"><button id="camera-toggle" type="button" class="button primary">Open camera</button><button id="capture-photo" type="button" class="button secondary" disabled>Capture photo</button><button id="capture-video" type="button" class="button secondary" disabled>Record 10 seconds</button></div>
+        <p id="camera-message" class="camera-footnote" role="status">Camera access needs HTTPS or localhost. Camera permission is requested only when you open it.</p>
+        <div class="camera-options" id="camera-options" hidden><label for="camera-select">Camera<select id="camera-select"></select></label><label id="zoom-wrap" for="zoom" hidden>Zoom<input id="zoom" type="range" step="0.1"></label><button id="torch" class="button secondary small" type="button" aria-pressed="false" hidden>Flashlight</button></div>
+        <section class="saved-samples" aria-labelledby="samples-title"><div class="section-heading"><h2 id="samples-title">Samples to save</h2><span id="sample-count" class="muted">0 prepared</span></div><p id="samples-empty" class="muted">A photo or video appears here with its label file. Download both into the same folder.</p><ul id="samples-list"></ul><p class="small-note">Prepared files are temporary and disappear when you leave this page. Keep the same group ID for every photo and video of one physical label or capture session.</p></section>
+      </section>
+      <section class="label-section" aria-labelledby="label-title">
+        <h2 id="label-title">Label this sample</h2>
+        <form id="sample-form">
+          <label for="expected">Known barcode value<input id="expected" name="expected" type="text" maxlength="128" autocomplete="off" spellcheck="false" placeholder="For example, BOX-1042"></label>
+          <label class="check-label"><input id="negative" type="checkbox">This scene has no complete barcode</label>
+          <p class="field-help">Use a Code 128 label with a value you can verify. Negative scenes help measure incorrect detections.</p>
+          <div class="field-row"><label for="group-id">Label or session group<input id="group-id" type="text" maxlength="128" placeholder="box-1042-session-1" autocomplete="off" spellcheck="false"></label><label for="split">Dataset split<select id="split"><option value="train">Train</option><option value="dev" selected>Development</option><option value="test">Held-out test</option></select></label></div>
+          <label for="device">Phone or camera name<input id="device" type="text" maxlength="256" placeholder="For example, Pixel 8 rear camera" autocomplete="off"></label>
+          <fieldset id="conditions"><legend>Conditions in this scene</legend><div class="condition-options"><label><input type="checkbox" value="clean">Clean</label><label><input type="checkbox" value="blur">Blur</label><label><input type="checkbox" value="distant">Distant</label><label><input type="checkbox" value="angled">Angled</label><label><input type="checkbox" value="scratched">Scratched</label><label><input type="checkbox" value="lowlight">Low light</label></div></fieldset>
+          <p class="field-help">Keep held-out labels separate from training and tuning. All samples in one group must use the same split.</p>
+        </form>
+        <section class="trial-controls" aria-labelledby="trial-title"><h2 id="trial-title">Live comparison</h2><p class="muted">Both engines receive the same pixels. A trial lasts up to 60 seconds. Keep the target and label details unchanged during a trial.</p><button id="trial-toggle" type="button" class="button primary" disabled>Start comparison</button><p id="trial-state" class="trial-state" role="status">Open the camera and complete the label details to begin.</p></section>
+      </section>
+    </div>
+    <section class="measurements" aria-labelledby="measure-title"><div class="section-heading"><h2 id="measure-title">Comparison results</h2><button id="export-report" type="button" class="button secondary small" disabled>Download report</button></div><p id="measurement-note" class="muted">No trial yet. These measurements describe this scene and device, not overall scanning accuracy.</p><div class="table-scroll"><table><thead><tr><th scope="col">Measurement</th><th scope="col">Custom Code 128</th><th scope="col">ZXing</th></tr></thead><tbody id="metrics-body"><tr><th scope="row">Frames evaluated</th><td>—</td><td>—</td></tr></tbody></table></div><div class="latest-values"><div><h3>Latest custom result</h3><p id="latest-custom">No reading yet</p></div><div><h3>Latest ZXing result</h3><p id="latest-zxing">No reading yet</p></div></div><p class="small-note">A wrong reading is any unexpected value or format, even if a correct value is also present. Confirmation needs matching correct readings in two separate video frames. Decoder timings exclude camera capture, startup and UI work; confirmation time includes retries from the start of the trial.</p></section>
+    <details class="offline-help"><summary>Collecting useful evaluation data</summary><div><p>Capture multiple phones, label sizes, distances, angles and lighting conditions. Include ordinary scenes without barcodes. Record the exact value from an independent source before scanning.</p><p>Use one group ID for related samples. Choose the held-out test split before tuning and keep it out of development. Download every media file and its JSON label file. The project’s dataset tools validate groups and import these pairs.</p><p id="offline-status">Offline access is being checked.</p><button id="refresh-lab" class="text-button" type="button" hidden>Update lab files</button></div></details>
+  </main>
+  <footer><span>Code 128 lab</span><p>Experimental engine. Local processing.</p><a href="../engine/THIRD-PARTY.txt">Engine credits</a></footer>
+  <noscript><p class="notice">Enable JavaScript to use the lab.</p></noscript>
+</body>
+</html>

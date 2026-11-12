@@ -2,6 +2,8 @@
 
 A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
 
+An [experimental Code 128 lab](CODE128-LAB.md) adds a custom decoder, local photo/video collection, and comparison with ZXing. Open `/scan/lab/` when using the API server, or `/lab/` when hosting the `web/` contents directly. The regular scanner and API continue to use ZXing. The lab includes synthetic development examples; real-phone accuracy and Scanbot parity have not been established.
+
 ## Scan live through the camera
 
 Open the deployed site's `/scan/` address, or its main address, which redirects to the scanner. Choose **Start camera** and allow the browser to use the camera. Point at a barcode or QR code. The app reads the camera frames locally; it does not send camera images to the Python API or any other server.
@@ -24,7 +26,7 @@ See [ACCURACY.md](ACCURACY.md) for reproducible before/after measurements and re
 2. On a phone, use the browser's **Install app** or **Add to Home Screen** option if available. On iPhone, use Safari's Share menu and **Add to Home Screen**.
 3. Turn on airplane mode, reopen the scanner at the same address or from its home-screen icon, and start the camera.
 
-Only the camera app and its locally bundled functionality work offline. Requests to the Python barcode generation and image-upload APIs still require a running server and a network connection. Camera frames are not stored. If local scan-history saving is enabled, the browser stores decoded values and scan metadata, not photos; clear that history from the app when it is no longer needed.
+Only the camera app and its locally bundled functionality work offline. Requests to the Python barcode generation and image-upload APIs still require a running server and a network connection. The regular scanner does not store camera frames. If local scan-history saving is enabled, the browser stores decoded values and scan metadata, not photos; clear that history from the app when it is no longer needed. The lab has separate, explicit photo/video capture and download controls for collecting labelled examples locally.
 
 Offline readiness applies to the current browser and device. Clearing site data, private-browsing restrictions, storage pressure, or browser cache eviction can remove the offline files. If that happens, open the app online again and wait for offline readiness before disconnecting. After an app update, wait for the new version to finish downloading before testing offline mode.
 
@@ -49,6 +51,7 @@ Then open <http://127.0.0.1:8000/>. Keep the server running during the first com
 | Endpoint | Input | Result |
 | --- | --- | --- |
 | `GET /scan/` | None | Live camera app; no API key needed |
+| `GET /scan/lab/` | None | Experimental Code 128 collection and comparison lab; no API key needed |
 | `POST /v1/barcodes/generate` | JSON with `format`, `text`, optional `output` and `scale` | PNG or SVG image |
 | `POST /v1/barcodes/read` | Multipart upload in the `file` field | JSON with decoded values, formats, raw bytes, and four corner positions |
 | `GET /v1/formats` | None | Available generation formats |
@@ -125,12 +128,15 @@ Invalid images return 400, missing or wrong keys return 401, oversized inputs re
 
 ## Tests
 
+Install `requirements-dev.txt` for the API, image tools and Python tests. The optional `requirements-research.txt` adds OpenCV for video extraction and its tests; install it to run the full CI dependency set. Neither the browser app nor the deployed API needs OpenCV.
+
 ```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-research.txt
 .\.venv\Scripts\python.exe -m pytest -q
 node --test tests/*.test.mjs
 ```
 
-The Python tests exercise real API generation and decoding, all four generation symbologies, SVG output, authentication, image limits, EXIF rotation, invalid inputs, and serving the camera app. The Node tests exercise the actual bundled decoder and the service worker's offline-cache lifecycle. Use Node 22 or newer for those tests. GitHub Actions runs both test suites on pushes and pull requests.
+The Python tests exercise real API generation and decoding, all four generation symbologies, SVG output, authentication, image limits, EXIF rotation, invalid inputs, serving the camera app, and dataset import/review rules. The Node tests exercise the actual bundled decoder, custom Code 128 engine, benchmark accounting, lab confirmation policy and service worker's offline-cache lifecycle. Use Node 22 or newer for those tests. GitHub Actions installs the video dependencies and runs both test suites on pushes and pull requests, then benchmarks the eight synthetic Code 128 development examples and prints results in the Actions log. See [CODE128-LAB.md](CODE128-LAB.md) for benchmark reproduction and [TESTING.md](TESTING.md) for verification details.
 
 Browser verification covered the desktop layout and a 390px phone layout. A simulated camera stream exercised the production scanning loop with QR and Code 128 fixtures. The cached production app also reopened with its local server unavailable and decoded a Code 128 image locally. Physical camera hardware and iPhone behavior have not been tested; complete a real phone-camera and airplane-mode check before relying on a particular device.
 
@@ -151,10 +157,10 @@ For a public service, deploy behind HTTPS and add rate limits, per-customer keys
 2. Go to <https://github.com/new>, choose a repository name such as `barcode-api`, and choose **Private** or **Public**.
 3. Leave the README, `.gitignore`, and license initialization options off, then create the repository.
 4. On the empty repository page, choose **uploading an existing file**. In an existing repository, use **Add file → Upload files**.
-5. Open the extracted project folder and drag its contents into GitHub. Include `.github`, `.gitignore`, `.dockerignore`, `app.py`, `barcode_reader.py`, `README.md`, requirements files, `Dockerfile`, `examples`, `tests`, `tools`, and the entire `web` folder. Upload the contents, not the ZIP or an enclosing folder. The workflow path must remain `.github/workflows/tests.yml`.
+5. Open the extracted project folder and drag its contents into GitHub. Include `.github`, `.gitignore`, `.dockerignore`, `app.py`, `barcode_reader.py`, documentation, requirements files, `Dockerfile`, `examples`, `tests`, `tools`, the shipped `data/synthetic` examples, `data/README.md`, `data/manifest.example.json`, `benchmark-results`, and the entire `web` folder. Upload the contents, not the ZIP or an enclosing folder. The workflow path must remain `.github/workflows/tests.yml`.
 6. Enter `Initial barcode API` as the commit message and choose **Commit changes**.
 7. Check that `app.py` and `README.md` appear at the repository root. The **Actions** tab shows the test workflow.
 
-Keep secret keys, `.env` files, virtual environments, caches, and personal images out of the upload. Saving the source to GitHub does not host the API; run it locally or deploy the service separately.
+Keep secret keys, `.env` files, virtual environments, caches, personal images, and `data/local` out of the upload. Git ignores `data/local`, but GitHub's browser upload does not apply your local ignore rules. Saving the source to GitHub does not host the API; run it locally or deploy the service separately.
 
 When updating an existing repository, use **Add file → Upload files** to replace the changed files and add the new `web` assets. Check the folder paths before committing. The bundled JavaScript, WebAssembly, fonts, icons, and license notices must stay together so the scanner can download everything it needs for offline use.

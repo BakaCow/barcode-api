@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "description": "Generated smoke-test examples, not real-world validation or a held-out benchmark.",
+  "entries": [
+    {
+      "id": "alpha-clean",
+      "path": "media/alpha-clean.png",
+      "mediaType": "image",
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "format": "Code128"
+        }
+      ],
+      "negative": false,
+      "groupId": "synthetic-alpha",
+      "split": "dev",
+      "conditions": [
+        "clean"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    },
+    {
+      "id": "alpha-angled",
+      "path": "media/alpha-angled.png",
+      "mediaType": "image",
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "format": "Code128"
+        }
+      ],
+      "negative": false,
+      "groupId": "synthetic-alpha",
+      "split": "dev",
+      "conditions": [
+        "angled"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    },
+    {
+      "id": "alpha-lowcontrast",
+      "path": "media/alpha-lowcontrast.png",
+      "mediaType": "image",
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "format": "Code128"
+        }
+      ],
+      "negative": false,
+      "groupId": "synthetic-alpha",
+      "split": "dev",
+      "conditions": [
+        "lowcontrast"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    },
+    {
+      "id": "alpha-blurred",
+      "path": "media/alpha-blurred.png",
+      "mediaType": "image",
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "format": "Code128"
+        }
+      ],
+      "negative": false,
+      "groupId": "synthetic-alpha",
+      "split": "dev",
+      "conditions": [
+        "blur"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    },
+    {
+      "id": "numeric-clean",
+      "path": "media/numeric-clean.png",
+      "mediaType": "image",
+      "expected": [
+        {
+          "text": "00123456789012",
+          "format": "Code128"
+        }
+      ],
+      "negative": false,
+      "groupId": "synthetic-numeric",
+      "split": "dev",
+      "conditions": [
+        "clean"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    },
+    {
+      "id": "numeric-angled",
+      "path": "media/numeric-angled.png",
+      "mediaType": "image",
+      "expected": [
+        {
+          "text": "00123456789012",
+          "format": "Code128"
+        }
+      ],
+      "negative": false,
+      "groupId": "synthetic-numeric",
+      "split": "dev",
+      "conditions": [
+        "angled"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    },
+    {
+      "id": "negative-blank",
+      "path": "media/negative-blank.png",
+      "mediaType": "image",
+      "expected": [],
+      "negative": true,
+      "groupId": "synthetic-blank",
+      "split": "dev",
+      "conditions": [
+        "negative"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    },
+    {
+      "id": "negative-stripes",
+      "path": "media/negative-stripes.png",
+      "mediaType": "image",
+      "expected": [],
+      "negative": true,
+      "groupId": "synthetic-stripes",
+      "split": "dev",
+      "conditions": [
+        "negative"
+      ],
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "source": "synthetic"
+    }
+  ]
+}

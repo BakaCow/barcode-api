@@ -1,5 +1,6 @@
 /* Everything needed to scan is cached here; camera frames never pass through it. */
-const VERSION = "1.1.0";
+const VERSION = "1.2.1";
+const FEATURES = ["code128-lab"];
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `barcode-camera:${SCOPE.href}:`;
 const CACHE_NAME = `${CACHE_PREFIX}${VERSION}`;
@@ -11,6 +12,9 @@ const CORE_PATHS = [
   "./vendor/THIRD-PARTY.txt", "./vendor/ZXING-WASM-LICENSE.txt",
   "./vendor/ZXING-CPP-LICENSE.txt", "./vendor/ZXING-WASM-CPP-LICENSE.txt",
   "./vendor/PUBLIC-SANS-LICENSE.txt",
+  "./lab/", "./lab/index.html", "./lab/lab.css", "./lab/lab.js", "./lab/lab-policy.js",
+  "./code128-lab-worker.js", "./engine/code128-decoder.js", "./engine/code128-detector.js",
+  "./engine/code128-engine.js", "./engine/THIRD-PARTY.txt",
 ];
 const CORE_URLS = CORE_PATHS.map(path => new URL(path, SCOPE).href);
 const CORE_SET = new Set(CORE_URLS);
@@ -49,7 +53,7 @@ self.addEventListener("message", event => {
     event.waitUntil((async () => {
       let ready = false;
       try { ready = await isOfflineReady(); } catch { /* Storage may be unavailable. */ }
-      event.ports?.[0]?.postMessage({ ready, version: VERSION });
+      event.ports?.[0]?.postMessage({ ready, version: VERSION, features: FEATURES });
     })());
   } else if (event.data?.type === "REPAIR_OFFLINE") {
     event.waitUntil((async () => {
@@ -65,7 +69,7 @@ self.addEventListener("message", event => {
         try { ready = await isOfflineReady(); } catch { /* Storage may be unavailable. */ }
         error = "Could not download all offline files. Connect to the internet and try again.";
       }
-      event.ports?.[0]?.postMessage({ ready, version: VERSION, ...(error ? { error } : {}) });
+      event.ports?.[0]?.postMessage({ ready, version: VERSION, features: FEATURES, ...(error ? { error } : {}) });
     })());
   } else if (event.data?.type === "ACTIVATE_UPDATE") {
     event.waitUntil(self.skipWaiting());

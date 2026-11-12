@@ -1,0 +1,20 @@
+Experimental Code 128 engine attribution
+
+The Code 128 module-width lookup table in code128-decoder.js is adapted from:
+ZXing-C++, core/src/oned/ODCode128Patterns.h
+https://github.com/zxing-cpp/zxing-cpp/blob/master/core/src/oned/ODCode128Patterns.h
+Copyright 2016 Nu-book Inc.
+Copyright 2016 ZXing authors
+SPDX-License-Identifier: Apache-2.0
+The complete license is distributed at ../vendor/ZXING-CPP-LICENSE.txt.
+
+Modifications: lookup rows are represented as JavaScript strings, and the stop
+pattern includes its terminating two-module bar. The scanline matching, sample
+selection, validation and consensus implementation is project code. This
+prototype does not invoke ZXing or another decoder to produce its results.
+
+The prototype supports Code Sets A/B/C, set switching, SHIFT, and GS1 FNC1.
+Unsupported FNC2/FNC3/FNC4 and AIM second-position FNC1 are rejected. It requires
+approximately ten-module quiet zones and at least two agreeing image rows.
+It is an experimental single-value decoder, not a full standards conformance
+implementation and not a claim of Scanbot-equivalent performance.
