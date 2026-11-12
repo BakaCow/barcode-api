@@ -1,0 +1,6 @@
+{
+  "format": "qr",
+  "text": "https://example.com",
+  "output": "png",
+  "scale": 4
+}
