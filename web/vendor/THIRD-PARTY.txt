@@ -1,0 +1,12 @@
+Barcode Camera third-party assets
+
+zxing-wasm 3.1.6 by Ze-Zheng Wu: https://github.com/Sec-ant/zxing-wasm
+JavaScript wrapper: MIT (ZXING-WASM-LICENSE.txt).
+C++ bindings: Apache-2.0 (ZXING-WASM-CPP-LICENSE.txt).
+Reader engine ZXing-C++: Apache-2.0 (ZXING-CPP-LICENSE.txt).
+Reader-only build; no Zint writer is included.
+
+Public Sans Variable 5.3.0 via Fontsource: https://github.com/uswds/public-sans
+SIL Open Font License 1.1 (PUBLIC-SANS-LICENSE.txt).
+
+All executable assets and font files are bundled locally. No runtime CDN dependency.

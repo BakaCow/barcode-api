@@ -4,15 +4,18 @@ import base64
 from contextlib import asynccontextmanager
 from io import BytesIO
 import os
+from pathlib import Path
 import secrets
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response, UploadFile
 from fastapi.security import APIKeyHeader
+from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse
 import zxingcpp
+from barcode_reader import read_barcodes
 
 MAX_FILE_BYTES = 10 * 1024 * 1024
 MAX_PIXELS = 20_000_000
@@ -70,7 +73,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Barcode API",
-    version="0.1.0",
+    version="0.3.0",
     description="Read codes from images and generate QR, Code 128, EAN-13, and UPC-A images.",
     lifespan=lifespan,
 )
@@ -137,6 +140,11 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/", include_in_schema=False)
+def scanner_home():
+    return RedirectResponse(url="/scan/")
+
+
 @router.get("/formats")
 def formats():
     return {"generate": list(FORMATS), "read": "All formats supported by ZXing-C++"}
@@ -194,23 +202,47 @@ def read(file: UploadFile, response: Response):
         raise HTTPException(400, "File is not a valid supported image.") from exc
 
     with image:
-        results = zxingcpp.read_barcodes(image)
+        results = read_barcodes(image)
         barcodes = []
         for code in results:
             name = next((name for name, value in FORMATS.items() if code.format == value), None)
             if name is None:
                 name = str(code.format).replace("BarcodeFormat.", "").lower().replace(" ", "")
-            corners = code.position
             barcodes.append(BarcodeResult(
                 text=code.text,
                 format=name,
                 bytes_base64=base64.b64encode(code.bytes).decode("ascii"),
-                position=[Point(x=point.x, y=point.y) for point in (
-                    corners.top_left, corners.top_right, corners.bottom_right, corners.bottom_left
-                )],
+                position=[Point(x=x, y=y) for x, y in code.points],
             ))
         response.headers["Cache-Control"] = "no-store"
         return ReadResponse(barcodes=barcodes, image=ImageSize(width=image.width, height=image.height))
 
 
 app.include_router(router)
+
+
+class ScannerFiles(StaticFiles):
+    """Serve the independent scanner without applying API-key authentication."""
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        # Explicit MIME types are consistent across Windows and Linux hosts.
+        if path.endswith(".wasm"):
+            response.headers["Content-Type"] = "application/wasm"
+        elif path.endswith(".js"):
+            response.headers["Content-Type"] = "application/javascript"
+        elif path.endswith(".webmanifest"):
+            response.headers["Content-Type"] = "application/manifest+json"
+        if path == "sw.js":
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
+# All scanner assets, its decoder, and its service worker share the /scan/ scope.
+# The folder can also be hosted by itself on an HTTPS static host.
+app.mount(
+    "/scan",
+    ScannerFiles(directory=Path(__file__).resolve().parent / "web", html=True, check_dir=False),
+    name="scanner",
+)

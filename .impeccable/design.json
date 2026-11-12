@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-12T11:35:02.083812+00:00",
+  "title": "Design System: Barcode Camera",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0082 121.63)",
+          "oklch(25% 0.0082 121.63)",
+          "oklch(35% 0.0082 121.63)",
+          "oklch(45% 0.0082 121.63)",
+          "oklch(58% 0.0082 121.63)",
+          "oklch(70% 0.0082 121.63)",
+          "oklch(83% 0.0082 121.63)",
+          "oklch(95% 0.0082 121.63)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(25% 0.0000 89.88)",
+          "oklch(35% 0.0000 89.88)",
+          "oklch(45% 0.0000 89.88)",
+          "oklch(58% 0.0000 89.88)",
+          "oklch(70% 0.0000 89.88)",
+          "oklch(83% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0327 179.24)",
+          "oklch(25% 0.0327 179.24)",
+          "oklch(35% 0.0327 179.24)",
+          "oklch(45% 0.0327 179.24)",
+          "oklch(58% 0.0327 179.24)",
+          "oklch(70% 0.0327 179.24)",
+          "oklch(83% 0.0327 179.24)",
+          "oklch(95% 0.0327 179.24)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0290 167.23)",
+          "oklch(25% 0.0290 167.23)",
+          "oklch(35% 0.0290 167.23)",
+          "oklch(45% 0.0290 167.23)",
+          "oklch(58% 0.0290 167.23)",
+          "oklch(70% 0.0290 167.23)",
+          "oklch(83% 0.0290 167.23)",
+          "oklch(95% 0.0290 167.23)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.0166 142.55)",
+          "oklch(25% 0.0166 142.55)",
+          "oklch(35% 0.0166 142.55)",
+          "oklch(45% 0.0166 142.55)",
+          "oklch(58% 0.0166 142.55)",
+          "oklch(70% 0.0166 142.55)",
+          "oklch(83% 0.0166 142.55)",
+          "oklch(95% 0.0166 142.55)"
+        ]
+      },
+      "green": {
+        "role": "primary",
+        "displayName": "Green",
+        "tonalRamp": [
+          "oklch(15% 0.0860 160.48)",
+          "oklch(25% 0.0860 160.48)",
+          "oklch(35% 0.0860 160.48)",
+          "oklch(45% 0.0860 160.48)",
+          "oklch(58% 0.0860 160.48)",
+          "oklch(70% 0.0860 160.48)",
+          "oklch(83% 0.0860 160.48)",
+          "oklch(95% 0.0860 160.48)"
+        ]
+      },
+      "green-dark": {
+        "role": "primary",
+        "displayName": "Green Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0698 160.41)",
+          "oklch(25% 0.0698 160.41)",
+          "oklch(35% 0.0698 160.41)",
+          "oklch(45% 0.0698 160.41)",
+          "oklch(58% 0.0698 160.41)",
+          "oklch(70% 0.0698 160.41)",
+          "oklch(83% 0.0698 160.41)",
+          "oklch(95% 0.0698 160.41)"
+        ]
+      },
+      "mint": {
+        "role": "primary",
+        "displayName": "Mint",
+        "tonalRamp": [
+          "oklch(15% 0.0781 154.23)",
+          "oklch(25% 0.0781 154.23)",
+          "oklch(35% 0.0781 154.23)",
+          "oklch(45% 0.0781 154.23)",
+          "oklch(58% 0.0781 154.23)",
+          "oklch(70% 0.0781 154.23)",
+          "oklch(83% 0.0781 154.23)",
+          "oklch(95% 0.0781 154.23)"
+        ]
+      },
+      "muted-surface": {
+        "role": "neutral",
+        "displayName": "Muted Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0136 134.90)",
+          "oklch(25% 0.0136 134.90)",
+          "oklch(35% 0.0136 134.90)",
+          "oklch(45% 0.0136 134.90)",
+          "oklch(58% 0.0136 134.90)",
+          "oklch(70% 0.0136 134.90)",
+          "oklch(83% 0.0136 134.90)",
+          "oklch(95% 0.0136 134.90)"
+        ]
+      },
+      "error": {
+        "role": "neutral",
+        "displayName": "Error",
+        "tonalRamp": [
+          "oklch(15% 0.1308 29.31)",
+          "oklch(25% 0.1308 29.31)",
+          "oklch(35% 0.1308 29.31)",
+          "oklch(45% 0.1308 29.31)",
+          "oklch(58% 0.1308 29.31)",
+          "oklch(70% 0.1308 29.31)",
+          "oklch(83% 0.1308 29.31)",
+          "oklch(95% 0.1308 29.31)"
+        ]
+      },
+      "error-bg": {
+        "role": "neutral",
+        "displayName": "Error Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0188 46.81)",
+          "oklch(25% 0.0188 46.81)",
+          "oklch(35% 0.0188 46.81)",
+          "oklch(45% 0.0188 46.81)",
+          "oklch(58% 0.0188 46.81)",
+          "oklch(70% 0.0188 46.81)",
+          "oklch(83% 0.0188 46.81)",
+          "oklch(95% 0.0188 46.81)"
+        ]
+      },
+      "focus": {
+        "role": "neutral",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(15% 0.1623 262.02)",
+          "oklch(25% 0.1623 262.02)",
+          "oklch(35% 0.1623 262.02)",
+          "oklch(45% 0.1623 262.02)",
+          "oklch(58% 0.1623 262.02)",
+          "oklch(70% 0.1623 262.02)",
+          "oklch(83% 0.1623 262.02)",
+          "oklch(95% 0.1623 262.02)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Compact primary page heading."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Instructions and supporting text."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "control-color",
+        "value": "background .15s, color .15s",
+        "purpose": "Control feedback; disabled by reduced-motion preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-camera",
+        "value": "1100px"
+      },
+      {
+        "name": "tablet",
+        "value": "900px"
+      },
+      {
+        "name": "phone",
+        "value": "680px"
+      }
+    ],
+    "focus": {
+      "outline": "3px solid #477bdf",
+      "offset": "4px"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Start or stop the primary operation.",
+      "html": "<button class=\"ds-button ds-primary\">Start camera</button>",
+      "css": ".ds-button{font:600 14px/1.25 var(--font,'Public Sans',sans-serif);border-radius:9px;padding:12px 17px;min-height:46px;cursor:pointer;transition:background .15s,color .15s}.ds-button:focus-visible{outline:3px solid #477bdf;outline-offset:4px}.ds-button:disabled{opacity:.45;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-button{transition:none}}.ds-primary{border:1px solid transparent;background:var(--green,#226748);color:var(--white,#fff)}.ds-primary:hover:not(:disabled){background:var(--green-dark,#184d35)}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A supporting camera, image, or export action.",
+      "html": "<button class=\"ds-button ds-secondary\">Scan image</button>",
+      "css": ".ds-button{font:600 14px/1.25 var(--font,'Public Sans',sans-serif);border-radius:9px;padding:12px 17px;min-height:46px;cursor:pointer;transition:background .15s,color .15s}.ds-button:focus-visible{outline:3px solid #477bdf;outline-offset:4px}.ds-button:disabled{opacity:.45;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-button{transition:none}}.ds-secondary{border:1px solid var(--line,#d4ddd3);background:var(--white,#fff);color:var(--ink,#142d28)}.ds-secondary:hover:not(:disabled){background:var(--muted-surface,#e7ede4)}"
+    },
+    {
+      "name": "Format label",
+      "kind": "chip",
+      "refersTo": "format-label",
+      "description": "Short noninteractive barcode format label.",
+      "html": "<span class=\"ds-format\">Code 128</span>",
+      "css": ".ds-format{font:10px var(--font,'Public Sans',sans-serif);color:var(--ink,#142d28);background:var(--muted-surface,#e7ede4);padding:4px 7px;border-radius:4px;overflow-wrap:anywhere}"
+    },
+    {
+      "name": "Results panel",
+      "kind": "card",
+      "refersTo": "results-panel",
+      "description": "Readable latest-result and recent-history surface.",
+      "html": "<section class=\"ds-results\"><h2>Latest scan</h2><p>Your next find appears here.</p></section>",
+      "css": ".ds-results{font:15px/1.5 var(--font,'Public Sans',sans-serif);color:var(--ink,#142d28);background:var(--white,#fff);border:1px solid var(--line,#d4ddd3);border-radius:14px;padding:24px}.ds-results h2{font-size:15px;font-weight:650;letter-spacing:-.015em;margin:0}.ds-results p{font-size:16px;letter-spacing:-.02em;margin:30px 0 6px}"
+    },
+    {
+      "name": "Camera selector",
+      "kind": "input",
+      "refersTo": "camera-field",
+      "description": "Select an available camera after permission is granted.",
+      "html": "<label class=\"ds-field-label\">Camera <select class=\"ds-field\"><option>Rear camera</option><option>Front camera</option></select></label>",
+      "css": ".ds-field-label{font:12px var(--font,'Public Sans',sans-serif);color:var(--ink,#142d28)}.ds-field{font:inherit;min-width:160px;max-width:300px;border:1px solid var(--line,#d4ddd3);border-radius:6px;padding:8px;background:var(--white,#fff);color:var(--ink,#142d28)}.ds-field:focus-visible{outline:3px solid #477bdf;outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Quiet utility",
+    "overview": "A restrained, legible interface that gives the camera and decoded values priority. Pale green paper surrounds a dark camera surface; green actions and mint scan outlines make the active operation easy to identify. The shipped interface uses this system on phone and desktop.",
+    "keyCharacteristics": [
+      "Clear controls and readable results.",
+      "Flat surfaces with soft corners and thin dividers.",
+      "Visible readiness, permission, empty, scanning, and error states."
+    ],
+    "rules": [],
+    "dos": [
+      "Do use the established green, paper, and ink roles consistently.",
+      "Do preserve keyboard focus, long-value wrapping, and phone-sized controls.",
+      "Do distinguish cached offline readiness from network connectivity."
+    ],
+    "donts": [
+      "Don't hide camera or decoding errors behind decorative feedback.",
+      "Don't introduce remote fonts or assets that bypass the offline bundle.",
+      "Don't turn scanned text into an automatically opened URL."
+    ]
+  }
+}

@@ -1,11 +1,54 @@
 # Barcode API
 
-A Python API that reads barcodes from uploaded images and generates barcode or QR-code images. Built with [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
+A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
+
+## Scan live through the camera
+
+Open the deployed site's `/scan/` address, or its main address, which redirects to the scanner. Choose **Start camera** and allow the browser to use the camera. Point at a barcode or QR code. The app reads the camera frames locally; it does not send camera images to the Python API or any other server.
+
+The scanner is a separate browser app. It does not need your API key. The existing `/v1` endpoints still require that key.
+
+### Reading difficult labels
+
+The scanner preserves more camera detail, retries selected center crops, and asks for continuous autofocus when the camera supports it. When the initial decode fails, it can retry contrast normalization, sharpening, a diagonal rotation, and light/dark inversion. The browser image reader and uploaded-image API have bounded recovery passes; neither reconstructs completely missing barcode data.
+
+Live results need matching payload bytes and format in two separate video frames before appearing. Formats without a known mandatory checksum require three. This adds a short confirmation delay and helps reject transient mistakes; it cannot rule out a persistent wrong reading. Modern browsers use presented-frame callbacks or decoded-frame counters. Browsers without either use playback timestamps, which cannot reliably distinguish a frozen video image from a new frame.
+
+Clean images use the original decoder first. Difficult images may take longer. Recovery stops when a pass finds a code, so an easy code can prevent extra recovery attempts for a harder code in the same image. Imported images do not use live-frame confirmation.
+
+See [ACCURACY.md](ACCURACY.md) for reproducible before/after measurements and remaining limits. The measurements use generated images, not real phone footage or a Scanbot comparison.
+
+### Use it offline
+
+1. Open the scanner while connected to the internet and wait until it reports that offline mode is ready. That first visit downloads the page, decoder, WebAssembly engine, and other assets into this browser.
+2. On a phone, use the browser's **Install app** or **Add to Home Screen** option if available. On iPhone, use Safari's Share menu and **Add to Home Screen**.
+3. Turn on airplane mode, reopen the scanner at the same address or from its home-screen icon, and start the camera.
+
+Only the camera app and its locally bundled functionality work offline. Requests to the Python barcode generation and image-upload APIs still require a running server and a network connection. Camera frames are not stored. If local scan-history saving is enabled, the browser stores decoded values and scan metadata, not photos; clear that history from the app when it is no longer needed.
+
+Offline readiness applies to the current browser and device. Clearing site data, private-browsing restrictions, storage pressure, or browser cache eviction can remove the offline files. If that happens, open the app online again and wait for offline readiness before disconnecting. After an app update, wait for the new version to finish downloading before testing offline mode.
+
+### Camera requirements
+
+Use a current browser that supports camera access, WebAssembly, and service workers. The page must be served over **HTTPS**, or over `http://localhost` / `http://127.0.0.1` on the same device for development. Opening `index.html` directly as a file, or visiting a plain HTTP LAN address from your phone, does not provide the secure context needed for the full camera/offline app. Camera, flashlight, installation, and storage behavior vary by browser and device. Test with the phones and real barcode labels you intend to use; this project does not establish Scanbot-equivalent speed or recognition quality.
+
+## Host just the camera app
+
+The `web/` directory is self-contained. Publish its **contents** to any HTTPS static host while preserving the `vendor/` folder and filenames. No Python server, database, API key, or CDN is needed for this version of the scanner. Relative asset paths allow it to run at a subpath such as `/barcode-api/`.
+
+For a local desktop preview without starting the API, run this command from the project folder:
+
+```powershell
+py -m http.server 8000 --bind 127.0.0.1 --directory web
+```
+
+Then open <http://127.0.0.1:8000/>. Keep the server running during the first complete download. The browser's camera permission prompt still needs your approval.
 
 ## What it does
 
 | Endpoint | Input | Result |
 | --- | --- | --- |
+| `GET /scan/` | None | Live camera app; no API key needed |
 | `POST /v1/barcodes/generate` | JSON with `format`, `text`, optional `output` and `scale` | PNG or SVG image |
 | `POST /v1/barcodes/read` | Multipart upload in the `file` field | JSON with decoded values, formats, raw bytes, and four corner positions |
 | `GET /v1/formats` | None | Available generation formats |
@@ -13,7 +56,7 @@ A Python API that reads barcodes from uploaded images and generates barcode or Q
 
 Generation supports `qr`, `code128`, `ean13`, and `upca`. Reading uses ZXing-C++'s supported formats, including QR and common retail barcodes. Each `/v1` endpoint requires an `X-API-Key` header.
 
-This is a starter service for uploaded images. It does not include live camera scanning, user accounts, billing, product lookup, or a hosting subscription. A barcode's value is usually an identifier; product names and prices require a separate data source.
+The project does not include user accounts, billing, product lookup, or a hosting subscription. A barcode's value is usually an identifier; product names and prices require a separate data source.
 
 ## Run locally on Windows
 
@@ -26,7 +69,7 @@ $env:BARCODE_API_KEY = (& .\.venv\Scripts\python.exe -c "import secrets; print(s
 .\.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-Keep the terminal open. Visit <http://127.0.0.1:8000/docs> for the interactive API documentation. Use **Authorize** to enter the key generated above. To see the key, stop the server with Ctrl+C, run `$env:BARCODE_API_KEY`, copy it, and restart the same server command. Keep that key private.
+Keep the terminal open. Visit <http://127.0.0.1:8000/scan/> for the camera app or <http://127.0.0.1:8000/docs> for the interactive API documentation. The API documentation has an **Authorize** button for the key generated above. To see the key, stop the server with Ctrl+C, run `$env:BARCODE_API_KEY`, copy it, and restart the same server command. Keep that key private.
 
 The service refuses to start unless `BARCODE_API_KEY` has at least 24 characters. The environment variable lasts for that terminal session. The app does not automatically load `.env` files.
 
@@ -84,9 +127,12 @@ Invalid images return 400, missing or wrong keys return 401, oversized inputs re
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
+node --test tests/*.test.mjs
 ```
 
-The included tests exercise real generation and decoding, all four output symbologies, SVG output, authentication, image limits, EXIF rotation, and invalid inputs. The test suite passed locally on Python 3.14. GitHub Actions runs it on pushes and pull requests.
+The Python tests exercise real API generation and decoding, all four generation symbologies, SVG output, authentication, image limits, EXIF rotation, invalid inputs, and serving the camera app. The Node tests exercise the actual bundled decoder and the service worker's offline-cache lifecycle. Use Node 22 or newer for those tests. GitHub Actions runs both test suites on pushes and pull requests.
+
+Browser verification covered the desktop layout and a 390px phone layout. A simulated camera stream exercised the production scanning loop with QR and Code 128 fixtures. The cached production app also reopened with its local server unavailable and decoded a Code 128 image locally. Physical camera hardware and iPhone behavior have not been tested; complete a real phone-camera and airplane-mode check before relying on a particular device.
 
 ## Docker
 
@@ -95,7 +141,7 @@ docker build -t barcode-api .
 docker run --rm -p 8000:8000 -e BARCODE_API_KEY barcode-api
 ```
 
-Set and export `BARCODE_API_KEY` in the host shell first. The container runs as a non-root user. Docker packaging is included but has not been tested locally.
+Set and export `BARCODE_API_KEY` in the host shell first. The container runs as a non-root user and includes the camera app at `/scan/`. Docker packaging is included but has not been tested locally.
 
 For a public service, deploy behind HTTPS and add rate limits, per-customer keys, usage accounting, concurrency limits, and resource/time limits appropriate to your hosting platform. Test recognition quality against your own real photos; the included tests do not establish Scanbot-equivalent performance.
 
@@ -105,8 +151,10 @@ For a public service, deploy behind HTTPS and add rate limits, per-customer keys
 2. Go to <https://github.com/new>, choose a repository name such as `barcode-api`, and choose **Private** or **Public**.
 3. Leave the README, `.gitignore`, and license initialization options off, then create the repository.
 4. On the empty repository page, choose **uploading an existing file**. In an existing repository, use **Add file → Upload files**.
-5. Open the extracted project folder and drag its contents into GitHub. Include `.github`, `.gitignore`, `.dockerignore`, `app.py`, `README.md`, requirements files, `Dockerfile`, `examples`, and `tests`. Upload the contents, not the ZIP or an enclosing folder.
+5. Open the extracted project folder and drag its contents into GitHub. Include `.github`, `.gitignore`, `.dockerignore`, `app.py`, `barcode_reader.py`, `README.md`, requirements files, `Dockerfile`, `examples`, `tests`, `tools`, and the entire `web` folder. Upload the contents, not the ZIP or an enclosing folder. The workflow path must remain `.github/workflows/tests.yml`.
 6. Enter `Initial barcode API` as the commit message and choose **Commit changes**.
 7. Check that `app.py` and `README.md` appear at the repository root. The **Actions** tab shows the test workflow.
 
 Keep secret keys, `.env` files, virtual environments, caches, and personal images out of the upload. Saving the source to GitHub does not host the API; run it locally or deploy the service separately.
+
+When updating an existing repository, use **Add file → Upload files** to replace the changed files and add the new `web` assets. Check the folder paths before committing. The bundled JavaScript, WebAssembly, fonts, icons, and license notices must stay together so the scanner can download everything it needs for offline use.

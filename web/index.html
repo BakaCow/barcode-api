@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#142d28">
+  <meta name="description" content="Scan barcodes and QR codes with your camera. Decodes on your device and works offline after setup.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Barcode Camera</title>
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./scan-policy.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#scanner">Skip to scanner</a>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Barcode Camera home"><img src="./icon.svg" width="34" height="34" alt=""><span>Barcode Camera</span></a>
+    <div class="offline-state" id="offline-state" role="status"><span class="status-dot"></span><span id="offline-label">Preparing offline access…</span></div>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div><h1>Scan a barcode.</h1><p>Point your camera. Read the code. Keep it on your device.</p></div>
+      <button id="install" class="button secondary" hidden>Install app <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg></button>
+    </div>
+
+    <div id="update-banner" class="notice" hidden><p>A new version is ready. Your saved scans will stay on this device.</p><button id="update" class="button secondary">Update app</button></div>
+    <div id="error" class="notice error" role="alert" hidden><p id="error-text"></p><button class="text-button" id="dismiss-error" aria-label="Dismiss message">Dismiss</button></div>
+
+    <div class="workspace">
+      <section class="scanner-section" id="scanner" aria-label="Camera scanner">
+        <div class="camera-stage" id="camera-stage">
+          <video id="video" playsinline muted aria-label="Live camera preview" hidden></video>
+          <svg id="overlay" class="overlay" aria-hidden="true" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="stage-top"><span id="camera-state">Camera is off</span><span class="on-device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg>On-device scanning</span></div>
+          <div class="camera-placeholder" id="camera-placeholder">
+            <div class="viewfinder" aria-hidden="true"><svg viewBox="0 0 160 110"><path class="corners" d="M1 25V1h25m108 0h25v24M1 85v24h25m108 0h25V85"/><path class="bars" d="M38 31v48m9-48v48m14-48v48m6-48v48m15-48v48m12-48v48m6-48v48m17-48v48m6-48v48"/></svg></div>
+            <h2 id="camera-title">Ready when you are</h2><p id="camera-description">Allow camera access to start scanning.<br>Images never leave this device.</p>
+          </div>
+          <div class="stage-bottom" id="scan-hint">QR codes, product barcodes, and more</div>
+        </div>
+        <div class="camera-toolbar">
+          <button id="start" class="button primary"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6 10 3h4l2 3h5v15H3V6h5Z"/><circle cx="12" cy="13" r="4"/></svg><span>Start camera</span></button>
+          <button id="torch" class="button secondary" aria-label="Flashlight" aria-pressed="false" disabled title="Available when your camera supports a flashlight"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7l0-7Z"/></svg><span>Flashlight</span></button>
+          <button id="choose-image" class="button secondary"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 18 6-6 4 4 3-4 5 6"/></svg><span>Scan image</span></button>
+          <input type="file" id="image-file" accept="image/png,image/jpeg,image/webp" hidden>
+        </div>
+        <div class="camera-settings" id="camera-settings" hidden><label for="camera-select">Camera</label><select id="camera-select" aria-label="Choose camera"></select><div id="zoom-control" hidden><label for="zoom">Zoom</label><input id="zoom" type="range" min="1" max="4" value="1" step="0.1"></div></div>
+        <p class="camera-footnote" id="engine-status" role="status">Camera scanning runs here, even without internet once the app is ready.</p>
+      </section>
+
+      <aside class="results" aria-label="Scan results">
+        <section class="latest" aria-labelledby="latest-title">
+          <div class="section-heading"><h2 id="latest-title">Latest scan</h2><span id="result-format" class="format-label" hidden></span></div>
+          <div id="result-empty" class="empty-result"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 16V5h11m16 0h11v11M5 32v11h11m16 0h11V32M14 16v16m6-16v16m9-16v16m5-16v16"/></svg><p>Your next find appears here.</p><span>Hold the code steady and make sure it’s well lit.</span></div>
+          <div id="result-data" hidden><p id="result-text" class="result-text" tabindex="0"></p><div class="result-meta"><span id="result-time"></span><button id="copy-latest" class="button secondary small">Copy value</button></div></div>
+          <p class="sr-only" id="scan-announcement" role="status" aria-live="polite"></p>
+        </section>
+        <section class="history" aria-labelledby="history-title">
+          <div class="section-heading"><h2 id="history-title">Recent scans <span id="scan-count" class="count">0</span></h2><button id="clear" class="text-button" disabled>Clear</button></div>
+          <p id="history-empty" class="muted">Scanned codes collect here. Repeated codes appear only once.</p>
+          <ol id="history-list" class="history-list" aria-label="Recent scanned values"></ol>
+          <div class="history-actions"><button id="export" class="button secondary small" disabled>Export CSV <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg></button><span class="muted small-text">Up to 100 unique codes</span></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="preferences">
+      <label><input type="checkbox" id="remember">Remember scans on this device</label>
+      <label><input type="checkbox" id="sound">Play sound on a new scan</label>
+      <span id="storage-note">History clears when you close this page.</span>
+    </div>
+    <details class="offline-help"><summary>How to use it offline</summary><div><p>Open this page with internet once and wait for <strong>Offline ready</strong>. You can then scan and reopen this same address without internet. Installing it on your home screen makes it easier to find.</p><p>On iPhone or iPad, use Safari’s Share menu → Add to Home Screen. On Android, use your browser’s Install app or Add to Home screen option.</p><p>Camera permission and HTTPS are required. Clearing browser data can remove offline access and saved scans. The barcode API’s server endpoints are separate and still require a connection.</p><button id="retry-offline" class="text-button">Check offline readiness</button></div></details>
+  </main>
+  <footer><span>Barcode Camera</span><p>Local decoding. No image uploads.</p><a href="./vendor/THIRD-PARTY.txt">Open-source credits</a></footer>
+  <noscript><p class="notice">Enable JavaScript to use the camera scanner.</p></noscript>
+</body>
+</html>
