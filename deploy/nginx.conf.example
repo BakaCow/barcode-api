@@ -2,7 +2,13 @@
 # and certificate paths. The API's port must remain private/loopback-only.
 # Do not add API keys or decoded values to access logs.
 log_format barcode_safe '$time_iso8601 $status $request_time $upstream_response_time';
-limit_req_zone $binary_remote_addr zone=barcode_edge:10m rate=20r/s;
+# Empty keys are not rate-accounted. Static /scan/ assets can therefore install
+# atomically for several tills sharing an IP without consuming the API bucket.
+map $uri $barcode_api_limit_key {
+    default "";
+    ~^/v1(?:/|$) $binary_remote_addr;
+}
+limit_req_zone $barcode_api_limit_key zone=barcode_api_edge:10m rate=20r/s;
 
 server {
     listen 80;
@@ -29,7 +35,7 @@ server {
     }
 
     location / {
-        limit_req zone=barcode_edge burst=40 nodelay;
+        limit_req zone=barcode_api_edge burst=40 nodelay;
         limit_req_status 429;
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;

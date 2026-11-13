@@ -155,7 +155,7 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
     isSecureContext: true,
   };
   const context = vm.createContext(globals); context.window = context;
-  for (const file of ['scan-policy.js', 'pos-policy.js', 'frame-analysis.js', 'capture-selection.js', 'app.js']) {
+  for (const file of ['scan-policy.js', 'pos-policy.js', 'frame-analysis.js', 'capture-selection.js', 'camera-constraints.js', 'app.js']) {
     vm.runInContext(readFileSync(new URL(`../web/${file}`, import.meta.url), 'utf8'), context, { filename: file });
   }
   const evaluate = code => vm.runInContext(code, context);
@@ -198,6 +198,106 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
     async close() { evaluate('stopCamera()'); await flush(); },
   };
 }
+
+test('cancelling unresolved permission unlocks import and a late stream cannot finish a newer startup', async t => {
+  const app = cameraHarness(); t.after(() => app.close());
+  const original = app.context.navigator.mediaDevices.getUserMedia;
+  const requests = [];
+  app.context.navigator.mediaDevices.getUserMedia = () => new Promise(resolve => requests.push(resolve));
+  const first = app.evaluate('startCamera()'); await flush();
+  assert.equal(app.evaluate('starting'), true);
+  assert.equal(app.get('start').disabled, false, 'opening offers a working Cancel camera action');
+  await app.click('start');
+  assert.equal(app.evaluate('starting'), false);
+  assert.equal(app.get('choose-image').disabled, false);
+  const second = app.evaluate('startCamera()'); await flush();
+  const stale = await original(); requests[0](stale); await first;
+  assert.ok(stale.track.stopped > 0);
+  assert.equal(app.evaluate('starting'), true, 'old finalizer cannot unlock a newer operation');
+  const fresh = await original(); requests[1](fresh); await second;
+  assert.equal(app.evaluate('active'), true);
+  assert.equal(app.get('video').srcObject, fresh);
+});
+
+test('backgrounding unresolved camera permission immediately restores the main controls', async () => {
+  const app = cameraHarness();
+  let resolve;
+  const original = app.context.navigator.mediaDevices.getUserMedia;
+  app.context.navigator.mediaDevices.getUserMedia = () => new Promise(done => { resolve = done; });
+  const opening = app.evaluate('startCamera()'); await flush();
+  app.context.document.hidden = true; await app.event('document:visibilitychange');
+  assert.equal(app.evaluate('starting'), false);
+  assert.equal(app.get('choose-image').disabled, false);
+  const late = await original(); resolve(late); await opening;
+  assert.ok(late.track.stopped > 0);
+  assert.equal(app.evaluate('active'), false);
+});
+
+for (const method of ['getCapabilities', 'getSettings']) test(`a failing optional ${method} probe keeps main scanning usable`, async t => {
+  const app = cameraHarness(); t.after(() => app.close());
+  const original = app.context.navigator.mediaDevices.getUserMedia;
+  app.context.navigator.mediaDevices.getUserMedia = async () => {
+    const stream = await original(); stream.track[method] = () => { throw new Error('Unsupported optional probe'); }; return stream;
+  };
+  await app.open();
+  assert.equal(app.evaluate('active'), true);
+  assert.equal(app.streams[0].track.stopped, 0);
+  assert.equal(app.awaiting.length, 1);
+  assert.equal(app.get('error').hidden, true);
+  if (method === 'getCapabilities') assert.equal(app.get('torch').disabled, true);
+});
+
+function savedHistory(app, { failSet = null, failRemove = false } = {}) {
+  const saved = { ...item, timestamp: 1000 };
+  const values = new Map([['barcode-camera.remember.v1', 'true'], ['barcode-camera.history.v1', JSON.stringify([saved])]]);
+  app.context.localStorage = {
+    getItem: key => values.get(key) ?? null,
+    setItem(key, value) { if (key === failSet) throw new Error('Quota exceeded'); values.set(key, value); },
+    removeItem(key) { if (failRemove) throw new Error('Storage blocked'); values.delete(key); },
+  };
+  app.evaluate('loadHistory()');
+  return values;
+}
+
+test('quota failure preserves a truthful Remember state and explains old durable history', () => {
+  const app = cameraHarness();
+  const values = savedHistory(app, { failSet: 'barcode-camera.history.v1' });
+  app.context.newItem = { ...other, timestamp: 2000 };
+  app.evaluate('history.unshift(newItem); saveHistory()');
+  assert.equal(app.get('remember').checked, true);
+  assert.match(app.get('storage-note').textContent, /changes could not be saved.*Previously saved scans/);
+  assert.equal(JSON.parse(values.get('barcode-camera.history.v1')).length, 1);
+  assert.equal(values.get('barcode-camera.remember.v1'), 'true');
+});
+
+test('failed history removal keeps saving off and explicitly reports remaining device data', async () => {
+  const app = cameraHarness();
+  const values = savedHistory(app, { failRemove: true });
+  await app.change('remember', false);
+  assert.equal(app.get('remember').checked, false);
+  assert.equal(values.get('barcode-camera.remember.v1'), 'false');
+  assert.ok(values.has('barcode-camera.history.v1'));
+  assert.match(app.get('storage-note').textContent, /previously saved history could not be removed/);
+  app.evaluate('loadHistory()');
+  assert.match(app.get('storage-note').textContent, /Previously saved history is still on this device/);
+});
+
+test('failed Remember preference write restores the previously durable choice', async () => {
+  const app = cameraHarness();
+  savedHistory(app, { failSet: 'barcode-camera.remember.v1' });
+  await app.change('remember', false);
+  assert.equal(app.get('remember').checked, true);
+  assert.match(app.get('storage-note').textContent, /preference could not be changed/);
+});
+
+test('clearing history reports a storage failure instead of claiming all history was removed', async () => {
+  const app = cameraHarness();
+  const values = savedHistory(app, { failSet: 'barcode-camera.history.v1' });
+  await app.click('clear');
+  assert.equal(app.history.length, 0);
+  assert.equal(JSON.parse(values.get('barcode-camera.history.v1')).length, 1);
+  assert.match(app.get('scan-announcement').textContent, /cleared from this page.*could not be updated/);
+});
 
 test('live POS settings reach the worker and disallowed responses cannot enter history', async t => {
   const app = cameraHarness(); t.after(() => app.close());
@@ -299,7 +399,7 @@ test('zoom changes invalidate POS evidence and pre-zoom results', async t => {
   await app.open(); await app.reply();
   await app.tick();
   await app.change('zoom', 2, 'input');
-  assert.ok(app.constraints.some(value => value.advanced?.[0]?.zoom === 2));
+  assert.ok(app.constraints.some(value => value.advanced?.some(entry => entry.zoom === 2)));
   await app.reply(); assert.equal(app.history.length, 0);
   await app.tick(); await app.reply(); assert.equal(app.history.length, 0);
   await app.tick(); await app.reply(); assert.equal(app.history.length, 1);

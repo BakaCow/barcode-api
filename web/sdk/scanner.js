@@ -1,13 +1,11 @@
 /** Headless, local-only camera scanner. Keep the adjacent web/ assets together. */
 import * as posModule from '../pos-policy.js';
-import * as analysisModule from '../frame-analysis.js';
 import * as selectionModule from '../capture-selection.js';
 import * as captureModule from '../scan-policy.js';
 import { validateTarget, regionPlan, sourceRegions, clearFrame, cameraCapabilities, boundedZoom } from './capture-tools.js';
 
 // The existing helpers also support classic-script users of the standalone app.
 const Pos = globalThis.PosPolicy || posModule.default;
-const Analysis = globalThis.FrameAnalysis || analysisModule.default;
 const Selection = globalThis.CaptureSelection || selectionModule.default;
 const Capture = globalThis.ScanPolicy || captureModule.default;
 const DEFAULTS = { formats: ['ean13', 'upca', 'code128', 'qr'], confirmationFrames: 2,
@@ -62,7 +60,7 @@ export function createScanner(configuration = {}) {
   if (!context) throw new Error('This browser cannot capture camera images.');
   let selection = Selection.create(), stream = null, active = false, destroyed = false, accepted = false;
   let generation = 0, revision = 0, retry = 0, timer = null, loop = null, startPromise = null;
-  let operation = null, worker = null, ready = null, requestId = 0, lastFrame = null;
+  let operation = null, worker = null, ready = null, requestId = 0, lastFrame = null, offscreenCapture = false;
   let frameCallback = null, presented = null, trackCleanup = null;
   let cameraChoice = {}, cameraAbort = null, controlQueue = Promise.resolve(), controlValues = {}, controlConstraints = {};
   const controlsPending = new Set();
@@ -93,7 +91,7 @@ export function createScanner(configuration = {}) {
     lastFrame = null; retry = 0;
   }
   function resetWorker(error = aborted()) {
-    worker?.terminate(); worker = null; ready = null;
+    worker?.terminate(); worker = null; ready = null; offscreenCapture = false;
     for (const entry of pending.values()) { clear(entry.timer); entry.reject(error); }
     pending.clear();
   }
@@ -119,7 +117,10 @@ export function createScanner(configuration = {}) {
         else entry.resolve(data);
       };
       current.onerror = () => { if (worker === current) resetWorker(new Error('Could not load scanner assets. Check the asset directory and offline cache.')); };
-      ready = call('init').catch(error => { if (worker === current) resetWorker(error); throw error; });
+      ready = call('init').then(response => {
+        if (worker === current) offscreenCapture = response.capabilities?.offscreenCapture === true;
+        return response;
+      }).catch(error => { if (worker === current) resetWorker(error); throw error; });
     }
     return ready;
   }
@@ -170,32 +171,79 @@ export function createScanner(configuration = {}) {
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
     return { image: { width: pixels.width, height: pixels.height, data: pixels.data.buffer }, plan };
   }
-  function captureSample(source, width, height, imported = false) {
+  async function captureSample(source, width, height, imported = false) {
+    const token = generation, currentRevision = revision;
     const detail = options.captureMode === 'detail', target = options.targetRegion;
+    const valid = () => token === generation && currentRevision === revision && !destroyed && !controlsPending.size;
     let input = source, scale = { x: 1, y: 1 };
+    if (offscreenCapture && typeof env.createImageBitmap === 'function' && snapshotContext && (detail || !target || imported)) {
+      // Freeze exactly one bounded exposure. Readback, analysis, resizing and
+      // recovery crops then run in the worker, not on the interaction thread.
+      const sizing = regionPlan(width, height, null, imported ? 20_000_000 : detail ? 8_294_400 : 2_100_000,
+        imported ? 20_000_000 : detail ? 3840 : 1920);
+      snapshot.width = sizing.width; snapshot.height = sizing.height;
+      snapshotContext.drawImage(source, 0, 0, width, height, 0, 0, snapshot.width, snapshot.height);
+      let bitmap, bitmapDeadline, expired = false, submitted = false;
+      try {
+        const signal = (imported ? operation : cameraAbort)?.signal;
+        const request = env.createImageBitmap(snapshot);
+        request.then(value => { if (expired || !valid()) value.close(); }, () => {});
+        const timeout = new Promise((_resolve, reject) => {
+          bitmapDeadline = later(() => { expired = true; reject(new Error('Camera image preparation timed out.')); }, 2000);
+        });
+        const prepared = Promise.race([request, timeout]);
+        bitmap = signal ? await abortable(prepared, signal) : await prepared;
+        if (!valid()) { bitmap.close(); throw aborted(); }
+        clear(bitmapDeadline); submitted = true;
+        const response = await call('prepare', { bitmap, sourceWidth: width, sourceHeight: height,
+          imported, captureMode: options.captureMode, targetRegion: target, cropBarcodes: options.cropBarcodes }, [bitmap]);
+        if (!valid()) throw aborted();
+        return response.sample;
+      } catch (error) {
+        if (!valid() || error.name === 'AbortError') throw aborted();
+        if (submitted) throw error;
+        // A partial createImageBitmap implementation must not disable an
+        // otherwise usable camera. Keep worker analysis with canvas capture.
+        offscreenCapture = false;
+      } finally {
+        clear(bitmapDeadline);
+        // Transferred bitmaps are closed by the worker. close() is also safe
+        // when a failed transfer left ownership here.
+        bitmap?.close();
+        if (token === generation) snapshot.width = snapshot.height = 0;
+      }
+    }
     if (detail && !imported) {
-      // A single bounded snapshot makes the broad pass and source crops the SAME frame.
+      // Compatibility path: freeze the source before async analysis so every
+      // source crop still belongs to the same exposure as its broad image.
       if (!snapshotContext) throw new Error('This browser cannot capture detailed frames.');
       const sizing = regionPlan(width, height, null, 8_294_400, 3840);
       snapshot.width = sizing.width; snapshot.height = sizing.height;
       snapshotContext.drawImage(source, 0, 0, width, height, 0, 0, snapshot.width, snapshot.height);
       input = snapshot; scale = { x: snapshot.width / width, y: snapshot.height / height };
     }
-    const sample = capture(input, width, height, imported || (detail && target) ? 4_000_000 : 2_100_000,
-      target, detail && target ? 3840 : 1920, scale);
-    const analysis = Analysis.analyze(sample.image);
-    const proposals = sourceRegions(analysis, sample.plan, width, height);
-    const recovery = [];
-    if (detail && !target && options.cropBarcodes && sample.plan.width < width * scale.x) {
-      for (const region of proposals.slice(0, 2)) {
-        const { kind, ...rectangle } = region;
-        const crop = capture(input, width, height, 1_000_000, rectangle, 3840, scale);
-        // Retain at most two 1M-pixel crops with each selected sample, never whole 4K snapshots.
-        if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
+    try {
+      const sample = capture(input, width, height, imported || (detail && target) ? 4_000_000 : 2_100_000,
+        target, detail && target ? 3840 : 1920, scale);
+      // Transfer ownership both ways: no 4M-pixel clone and no full-image
+      // fingerprint/region analysis on the UI thread, even without OffscreenCanvas.
+      const response = await call('analyze', { image: sample.image, returnImage: true }, [sample.image.data]);
+      if (!valid()) throw aborted();
+      sample.image = response.image;
+      const analysis = response.analysis;
+      const proposals = sourceRegions(analysis, sample.plan, width, height);
+      const recovery = [];
+      if (detail && !target && options.cropBarcodes && sample.plan.width < width * scale.x) {
+        for (const region of proposals.slice(0, 2)) {
+          const { kind, ...rectangle } = region;
+          const crop = capture(input, width, height, 1_000_000, rectangle, 3840, scale);
+          if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
+        }
       }
+      return { ...sample, analysis, proposals, recovery, sourceWidth: width, sourceHeight: height };
+    } finally {
+      if (token === generation) snapshot.width = snapshot.height = 0;
     }
-    snapshot.width = snapshot.height = 0;
-    return { ...sample, analysis, proposals, recovery, sourceWidth: width, sourceHeight: height };
   }
   async function decodeSample(sample, mode) {
     const { image, plan } = sample, started = now(), token = generation, currentRevision = revision;
@@ -257,7 +305,8 @@ export function createScanner(configuration = {}) {
       if (video.readyState >= 2 && video.videoWidth && video.videoHeight && id !== null && id !== lastFrame) {
         lastFrame = id;
         const capturedAt = now();
-        const sample = captureSample(video, video.videoWidth, video.videoHeight);
+        const sample = await captureSample(video, video.videoWidth, video.videoHeight);
+        if (!active || token !== generation || currentRevision !== revision || controlsPending.size) return;
         const { analysis } = sample;
         const candidate = { ...sample, analysis, capturedAt, frameId: id, revision: currentRevision };
         emit(onCandidates, { regions: sample.proposals, sourceWidth: video.videoWidth, sourceHeight: video.videoHeight, frameId: id });
@@ -393,7 +442,8 @@ export function createScanner(configuration = {}) {
       if (token !== generation || currentRevision !== revision) throw aborted();
       await abortable(initialize(), abort.signal);
       if (token !== generation || currentRevision !== revision) throw aborted();
-      const sample = captureSample(loaded.source, loaded.width, loaded.height, true);
+      const sample = await captureSample(loaded.source, loaded.width, loaded.height, true);
+      if (token !== generation || currentRevision !== revision) throw aborted();
       emit(onCandidates, { regions: sample.proposals, sourceWidth: loaded.width, sourceHeight: loaded.height, frameId: 'import:1' });
       if (token !== generation || currentRevision !== revision) throw aborted();
       const results = await decodeSample(sample, 'image');

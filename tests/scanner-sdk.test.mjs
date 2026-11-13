@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';
 import vm from 'node:vm';
 import { createScanner } from '../web/sdk/scanner.js';
+import Analysis from '../web/frame-analysis.js';
 const flush = async () => { for (let i = 0; i < 3; i++) await new Promise(resolve => setImmediate(resolve)); };
 const item = { text: '00042', format: 'Code128', bytes: [48, 48, 48, 52, 50], position: {
   topLeft: { x: 4, y: 5 }, topRight: { x: 32, y: 5 }, bottomRight: { x: 32, y: 20 }, bottomLeft: { x: 4, y: 20 },
@@ -20,6 +21,7 @@ function harness(settings = {}, frameSupport = 'decoded') {
   const listen = prefix => ({ addEventListener(type, fn) { events.set(prefix + type, fn); }, removeEventListener(type, fn) { if (events.get(prefix + type) === fn) events.delete(prefix + type); } });
   function makeCanvas() {
   const context = { fillRect() {}, drawImage(...args) { this.draw = args; captures.push(args); }, getImageData(_x, _y, width, height) {
+    state.readbacks = (state.readbacks || 0) + 1;
     if (state.fixture) {
       const pixels = inflateSync(Buffer.from(state.fixture.rgba_zlib_base64, 'base64'));
       const output = new Uint8ClampedArray(width * height * 4);
@@ -65,7 +67,9 @@ function harness(settings = {}, frameSupport = 'decoded') {
     constructor(url) { this.url = String(url); this.terminated = false; workers.push(this); }
     postMessage(message) {
       messages.push(message);
-      if (message.type === 'init') queueMicrotask(() => this.onmessage({ data: { id: message.id, type: 'ready' } }));
+      if (message.type === 'init') queueMicrotask(() => this.onmessage({ data: { id: message.id, type: 'ready', capabilities: { offscreenCapture: state.offscreen === true } } }));
+      else if (message.type === 'analyze' && !state.holdAnalysis) queueMicrotask(() => this.onmessage({ data: {
+        id: message.id, type: 'analysis', analysis: Analysis.analyze(message.image), image: message.image } }));
       else waiting.push({ worker: this, message });
     }
     terminate() { this.terminated = true; }
@@ -75,9 +79,9 @@ function harness(settings = {}, frameSupport = 'decoded') {
     setTimeout(fn, ms) { const id = ++state.next; timers.set(id, { fn, ms }); return id; }, clearTimeout: id => timers.delete(id),
     navigator: { mediaDevices: { getUserMedia(request) { state.calls++; cameraRequests.push(request); return state.permission?.promise || Promise.resolve(makeStream()); },
       enumerateDevices: async () => state.devices || [] } },
-    createImageBitmap() {
+    createImageBitmap(source) {
       if (state.bitmapRequest) return state.bitmapRequest.promise;
-      const bitmap = { width: state.fixture?.width || 64, height: state.fixture?.height || 48, closed: 0, close() { this.closed++; } }; bitmaps.push(bitmap); return Promise.resolve(bitmap);
+      const bitmap = { width: source?.width || state.fixture?.width || 64, height: source?.height || state.fixture?.height || 48, closed: 0, close() { this.closed++; } }; bitmaps.push(bitmap); return Promise.resolve(bitmap);
     },
   };
   doc.defaultView = env;
@@ -526,4 +530,80 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     assert.equal(slow.results.length,0,'partial recovery cannot accept one label while another crop remains unchecked');
     assert.equal(slow.statuses.at(-1).reason,'no_code');slow.scanner.destroy();
   });
+});
+
+
+test('async analysis keeps only one pending frame and cannot publish stale target proposals', async () => {
+  let proposals = 0;
+  const h = harness({ confirmationFrames: 1, onCandidates() { proposals++; } });
+  h.state.holdAnalysis = true;
+  await h.scanner.start(); await h.tick(); await h.tick(); await h.tick();
+  assert.equal(h.waiting.length, 1, 'capture cannot queue behind pending analysis');
+  const pending = h.waiting.shift(); assert.equal(pending.message.type, 'analyze');
+  assert.equal(pending.message.returnImage, true);
+  h.scanner.setOptions({ targetRegion: { x: 0.5, y: 0, width: 0.5, height: 1 } });
+  pending.worker.onmessage({ data: { id: pending.message.id, type: 'analysis', image: pending.message.image,
+    analysis: Analysis.analyze(pending.message.image) } });
+  await flush();
+  assert.equal(proposals, 0); assert.equal(h.waiting.length, 0); assert.equal(h.results.length, 0);
+  h.state.holdAnalysis = false; await h.tick(); await h.reply();
+  assert.equal(proposals, 1); assert.equal(h.results.length, 1); h.scanner.destroy();
+});
+
+test('stopping during analysis settles the loop and ignores late pixel buffers', async () => {
+  const h = harness({ confirmationFrames: 1 }); h.state.holdAnalysis = true;
+  await h.scanner.start(); await h.tick();
+  const pending = h.waiting.shift(); h.scanner.stop(); await flush();
+  pending.worker.onmessage({ data: { id: pending.message.id, type: 'analysis', image: pending.message.image,
+    analysis: Analysis.analyze(pending.message.image) } });
+  await flush(); assert.equal(h.results.length, 0); assert.equal(h.errors.length, 0);
+  assert.equal(h.canvas.width, 0); assert.equal(h.waiting.length, 0);
+  h.state.holdAnalysis = false; await h.scanner.start(); await h.tick(); await h.reply();
+  assert.equal(h.results.length, 1); h.scanner.destroy();
+});
+
+
+test('offscreen capture submits one bounded bitmap without main-thread pixel readback', async () => {
+  const h = harness({ confirmationFrames: 1, captureMode: 'detail' }); h.state.offscreen = true;
+  h.video.videoWidth = 7680; h.video.videoHeight = 4320;
+  await h.scanner.start(); await h.tick(); await h.tick();
+  assert.equal(h.waiting.length, 1); assert.equal(h.state.readbacks || 0, 0);
+  const pending = h.waiting.shift(); assert.equal(pending.message.type, 'prepare');
+  assert.equal(pending.message.bitmap.width, 3840); assert.equal(pending.message.bitmap.height, 2160);
+  assert.equal(h.captures.filter(draw => draw[0] === h.video).length, 1);
+  h.scanner.stop(); await flush();
+  assert.ok(h.bitmaps[0].closed > 0); assert.equal(h.waiting.length, 0); assert.equal(h.errors.length, 0);
+  h.scanner.destroy();
+});
+
+test('cancelled bitmap creation closes its late result and cannot submit a stale worker request', async () => {
+  const h = harness(); h.state.offscreen = true; h.state.bitmapRequest = deferred();
+  await h.scanner.start(); await h.tick();
+  h.scanner.stop(); await flush();
+  const bitmap = { width: 64, height: 48, closed: 0, close() { this.closed++; } };
+  h.state.bitmapRequest.resolve(bitmap); await flush();
+  assert.equal(bitmap.closed, 1); assert.equal(h.waiting.length, 0); assert.equal(h.results.length, 0);
+  assert.equal(h.errors.length, 0); h.scanner.destroy();
+});
+
+
+test('failed bitmap preparation falls back to bounded canvas capture and worker analysis', async () => {
+  const h = harness({ confirmationFrames: 1 }); h.state.offscreen = true;
+  h.env.createImageBitmap = async () => { throw new Error('Canvas bitmaps unsupported'); };
+  await h.scanner.start(); await h.tick();
+  assert.equal(h.waiting[0].message.type, 'decode'); assert.equal(h.state.readbacks, 1);
+  assert.ok(h.messages.some(message => message.type === 'analyze'));
+  await h.reply(); assert.equal(h.results.length, 1); assert.equal(h.errors.length, 0); h.scanner.destroy();
+});
+
+test('stalled bitmap preparation has a bounded fallback and closes the late bitmap', async () => {
+  const h = harness({ confirmationFrames: 1 }); h.state.offscreen = true; h.state.bitmapRequest = deferred();
+  await h.scanner.start(); await h.tick();
+  const [id, deadline] = [...h.timers].find(([, value]) => value.ms === 2000);
+  h.timers.delete(id); h.state.now += 2000; deadline.fn(); await flush();
+  assert.equal(h.waiting[0].message.type, 'decode');
+  const bitmap = { closed: 0, close() { this.closed++; } }; h.state.bitmapRequest.resolve(bitmap); await flush();
+  assert.equal(bitmap.closed, 1); await h.reply();
+  assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).reason, 'stale_frame');
+  await h.tick(); await h.reply(); assert.equal(h.results.length, 1); h.scanner.destroy();
 });

@@ -293,12 +293,63 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   return { results, ...details, diagnostics: { passes, strategy } };
 }
 
+function canPrepareCapture() {
+  if (typeof OffscreenCanvas !== 'function' || typeof ImageBitmap !== 'function') return false;
+  try { return Boolean(new OffscreenCanvas(1, 1).getContext('2d', { willReadFrequently: true })); }
+  catch { return false; }
+}
+
+function prepareCapture(message) {
+  const { bitmap, sourceWidth: width, sourceHeight: height, imported, captureMode, targetRegion, cropBarcodes } = message;
+  try {
+    if (typeof ImageBitmap !== 'function' || !(bitmap instanceof ImageBitmap) || !canPrepareCapture() ||
+        !Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width < 1 || height < 1 ||
+        typeof imported !== 'boolean' || typeof cropBarcodes !== 'boolean' || !['balanced', 'detail'].includes(captureMode) ||
+        bitmap.width < 1 || bitmap.height < 1 || bitmap.width * bitmap.height > (imported ? 20_000_000 : 8_294_400)) {
+      throw new Error('Invalid capture preparation request.');
+    }
+    if (typeof CaptureGeometry === 'undefined') importScripts('./capture-geometry.js');
+    loadFrameAnalysis();
+    const { regionPlan, sourceRegions, validateTarget } = CaptureGeometry;
+    const detail = captureMode === 'detail', target = validateTarget(targetRegion);
+    const scale = { x: bitmap.width / width, y: bitmap.height / height };
+    const canvas = new OffscreenCanvas(1, 1), context = canvas.getContext('2d', { willReadFrequently: true });
+    function capture(region, maxPixels, maxSide) {
+      const plan = regionPlan(width, height, region, maxPixels, maxSide);
+      canvas.width = plan.width; canvas.height = plan.height;
+      context.fillStyle = '#ffffff'; context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(bitmap, plan.x * scale.x, plan.y * scale.y, plan.cropWidth * scale.x, plan.cropHeight * scale.y,
+        0, 0, canvas.width, canvas.height);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+      return { image: { width: pixels.width, height: pixels.height, data: pixels.data.buffer }, plan };
+    }
+    try {
+      const sample = capture(target, imported || (detail && target) ? 4_000_000 : 2_100_000, detail && target ? 3840 : 1920);
+      const analysis = FrameAnalysis.analyze(sample.image);
+      const proposals = sourceRegions(analysis, sample.plan, width, height), recovery = [];
+      if (detail && !target && cropBarcodes && sample.plan.width < bitmap.width) {
+        for (const region of proposals.slice(0, 2)) {
+          const { kind, ...rectangle } = region;
+          const crop = capture(rectangle, 1_000_000, 3840);
+          if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
+        }
+      }
+      return { ...sample, analysis, proposals, recovery, sourceWidth: width, sourceHeight: height };
+    } finally { canvas.width = canvas.height = 0; }
+  } finally { bitmap?.close?.(); }
+}
+
 self.onmessage = async ({ data: message }) => {
   const { id, type } = message || {};
   try {
     if (type === 'init') {
       await initialize();
-      self.postMessage({ id, type: 'ready' });
+      self.postMessage({ id, type: 'ready', capabilities: { offscreenCapture: canPrepareCapture() } });
+      return;
+    }
+    if (type === 'prepare') {
+      const sample = prepareCapture(message);
+      self.postMessage({ id, type: 'prepared', sample }, [sample.image.data, ...sample.recovery.map(crop => crop.image.data)]);
       return;
     }
     if (!['decode', 'analyze'].includes(type)) throw new Error('Unknown decoder request.');
@@ -310,7 +361,9 @@ self.onmessage = async ({ data: message }) => {
     const image = new ImageData(new Uint8ClampedArray(data), width, height);
     if (type === 'analyze') {
       loadFrameAnalysis();
-      self.postMessage({ id, type: 'analysis', analysis: FrameAnalysis.analyze(image) });
+      const analysis = FrameAnalysis.analyze(image);
+      if (message.returnImage === true) self.postMessage({ id, type: 'analysis', analysis, image: message.image }, [data]);
+      else self.postMessage({ id, type: 'analysis', analysis });
       return;
     }
     const mode = message.mode ?? 'image';

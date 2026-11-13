@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="./lab.css">
   <script src="./lab-policy.js" defer></script>
+  <script src="../camera-constraints.js" defer></script>
   <script src="./lab.js" defer></script>
 </head>
 <body>
@@ -26,7 +27,7 @@
         <div class="lab-toolbar"><button id="camera-toggle" type="button" class="button primary">Open camera</button><button id="capture-photo" type="button" class="button secondary" disabled>Capture photo</button><button id="capture-video" type="button" class="button secondary" disabled>Record 10 seconds</button></div>
         <p id="camera-message" class="camera-footnote" role="status">Camera access needs HTTPS or localhost. Camera permission is requested only when you open it.</p>
         <div class="camera-options" id="camera-options" hidden><label for="camera-select">Camera<select id="camera-select"></select></label><label id="zoom-wrap" for="zoom" hidden>Zoom<input id="zoom" type="range" step="0.1"></label><button id="torch" class="button secondary small" type="button" aria-pressed="false" hidden>Flashlight</button></div>
-        <section class="saved-samples" aria-labelledby="samples-title"><div class="section-heading"><h2 id="samples-title">Samples to save</h2><span id="sample-count" class="muted">0 prepared</span></div><p id="samples-empty" class="muted">A photo or video appears here with its label file. Download both into the same folder.</p><ul id="samples-list"></ul><p class="small-note">Prepared files are temporary and disappear when you leave this page. Keep the same group ID for every photo and video of one physical label or capture session.</p></section>
+        <section class="saved-samples" aria-labelledby="samples-title"><div class="section-heading"><h2 id="samples-title">Samples to save</h2><span id="sample-count" class="muted">0 prepared</span></div><p id="sample-capacity" class="small-note" role="status">0 of 8 samples · 0.0 of 150 MiB used.</p><p id="samples-empty" class="muted">A photo or video appears here with its label file. Download both into the same folder.</p><ul id="samples-list"></ul><p class="small-note">Save both files before removing a sample. Prepared files are temporary and disappear when you leave this page. Keep the same group ID for every photo and video of one physical label or capture session.</p></section>
       </section>
       <section class="label-section" aria-labelledby="label-title">
         <h2 id="label-title">Label this sample</h2>

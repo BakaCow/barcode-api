@@ -4,9 +4,9 @@ import { createCart, DEMO_CATALOGUE } from './cart.mjs';
 
 const $ = (id) => document.getElementById(id), cart = createCart();
 const money = (cents) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100);
-let busy = false;
+let busy = false, operation = 0;
 let cameraControls;
-function errorMessage(error) { $('error').textContent = error.message || String(error); $('error').hidden = false; }
+function errorMessage(error) { if (error?.name === 'AbortError') return; $('error').textContent = error.message || String(error); $('error').hidden = false; }
 function controls() {
   const running = Boolean($('video').srcObject);
   $('stage').dataset.running = String(running);
@@ -40,12 +40,17 @@ const scanner = createScanner({ video: $('video'), formats: ['code128', 'qr'], c
   onError: errorMessage,
 });
 cameraControls = attachScannerControls({ container: $('camera-controls'), video: $('video'), scanner });
-$('start').addEventListener('click', async () => { $('error').hidden = true; busy = true; controls(); try { await scanner.start(); } catch (error) { errorMessage(error); } finally { busy = false; controls(); } });
-$('stop').addEventListener('click', () => { scanner.stop(); busy = false; controls(); });
+$('start').addEventListener('click', async () => {
+  const token = ++operation; $('error').hidden = true; busy = true; controls();
+  try { await scanner.start(); } catch (error) { if (token === operation) errorMessage(error); }
+  finally { if (token === operation) { busy = false; controls(); } }
+});
+function stop() { operation++; $('error').hidden = true; busy = false; scanner.stop(); controls(); }
+$('stop').addEventListener('click', stop);
 $('next').addEventListener('click', () => { $('error').hidden = true; scanner.rescan(); $('next').disabled = true; });
 $('clear').addEventListener('click', () => { scanner.rescan(); cart.clear(); renderCart(); $('next').disabled = true; $('cart-message').textContent = 'Cart cleared. Ready for another item.'; $('cart-message').dataset.state = 'rescan'; });
 $('manual').addEventListener('submit', (event) => {
-  event.preventDefault(); scanner.stop(); busy = false; controls();
+  event.preventDefault(); stop();
   accept({ scanId: `manual:${crypto.randomUUID()}`, format: $('manual-format').value, text: $('manual-value').value });
   $('manual-value').select();
 });
@@ -57,4 +62,4 @@ for (const item of DEMO_CATALOGUE) {
   price.textContent = `${money(item.priceCents)} AUD · ${item.format}`;
   row.append(name, value, image, price, link); $('catalogue').append(row);
 }
-window.addEventListener('pagehide', () => { scanner.stop(); busy = false; controls(); });
+window.addEventListener('pagehide', stop);

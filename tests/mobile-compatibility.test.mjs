@@ -32,7 +32,7 @@ function harness(page, profile, overrides = {}) {
   class Element {
     constructor(id = '') {
       this.id = id; this.value = ''; this.checked = false; this.hidden = false; this.disabled = false;
-      this.textContent = ''; this.children = []; this.attributes = {}; this.listeners = new Map();
+      this.textContent = ''; this.children = []; this.attributes = {}; this.listeners = new Map(); this.dataset = {};
       this.classList = { add() {}, remove() {}, toggle() {} };
     }
     addEventListener(type, callback) { this.listeners.set(type, callback); }
@@ -69,7 +69,7 @@ function harness(page, profile, overrides = {}) {
     if (options.capabilities || options.constraints !== 'ignore') item.applyConstraints = async (value) => {
       optionalConstraints.push(plain(value));
       if (options.constraints === 'reject') throw Object.assign(new Error('Optional constraint rejected'), { name: 'OverconstrainedError' });
-      if (options.constraints === 'apply') Object.assign(settings, value.advanced?.[0]);
+      if (options.constraints === 'apply') Object.assign(settings, ...(value.advanced || []));
     };
     return item;
   }
@@ -160,6 +160,7 @@ function harness(page, profile, overrides = {}) {
   if (options.recorderTypes !== null) globals.MediaRecorder = MediaRecorder;
   context = vm.createContext(globals); context.window = context;
   vm.runInContext(readFileSync(new URL(page === 'lab' ? '../web/lab/lab-policy.js' : '../web/scan-policy.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../web/camera-constraints.js', import.meta.url), 'utf8'), context);
   vm.runInContext(readFileSync(new URL(page === 'lab' ? '../web/lab/lab.js' : '../web/app.js', import.meta.url), 'utf8'), context);
   const evaluate = (expression) => vm.runInContext(expression, context);
   async function click(id) {
@@ -209,8 +210,8 @@ for (const profile of profiles) for (const page of pages) {
     assert.deepEqual([request.video.width.ideal, request.video.height.ideal], [1920, 1080]);
     assert.equal(app.get('video').videoWidth, 320, 'Ignored ideal resolution does not prevent camera startup');
     if (profile === android) {
-      assert.ok(app.optionalConstraints.some((value) => value.advanced[0].focusMode === 'continuous'));
-      assert.equal(app.optionalConstraints.some((value) => value.advanced[0].exposureMode === 'continuous'), page === 'lab');
+      assert.ok(app.optionalConstraints.some((value) => value.advanced.some(entry => entry.focusMode === 'continuous')));
+      assert.equal(app.optionalConstraints.some((value) => value.advanced.some(entry => entry.exposureMode === 'continuous')), page === 'lab');
       assert.equal(page === 'lab' ? app.get('torch').hidden : app.get('torch').disabled, false);
       assert.equal(app.get(page === 'lab' ? 'zoom-wrap' : 'zoom-control').hidden, false);
       assert.equal(Number(app.get('zoom').max), 6);

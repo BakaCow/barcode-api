@@ -98,6 +98,8 @@ Green is the primary action and ready-state color; its darker variant is the hov
 
 Public Sans is self-hosted for offline use. Headings use a compact weight and restrained negative tracking; body text and labels use the same family. The main headline steps down to 30px at the tablet breakpoint and 29px on phones. Decoded values use 21px text, wrap long payloads, and become 20px on phones. Data counts use tabular numerals.
 
+Functional secondary labels and status text use at least 14px; mobile body copy and text/select inputs use 16px. Frequent secondary actions and preference labels have at least 44px touch height. Shared `--focus`, `--camera-surface` and `--camera-text` roles keep the benchmark and camera UI aligned with the existing blue focus, ink surface and light green camera text.
+
 ## Layout
 
 The page is capped at 1280px. Desktop uses a two-column workspace with a larger camera column, a 34px gap, and 40px page padding. At 900px the gap becomes 20px and side padding becomes 24px. At 680px the workspace stacks, side padding becomes 20px, and camera controls remain at least 48px high. Results follow the scanner in document order. Help remains a compact disclosure below the preferences.
@@ -114,7 +116,7 @@ Large camera and results surfaces share gently rounded panel corners. Buttons us
 
 Primary actions use green and white; secondary actions use white, a thin line border, and a muted hover fill. Disabled controls visibly reduce opacity and use the unavailable cursor. Focusable controls use a 3px blue outline with 4px offset. Button color transitions last 150ms; reduced-motion mode removes transitions.
 
-The camera stage contains the preview, detected-code outlines, state labels, and the initial permission explanation. Result and history areas preserve arbitrary payload text, distinguish format from value, and expose explicit copy/export actions. Camera selection and zoom appear only when applicable. Status and errors use live-region semantics; the skip link provides direct access to the scanner.
+The camera stage contains the preview, detected-code outlines, state labels, and the initial permission explanation. While the main camera is off, state, explanation and hint occupy separate content-sized rows; the live preview retains its aspect ratio. Result and history areas preserve arbitrary payload text, distinguish format from value, and expose explicit copy/export actions. Camera selection and zoom appear only when applicable. Status and errors use live-region semantics; the skip link provides direct access to the scanner.
 
 ## Live POS controls
 
@@ -128,13 +130,13 @@ The POS example separates exact catalogue matching from scan confirmation, expla
 
 ### Camera and targeting
 
-The integration examples now share an optional Camera and targeting disclosure. Camera choice, capability-aware flashlight/zoom and capture detail use native form controls; disabled hardware functions keep a visible explanation. The video is contained rather than cropped so a tap and its overlay refer to the same source pixels. Dashed blue proposals indicate possible regions; a solid green border with a light outer edge indicates the user's selected scan area. Neither is a successful-read signal. A centre-aim button and full-view reset provide keyboard alternatives to tapping, and the active-area message explains that conflicts inside the selection still reject the scan. The component reads effective SDK options so externally configured targets remain visible.
+The integration examples now share an optional Camera and targeting disclosure. Camera choice, capability-aware flashlight/zoom and capture detail use native form controls; disabled hardware functions keep a visible explanation. The video is contained rather than cropped so a tap and its overlay refer to the same source pixels. Dashed blue proposals indicate possible regions; a solid green border with a light outer edge indicates the user's selected scan area. Neither is a successful-read signal. Adjust scan area exposes four native sliders for arbitrary keyboard positioning and sizing, alongside centre aim and full-view reset. A live status describes the selected percentages and explains that conflicts inside the selection still reject the scan. Controls preserve focus through asynchronous adjustments without stealing focus back after the user moves. The component reads effective SDK options so externally configured targets remain visible.
 
 ## Experimental lab flow
 
 The Code 128 lab reuses the same self-hosted typography, paper and green palette, camera surface, buttons, field styling and focus treatment. An Experimental label identifies its scope and a persistent Back to scanner link returns to the regular app. The wider desktop layout pairs capture controls with label details, then places comparison results below; phone layouts stack these sections in the same reading order.
 
-The primary sequence is open camera, enter a known value and group, capture a sample, then save its media and label file. Dataset split, device and conditions stay visible next to the value. Prepared samples show explicit download actions and a notice that unsaved files disappear on leaving. Collection does not silently accept a scanner prediction as the expected value.
+The primary sequence is open camera, enter a known value and group, capture a sample, then save its media and label file. Dataset split, device and conditions stay visible next to the value. Prepared samples show explicit download actions, visible usage against eight samples / 150 MiB, and a notice that unsaved files disappear on leaving. At capacity, collection pauses until the user saves and explicitly removes samples; existing samples are never evicted to make room. Collection does not silently accept a scanner prediction as the expected value.
 
 A separate Start comparison action begins a bounded trial with label details locked. The results table aligns the custom engine and ZXing by measurement, retains misses and wrong readings, and exposes report download. Empty, loading, camera-off, recording, comparison and offline-readiness states use plain text. Long barcode values wrap, tables scroll within their container on phones, and errors remain actionable. Timing and experimental limits are explained beside the measurements without interrupting the capture flow.
 

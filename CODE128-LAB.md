@@ -26,6 +26,8 @@ Start collection with ordinary printable ASCII Code 128 labels whose values you 
 
 In the lab, open the camera, enter the independently verified value, choose a group ID, split, device name and conditions, then capture a photo or a short video. Download **both** its media file and JSON label file into the same folder. Prepared files are temporary and disappear when the page closes. Scanner predictions never become ground truth automatically.
 
+The page holds up to eight prepared samples and 150 MiB of media. Usage is displayed beside the list. When full, save both files for a sample and explicitly remove it before capturing another. New samples that exceed the remaining space are rejected with an explanation; existing samples are retained. Recordings also have a 100 MiB per-file limit.
+
 Use one group ID for all views and frames of the same physical label, including later sessions with that label. Keep each group entirely in `train`, `dev`, or `test`. Reserve test groups before tuning. Include difficult positives and verified negatives without a Code 128 label; an unreadable positive is not a negative.
 
 With the Python environment from [README.md](README.md#run-locally-on-windows) installed, import a downloaded pair:

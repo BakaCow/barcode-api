@@ -121,13 +121,20 @@ test('a trial bounds retained observations and ignores clock values before its s
 
 function appHarness() {
   const nodes = new Map(), handlers = new Map(), timers = new Map(), messages = [];
+  const urls = new Map(), revoked = [];
   let timerId = 0, stopped = false, instance;
+  class LocalURL extends URL {
+    static createObjectURL(blob) { const url = `blob:sample-${++timerId}`; urls.set(url, blob); return url; }
+    static revokeObjectURL(url) { revoked.push(url); urls.delete(url); }
+  }
   function node(id) {
-    if (!nodes.has(id)) nodes.set(id, { value: '', checked: false, hidden: false, textContent: '', children: [], disabled: false,
+    if (!nodes.has(id)) nodes.set(id, { id, value: '', checked: false, hidden: false, textContent: '', children: [], disabled: false, dataset: {},
       addEventListener(name, fn) { handlers.set(`${id}:${name}`, fn); },
       querySelectorAll(selector) { if (id === 'sample-form') return ['expected', 'negative', 'group-id', 'split', 'device'].map(node); if (id === 'conditions') return [{ value: 'clean' }]; return []; },
       replaceChildren(...children) { this.children = children; }, append(...children) { this.children.push(...children); }, setAttribute() {},
       getContext() { return { drawImage() {}, getImageData() { return { data: new Uint8ClampedArray(64 * 32 * 4) }; } }; },
+      toBlob(done) { queueMicrotask(() => done(new Blob(['photo'], { type: 'image/png' }))); },
+      captureStream() { return { getTracks: () => [{ stop() {} }] }; },
     });
     return nodes.get(id);
   }
@@ -136,19 +143,124 @@ function appHarness() {
   const track = { stop() { stopped = true; }, getSettings: () => ({ deviceId: 'test' }), getCapabilities: () => ({}), addEventListener() {} };
   const stream = { getTracks: () => [track], getVideoTracks: () => [track] };
   const globals = {
-    Code128LabPolicy: policy, URL, Blob, Uint8ClampedArray, Uint32Array, ArrayBuffer, performance, console,
+    Code128LabPolicy: policy, CameraConstraints: require('../web/camera-constraints.js'), URL: LocalURL, Blob, Uint8ClampedArray, Uint32Array, ArrayBuffer, performance, console, crypto: globalThis.crypto,
     document: { hidden: false, getElementById: node, createElement: (tag) => node(`created-${tag}-${nodes.size}`), addEventListener(name, fn) { handlers.set(`document:${name}`, fn); } },
     navigator: { userAgent: 'test', mediaDevices: { getUserMedia: async () => stream, enumerateDevices: async () => [] } },
     location: { href: 'https://test.example/scan/lab/', reload() {} },
     setTimeout(fn, delay) { timers.set(++timerId, { fn, delay }); return timerId; }, clearTimeout(id) { timers.delete(id); },
     setInterval() { return 1; }, clearInterval() {},
     Worker: class { constructor() { instance = this; } postMessage(message) { messages.push(message); if (message.type === 'init') queueMicrotask(() => this.onmessage({ data: { id: message.id, type: 'ready' } })); } terminate() {} },
+    MediaRecorder: class {
+      static isTypeSupported() { return true; }
+      constructor(_stream, options) { this.mimeType = options.mimeType; this.state = 'inactive'; }
+      start() { this.state = 'recording'; }
+      stop() { this.state = 'inactive'; this.onstop?.(); }
+    },
     addEventListener(name, fn) { handlers.set(`window:${name}`, fn); }, isSecureContext: true,
   };
   const context = vm.createContext(globals); context.window = context;
   vm.runInContext(readFileSync(new URL('../web/lab/lab.js', import.meta.url), 'utf8'), context);
-  return { context, nodes, messages, timers, handlers, get worker() { return instance; }, get stopped() { return stopped; } };
+  return { context, nodes, messages, timers, handlers, urls, revoked, track, stream, get worker() { return instance; }, get stopped() { return stopped; } };
 }
+
+test('the collection lab blocks a ninth capture without evicting any unsaved media or labels', async () => {
+  const app = appHarness();
+  await vm.runInContext('openCamera()', app.context);
+  for (let i = 0; i < 8; i++) await vm.runInContext('capturePhoto()', app.context);
+  const first = vm.runInContext('prepared[7]', app.context);
+  assert.equal(app.nodes.get('capture-photo').disabled, true);
+  assert.equal(app.nodes.get('capture-video').disabled, true);
+  assert.match(app.nodes.get('sample-capacity').textContent, /8 of 8.*Capacity full/);
+  await vm.runInContext('capturePhoto()', app.context);
+  assert.equal(vm.runInContext('prepared.length', app.context), 8);
+  assert.ok(app.urls.has(first.mediaURL)); assert.ok(app.urls.has(first.metadataURL));
+  assert.equal(app.revoked.length, 0);
+  assert.match(app.nodes.get('error-message').textContent, /Existing samples have been kept/);
+  const row = app.nodes.get('samples-list').children[7];
+  const remove = row.children[1].children[2];
+  app.handlers.get(`${remove.id}:click`)();
+  assert.equal(vm.runInContext('prepared.length', app.context), 7);
+  assert.equal(app.nodes.get('capture-photo').disabled, false);
+  assert.deepEqual(app.revoked, [first.mediaURL, first.metadataURL]);
+  await vm.runInContext('capturePhoto()', app.context);
+  assert.equal(vm.runInContext('prepared.length', app.context), 8);
+});
+
+test('an oversized sample is rejected before object URLs are created and preserves prior samples', async () => {
+  const app = appHarness();
+  await vm.runInContext('openCamera();', app.context);
+  await vm.runInContext('capturePhoto()', app.context);
+  const previous = vm.runInContext('prepared[0]', app.context);
+  app.context.largeBlob = { size: 151 * 1024 * 1024 };
+  assert.throws(() => vm.runInContext('prepareSample(largeBlob, prepared[0].metadata)', app.context), /exceeds the remaining.*Existing samples have been kept/);
+  assert.equal(vm.runInContext('prepared.length', app.context), 1);
+  assert.equal(app.urls.size, 2); assert.equal(app.revoked.length, 0);
+  assert.ok(app.urls.has(previous.mediaURL));
+});
+
+test('recording reserves the remaining capacity and cannot remove earlier samples on overflow', async () => {
+  const app = appHarness();
+  await vm.runInContext('openCamera()', app.context);
+  await vm.runInContext('capturePhoto()', app.context);
+  const previous = vm.runInContext('prepared[0]', app.context);
+  // Model a large previously captured file without allocating 149 MiB in a unit test.
+  vm.runInContext('prepared[0].blob = { size: 149 * 1024 * 1024 }; captureVideo()', app.context);
+  assert.equal(vm.runInContext('recording.byteLimit', app.context), 1024 * 1024);
+  vm.runInContext('recording.recorder.ondataavailable({ data: { size: 2 * 1024 * 1024 } })', app.context);
+  assert.equal(vm.runInContext('recording', app.context), null);
+  assert.equal(vm.runInContext('prepared.length', app.context), 1);
+  assert.ok(app.urls.has(previous.mediaURL)); assert.ok(app.urls.has(previous.metadataURL));
+  assert.equal(app.revoked.length, 0);
+  assert.match(app.nodes.get('error-message').textContent, /Existing samples have been kept/);
+});
+
+test('a concurrent photo/video request cannot bypass the single capture slot', async () => {
+  const app = appHarness();
+  await vm.runInContext('openCamera()', app.context);
+  let finish;
+  app.context.photoEncoder = done => { finish = done; };
+  const first = vm.runInContext('canvas.toBlob = photoEncoder; capturePhoto()', app.context);
+  await vm.runInContext('capturePhoto(); captureVideo()', app.context);
+  assert.equal(vm.runInContext('recording', app.context), null);
+  finish(new Blob(['photo'], { type: 'image/png' })); await first;
+  assert.equal(vm.runInContext('prepared.length', app.context), 1);
+});
+
+test('cancelling lab permission restores controls and ignores a late startup finalizer', async () => {
+  const app = appHarness(), requests = [];
+  app.context.navigator.mediaDevices.getUserMedia = () => new Promise(resolve => requests.push(resolve));
+  const first = vm.runInContext('openCamera()', app.context);
+  assert.equal(app.nodes.get('camera-toggle').disabled, false);
+  app.handlers.get('camera-toggle:click')();
+  assert.equal(vm.runInContext('opening', app.context), false);
+  const second = vm.runInContext('openCamera()', app.context);
+  requests[0](app.stream); await first;
+  assert.equal(vm.runInContext('opening', app.context), true);
+  assert.equal(app.stopped, true);
+  requests[1](app.stream); await second;
+  assert.equal(vm.runInContext('opening', app.context), false);
+});
+
+test('lab camera controls preserve resolution, focus and exposure and display actual settings', async () => {
+  const app = appHarness(), calls = [];
+  let settings = { deviceId: 'test', zoom: 1, torch: false };
+  app.track.getCapabilities = () => ({ focusMode: ['continuous'], exposureMode: ['continuous'], torch: true, zoom: { min: 1, max: 5, step: 0.5 } });
+  app.track.getSettings = () => settings;
+  app.track.applyConstraints = async constraints => {
+    calls.push(constraints);
+    const updated = Object.assign({}, ...constraints.advanced);
+    settings = { ...settings, ...updated };
+    if (updated.zoom) settings.zoom = Math.round(updated.zoom * 2) / 2;
+  };
+  await vm.runInContext('openCamera()', app.context);
+  app.nodes.get('zoom').value = '2.2'; await app.handlers.get('zoom:change')();
+  await app.handlers.get('torch:click')();
+  const result = calls.at(-1), values = Object.assign({}, ...result.advanced);
+  assert.equal(result.width.ideal, 1920); assert.equal(result.height.ideal, 1080);
+  assert.equal(values.focusMode, 'continuous'); assert.equal(values.exposureMode, 'continuous');
+  assert.equal(values.zoom, 2.2); assert.equal(values.torch, true);
+  assert.equal(Number(app.nodes.get('zoom').value), 2);
+});
 
 test('the actual lab sends pixels without labels and discards a decode returned after stop', async () => {
   const app = appHarness();

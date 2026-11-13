@@ -1,12 +1,12 @@
 /* Everything needed to scan is cached here; camera frames never pass through it. */
-const VERSION = "1.6.0";
+const VERSION = "1.6.1";
 const FEATURES = ["code128-lab", "live-pos", "integration-examples", "camera-controls", "comparison-benchmark"];
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `barcode-camera:${SCOPE.href}:`;
 const CACHE_NAME = `${CACHE_PREFIX}${VERSION}`;
 const CORE_PATHS = [
   "./", "./index.html", "./styles.css", "./scan-policy.js", "./app.js", "./scanner-worker.js",
-  "./pos-policy.js", "./frame-analysis.js", "./capture-selection.js",
+  "./pos-policy.js", "./frame-analysis.js", "./capture-selection.js", "./camera-constraints.js", "./capture-geometry.js",
   "./sdk/scanner.js", "./sdk/capture-tools.js", "./sdk/controls.js", "./sdk/controls.css", "./LICENSE.txt",
   "./benchmark/", "./benchmark/index.html", "./benchmark/benchmark.css", "./benchmark/benchmark.js",
   "./benchmark/adapters.mjs", "./benchmark/metrics.mjs", "./benchmark/recorder.mjs",

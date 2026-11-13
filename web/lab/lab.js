@@ -5,10 +5,12 @@ const video = $('video');
 const canvas = document.createElement('canvas');
 const context = canvas.getContext('2d', { willReadFrequently: true });
 let camera = null, opening = false, cameraGeneration = 0, torch = false;
+let cameraControls = null;
 let worker = null, workerReady = null, sequence = 0, trial = null, trialStarting = false, trialReport = null, trialGeneration = 0;
 let recording = null, capturing = false, frameCallback = null, presentedFrame = null, lastFrame = null;
 let latestFrameIdentitySource = 'unavailable', workerTimer = null, loopTimer = null;
 let prepared = [], registration = null, reloadForUpdate = false;
+const SAMPLE_LIMIT = 8, SAMPLE_BYTES_LIMIT = 150 * 1024 * 1024, RECORDING_BYTES_LIMIT = 100 * 1024 * 1024;
 const pending = new Map();
 const cameraMessages = {
   NotAllowedError: 'Camera permission was not allowed. Enable it for this site, then open the camera again.',
@@ -26,12 +28,22 @@ function details() {
   return label;
 }
 function labelReady() { try { details(); return true; } catch { return false; } }
+function sampleCapacity() {
+  const bytes = prepared.reduce((total, sample) => total + sample.blob.size, 0);
+  return { bytes, remaining: Math.max(0, SAMPLE_BYTES_LIMIT - bytes), full: prepared.length >= SAMPLE_LIMIT || bytes >= SAMPLE_BYTES_LIMIT };
+}
+function requireSampleCapacity() {
+  if (sampleCapacity().full) throw new Error('Sample capacity is full. Save the media and label files, then remove a sample before capturing another. Existing samples have been kept.');
+}
 function controls() {
   const locked = !!trial || trialStarting || !!recording || capturing;
-  $('camera-toggle').disabled = opening || capturing;
-  $('camera-toggle').textContent = opening ? 'Opening camera…' : camera ? 'Close camera' : 'Open camera';
-  $('capture-photo').disabled = !camera || locked || !labelReady();
-  $('capture-video').disabled = !camera || !!trial || trialStarting || capturing || (!recording && !labelReady());
+  const capacity = sampleCapacity();
+  $('sample-capacity').dataset.full = String(capacity.full);
+  $('sample-capacity').textContent = `${prepared.length} of ${SAMPLE_LIMIT} samples · ${(capacity.bytes / 1024 / 1024).toFixed(1)} of 150 MiB used. ${capacity.full ? 'Capacity full. Save both files, then remove a sample to continue.' : 'Existing samples stay here until you remove them or leave this page.'}`;
+  $('camera-toggle').disabled = capturing;
+  $('camera-toggle').textContent = opening ? 'Cancel camera' : camera ? 'Close camera' : 'Open camera';
+  $('capture-photo').disabled = !camera || locked || capacity.full || !labelReady();
+  $('capture-video').disabled = !camera || !!trial || trialStarting || capturing || (!recording && (capacity.full || !labelReady()));
   $('capture-video').textContent = recording ? 'Finish recording' : 'Record 10 seconds';
   $('trial-toggle').disabled = !camera || opening || trialStarting || !!recording || capturing || (!trial && !labelReady());
   $('trial-toggle').textContent = trialStarting ? 'Loading engines…' : trial ? 'Stop comparison' : 'Start comparison';
@@ -67,6 +79,7 @@ function frameIdentity() {
 }
 function stopCamera(message = 'Camera closed.') {
   cameraGeneration++;
+  opening = false; cameraControls = null;
   stopTrial('Comparison stopped when the camera closed.');
   if (trialStarting) resetWorker('Camera closed before the comparison started.');
   if (recording) finishRecording(true);
@@ -82,15 +95,18 @@ async function openCamera(deviceId) {
   const token = cameraGeneration;
   let acquired;
   try {
-    acquired = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: { ideal: 1920 }, height: { ideal: 1080 },
-      ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'environment' } }) } });
+    const constraints = { width: { ideal: 1920 }, height: { ideal: 1080 },
+      ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'environment' } }) };
+    acquired = await navigator.mediaDevices.getUserMedia({ audio: false, video: constraints });
     if (token !== cameraGeneration || document.hidden) { acquired.getTracks().forEach((t) => t.stop()); return; }
     camera = acquired; video.srcObject = acquired; await video.play();
     if (token !== cameraGeneration) { acquired.getTracks().forEach((t) => t.stop()); return; }
-    const track = camera.getVideoTracks()[0], capabilities = track.getCapabilities?.() || {};
+    const track = camera.getVideoTracks()[0];
+    cameraControls = CameraConstraints.create(track, constraints, () => token === cameraGeneration && camera?.getVideoTracks()[0] === track);
+    const adjustments = cameraControls, capabilities = adjustments.capabilities();
     for (const key of ['focusMode', 'exposureMode']) {
       if (capabilities[key]?.includes('continuous')) {
-        try { await track.applyConstraints({ advanced: [{ [key]: 'continuous' }] }); } catch { /* Optional camera capability. */ }
+        try { await adjustments.change({ [key]: 'continuous' }); } catch { /* Optional camera capability. */ }
       }
     }
     if (token !== cameraGeneration) return;
@@ -101,19 +117,20 @@ async function openCamera(deviceId) {
     $('zoom-wrap').hidden = !capabilities.zoom;
     if (capabilities.zoom) {
       const zoom = $('zoom'); zoom.min = capabilities.zoom.min; zoom.max = Math.min(capabilities.zoom.max, Math.max(6, capabilities.zoom.min));
-      zoom.step = capabilities.zoom.step || 0.1; zoom.value = track.getSettings().zoom || capabilities.zoom.min;
+      zoom.step = capabilities.zoom.step || 0.1; zoom.value = adjustments.settings().zoom || capabilities.zoom.min;
     }
     try {
       const cameras = (await navigator.mediaDevices.enumerateDevices()).filter((entry) => entry.kind === 'videoinput');
+      if (token !== cameraGeneration) return;
       $('camera-select').replaceChildren();
       cameras.forEach((entry, index) => { const option = document.createElement('option'); option.value = entry.deviceId; option.textContent = entry.label || `Camera ${index + 1}`; $('camera-select').append(option); });
-      $('camera-select').value = track.getSettings().deviceId || cameras[0]?.deviceId || '';
+      $('camera-select').value = adjustments.settings().deviceId || cameras[0]?.deviceId || '';
     } catch { /* The existing camera stays usable. */ }
     $('camera-options').hidden = false;
     $('camera-message').textContent = 'Camera frames stay on this device. Enter the known value and label details before saving a sample.';
     $('trial-state').textContent = 'Complete the label details, then start a comparison.';
   } catch (cause) { acquired?.getTracks().forEach((track) => track.stop()); if (token === cameraGeneration) { stopCamera(); error(cameraMessages[cause.name] || cause.message); } }
-  finally { opening = false; controls(); }
+  finally { if (token === cameraGeneration) { opening = false; controls(); } }
 }
 function paint(target = canvas, targetContext = context) {
   if (!camera || video.readyState < 2) throw new Error('Wait until the camera preview is visible.');
@@ -128,12 +145,13 @@ function sampleIdentity(extension) {
   return { id, path: `${id}.${extension}`, capturedAt: stamp };
 }
 function prepareSample(blob, metadata) {
+  requireSampleCapacity();
+  if (blob.size > sampleCapacity().remaining) throw new Error('This new sample exceeds the remaining 150 MiB capacity and was not added. Existing samples have been kept. Save and remove samples, then capture again.');
   const mediaURL = URL.createObjectURL(blob);
-  const metadataURL = URL.createObjectURL(new Blob([JSON.stringify(metadata, null, 2) + '\n'], { type: 'application/json' }));
+  let metadataURL;
+  try { metadataURL = URL.createObjectURL(new Blob([JSON.stringify(metadata, null, 2) + '\n'], { type: 'application/json' })); }
+  catch (cause) { URL.revokeObjectURL(mediaURL); throw cause; }
   prepared.unshift({ blob, metadata, mediaURL, metadataURL });
-  while (prepared.length > 8 || prepared.reduce((total, item) => total + item.blob.size, 0) > 150 * 1024 * 1024) {
-    const previous = prepared.pop(); URL.revokeObjectURL(previous.mediaURL); URL.revokeObjectURL(previous.metadataURL);
-  }
   renderSamples();
 }
 function renderSamples() {
@@ -152,11 +170,13 @@ function renderSamples() {
     remove.addEventListener('click', () => { URL.revokeObjectURL(sample.mediaURL); URL.revokeObjectURL(sample.metadataURL); prepared = prepared.filter((entry) => entry !== sample); renderSamples(); });
     links.append(remove); item.append(info, links); $('samples-list').append(item);
   }
+  controls();
 }
 async function capturePhoto() {
-  if (capturing || trial || recording) return;
+  if (capturing || trial || trialStarting || recording || opening) return;
   clearError(); capturing = true; controls();
   try {
+    requireSampleCapacity();
     const label = details(), size = paint(), identity = sampleIdentity('png');
     const blob = await new Promise((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error('Could not capture the photo. Try again.')), 'image/png'));
     prepareSample(blob, policy.metadata(label, { ...identity, ...size, mediaType: 'image', mimeType: blob.type, userAgent: navigator.userAgent }));
@@ -172,9 +192,11 @@ function finishRecording(discard = false) {
 }
 function captureVideo() {
   if (recording) { finishRecording(); return; }
+  if (capturing || trial || trialStarting || opening) return;
   clearError();
   let pendingStream = null;
   try {
+    requireSampleCapacity();
     const label = details();
     if (!window.MediaRecorder || !canvas.captureStream) throw new Error('Video capture is unavailable in this browser. Capture photos instead.');
     const mime = ['video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find((value) => MediaRecorder.isTypeSupported(value));
@@ -183,14 +205,14 @@ function captureVideo() {
     const size = paint(recordCanvas, recordContext);
     pendingStream = recordCanvas.captureStream(15);
     const recorder = new MediaRecorder(pendingStream, { mimeType: mime, videoBitsPerSecond: 2_500_000 });
-    const entry = { recorder, mediaStream: pendingStream, label, size, chunks: [], bytes: 0, started: performance.now(), discard: false,
+    const entry = { recorder, mediaStream: pendingStream, label, size, chunks: [], bytes: 0, byteLimit: Math.min(RECORDING_BYTES_LIMIT, sampleCapacity().remaining), started: performance.now(), discard: false,
       identity: sampleIdentity(mime.includes('mp4') ? 'mp4' : 'webm'), paintTimer: null, stopTimer: null };
     recording = entry;
     pendingStream = null;
     recorder.ondataavailable = (event) => {
       if (!event.data.size) return;
       entry.bytes += event.data.size;
-      if (entry.bytes > 100 * 1024 * 1024) { error('Recording exceeded the file limit and was discarded. Try a shorter clip.'); finishRecording(true); return; }
+      if (entry.bytes > entry.byteLimit) { error('This recording exceeded the available sample capacity or 100 MiB file limit and was discarded. Existing samples have been kept. Save and remove samples or try a shorter clip.'); finishRecording(true); return; }
       entry.chunks.push(event.data);
     };
     recorder.onerror = () => { error('Recording failed. Try again or capture a photo.'); finishRecording(true); };
@@ -296,7 +318,7 @@ async function startTrial() {
     const startMs = performance.now(); trial = policy.createTrial(label.expected, startMs); lastFrame = null;
     const token = ++trialGeneration;
     trialReport = { version: 1, kind: 'code128-live-comparison', startedAt: new Date().toISOString(), startMs, label,
-      device: label.device, userAgent: navigator.userAgent, cameraSettings: camera.getVideoTracks()[0].getSettings(),
+      device: label.device, userAgent: navigator.userAgent, cameraSettings: CameraConstraints.probe(camera.getVideoTracks()[0], 'getSettings'),
       methodology: 'Paired independent camera frames. Correct results require exact text and Code128 format with no unexpected results. Two separate consecutive correct frames with equal raw payloads within 2500ms confirm a result. Decoder timing excludes capture/startup/UI. Confirmation time starts after both engines initialize and includes paired processing of both engines, not standalone engine latency. This single trial is not an overall accuracy estimate.' };
     $('export-report').disabled = true;
     $('measurement-note').textContent = `${label.negative ? 'Negative scene' : 'Known value: ' + label.expected[0].text} · ${label.device} · ${label.groupId}`;
@@ -325,7 +347,7 @@ async function offlineStatus() {
     registration.addEventListener('updatefound', watch); watch(); await show();
   } catch { $('offline-status').textContent = 'Offline preparation is unavailable. Use HTTPS or localhost and open this page online first.'; }
 }
-$('camera-toggle').addEventListener('click', () => camera ? stopCamera() : openCamera());
+$('camera-toggle').addEventListener('click', () => camera || opening ? stopCamera() : openCamera());
 $('camera-select').addEventListener('change', () => openCamera($('camera-select').value));
 $('capture-photo').addEventListener('click', capturePhoto);
 $('capture-video').addEventListener('click', captureVideo);
@@ -334,8 +356,17 @@ $('export-report').addEventListener('click', downloadReport);
 $('dismiss-error').addEventListener('click', clearError);
 $('sample-form').addEventListener('input', controls);
 $('sample-form').addEventListener('submit', (event) => event.preventDefault());
-$('torch').addEventListener('click', async () => { try { await camera.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: !torch }] }); torch = !torch; $('torch').setAttribute('aria-pressed', String(torch)); } catch { error('This camera could not change its flashlight setting.'); } });
-$('zoom').addEventListener('change', async () => { try { await camera.getVideoTracks()[0].applyConstraints({ advanced: [{ zoom: Number($('zoom').value) }] }); } catch { error('This camera could not change its zoom setting.'); } });
+async function adjustCamera(update, failure) {
+  const adjustments = cameraControls; if (!adjustments) return;
+  try {
+    const settings = await adjustments.change(update);
+    if (adjustments !== cameraControls) return;
+    torch = settings.torch === true; $('torch').setAttribute('aria-pressed', String(torch));
+    if (Number.isFinite(settings.zoom)) $('zoom').value = settings.zoom;
+  } catch (cause) { if (adjustments === cameraControls && cause.name !== 'AbortError') error(failure); }
+}
+$('torch').addEventListener('click', () => adjustCamera(current => ({ torch: !current.torch }), 'This camera could not change its flashlight setting.'));
+$('zoom').addEventListener('change', () => adjustCamera({ zoom: Number($('zoom').value) }, 'This camera could not change its zoom setting.'));
 $('refresh-lab').addEventListener('click', () => { stopCamera(); reloadForUpdate = true; registration?.waiting?.postMessage({ type: 'ACTIVATE_UPDATE' }); });
 navigator.serviceWorker?.addEventListener('controllerchange', () => { if (reloadForUpdate) location.reload(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopCamera('Camera paused because this page is hidden. Open it again to continue.'); });

@@ -7,9 +7,11 @@ const context = frame.getContext('2d', { willReadFrequently: true });
 const HISTORY_KEY = 'barcode-camera.history.v1';
 const REMEMBER_KEY = 'barcode-camera.remember.v1';
 let stream = null, active = false, starting = false, generation = 0, torchOn = false;
+let cameraControls = null;
 let worker = null, workerReady = null, requestId = 0;
 const pending = new Map();
 let history = [], latest = null, soundContext = null, installPrompt = null, registration = null;
+let storageWarning = '', durableRemember = false;
 let offlineReady = false, updateRequested = false, lastAnnouncement = '', importBusy = false;
 const confirmation = ScanPolicy.createConfirmation();
 let scanRevision = 0, lastVideoFrame = null, misses = 0, retryIndex = 0, candidateCrop = null, lastAcceptedAt = 0;
@@ -134,8 +136,8 @@ async function initializeScanner() {
 }
 
 function renderControls() {
-  $('start').disabled = starting || importBusy;
-  $('start').querySelector('span').textContent = starting ? 'Opening camera…' : active ? 'Stop camera' : 'Start camera';
+  $('start').disabled = importBusy;
+  $('start').querySelector('span').textContent = starting ? 'Cancel camera' : active ? 'Stop camera' : 'Start camera';
   $('choose-image').disabled = starting || importBusy;
   $('camera-select').disabled = starting || importBusy;
   $('rescan').disabled = starting || importBusy;
@@ -151,7 +153,7 @@ function renderControls() {
 function stopCamera(description) {
   generation += 1;
   resetScanEvidence();
-  active = false;
+  active = false; starting = false; cameraControls = null;
   stopFrameTracking();
   if (stream) stream.getTracks().forEach((track) => track.stop());
   stream = null; video.srcObject = null;
@@ -200,32 +202,34 @@ async function startCamera(deviceId) {
     startFrameTracking(token);
     const track = stream.getVideoTracks()[0];
     track.addEventListener('ended', () => { if (stream?.getVideoTracks()[0] === track) stopCamera('Camera disconnected. Tap Start camera to reconnect.'); });
-    const capabilities = track.getCapabilities?.() || {};
+    cameraControls = CameraConstraints.create(track, constraints.video, () => token === generation && stream?.getVideoTracks()[0] === track);
+    const controls = cameraControls, capabilities = controls.capabilities();
     if (capabilities.focusMode?.includes('continuous')) {
-      try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); }
+      try { await controls.change({ focusMode: 'continuous' }); }
       catch { /* Some browsers expose focus controls that the active camera cannot apply. */ }
       if (token !== generation) return;
     }
     $('torch').disabled = !capabilities.torch;
     if (capabilities.zoom && capabilities.zoom.max > capabilities.zoom.min) {
       const zoom = $('zoom');
-      zoom.min = capabilities.zoom.min; zoom.max = Math.min(capabilities.zoom.max, 6);
-      zoom.step = capabilities.zoom.step || 0.1; zoom.value = track.getSettings().zoom || capabilities.zoom.min;
+      zoom.min = capabilities.zoom.min; zoom.max = Math.min(capabilities.zoom.max, Math.max(6, capabilities.zoom.min));
+      zoom.step = capabilities.zoom.step || 0.1; zoom.value = controls.settings().zoom || capabilities.zoom.min;
       $('zoom-control').hidden = false;
     }
     $('engine-status').textContent = 'Scanning on this device. No camera images are uploaded.';
     $('scan-hint').textContent = 'Hold the code steady in view';
-    await listCameras(track.getSettings().deviceId);
+    await listCameras(controls.settings().deviceId, token);
     if (token === generation) scanFrame(token);
   } catch (error) {
     acquired?.getTracks().forEach((track) => track.stop());
     if (token === generation) { stopCamera(); showError(cameraError(error)); }
-  } finally { starting = false; renderControls(); }
+  } finally { if (token === generation) { starting = false; renderControls(); } }
 }
 
-async function listCameras(selected) {
+async function listCameras(selected, token = generation) {
   try {
     const devices = (await navigator.mediaDevices.enumerateDevices()).filter((item) => item.kind === 'videoinput');
+    if (token !== generation) return;
     const select = $('camera-select'); select.replaceChildren();
     devices.forEach((device, index) => { const option = document.createElement('option'); option.value = device.deviceId; option.textContent = device.label || `Camera ${index + 1}`; select.append(option); });
     if (selected) select.value = selected;
@@ -388,22 +392,25 @@ function renderHistory() {
 
 function saveHistory() {
   if (!$('remember').checked) return;
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
-  catch { $('remember').checked = false; $('storage-note').textContent = 'Storage unavailable. History stays in this page only.'; }
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); storageWarning = ''; }
+  catch { storageWarning = 'History changes could not be saved. Previously saved scans may remain on this device. Export to keep the history shown here.'; }
+  updateStorageNote();
 }
 
 function loadHistory() {
   try {
-    $('remember').checked = localStorage.getItem(REMEMBER_KEY) === 'true';
+    durableRemember = localStorage.getItem(REMEMBER_KEY) === 'true';
+    $('remember').checked = durableRemember;
     if ($('remember').checked) {
       const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
       if (Array.isArray(saved)) history = saved.filter((item) => item && typeof item.text === 'string' && typeof item.format === 'string' && Number.isFinite(item.timestamp) && item.text.length <= 10000 && (!item.bytes || (Array.isArray(item.bytes) && item.bytes.length <= 10000))).slice(0, 100);
     }
-  } catch { history = []; }
+    else if (localStorage.getItem(HISTORY_KEY)) storageWarning = 'Saving new scans is off. Previously saved history is still on this device; turn Remember on, then off to retry removing it.';
+  } catch { history = []; storageWarning = 'Saved history could not be read. Previous scans may still be stored on this device.'; }
   if (history.length) showLatest(history[0]);
   renderHistory(); updateStorageNote();
 }
-function updateStorageNote() { $('storage-note').textContent = $('remember').checked ? 'History is saved only in this browser.' : 'History clears when you close this page.'; }
+function updateStorageNote() { $('storage-note').textContent = storageWarning || ($('remember').checked ? 'History is saved only in this browser.' : 'History clears when you close this page.'); }
 
 function enableSound() {
   try { soundContext ||= new (window.AudioContext || window.webkitAudioContext)(); soundContext.resume().catch(() => {}); } catch { /* Sound is optional. */ }
@@ -498,7 +505,7 @@ async function setupOffline() {
   } catch { $('offline-label').textContent = 'Offline setup unavailable'; $('offline-state').classList.add('failed'); }
 }
 
-$('start').addEventListener('click', () => active ? stopCamera('Camera stopped. Tap Start camera when you’re ready.') : startCamera($('camera-select').value || undefined));
+$('start').addEventListener('click', () => active || starting ? stopCamera('Camera stopped. Tap Start camera when you’re ready.') : startCamera($('camera-select').value || undefined));
 for (const id of ['pos-mode', 'better-frames', 'target-crops', 'pos-confirmation', ...POS_NAMES.map(name => `pos-format-${name}`)]) {
   $(id).addEventListener('change', applyScanOptions);
 }
@@ -508,30 +515,48 @@ $('rescan').addEventListener('click', () => {
 });
 $('camera-select').addEventListener('change', () => { if (active) startCamera($('camera-select').value); });
 $('torch').addEventListener('click', async () => {
-  const track = stream?.getVideoTracks()[0]; if (!track) return;
+  const track = stream?.getVideoTracks()[0], controls = cameraControls; if (!track || !controls) return;
   resetScanEvidence();
   try {
-    const value = !torchOn; await track.applyConstraints({ advanced: [{ torch: value }] });
+    const settings = await controls.change(current => ({ torch: !current.torch }));
     if (stream?.getVideoTracks()[0] !== track) return;
-    resetScanEvidence(); torchOn = value; $('torch').setAttribute('aria-pressed', String(value));
+    resetScanEvidence(); torchOn = settings.torch === true; $('torch').setAttribute('aria-pressed', String(torchOn));
+    if (Number.isFinite(settings.zoom)) $('zoom').value = settings.zoom;
   }
-  catch { showError('This camera could not change its flashlight setting.'); }
+  catch (error) { if (stream?.getVideoTracks()[0] === track && error.name !== 'AbortError') showError('This camera could not change its flashlight setting.'); }
 });
 $('zoom').addEventListener('input', async () => {
-  const track = stream?.getVideoTracks()[0]; if (!track) return;
+  const track = stream?.getVideoTracks()[0], controls = cameraControls; if (!track || !controls) return;
   resetScanEvidence();
   try {
-    await track.applyConstraints({ advanced: [{ zoom: Number($('zoom').value) }] });
-    if (stream?.getVideoTracks()[0] === track) resetScanEvidence();
+    const settings = await controls.change({ zoom: Number($('zoom').value) });
+    if (stream?.getVideoTracks()[0] !== track) return;
+    resetScanEvidence();
+    if (Number.isFinite(settings.zoom)) $('zoom').value = settings.zoom;
+    torchOn = settings.torch === true; $('torch').setAttribute('aria-pressed', String(torchOn));
   }
-  catch { $('zoom-control').hidden = true; }
+  catch (error) { if (stream?.getVideoTracks()[0] === track && error.name !== 'AbortError') showError('This camera could not change its zoom setting.'); }
 });
 $('choose-image').addEventListener('click', () => { if ($('sound').checked) enableSound(); $('image-file').click(); });
 $('image-file').addEventListener('change', () => scanImage($('image-file').files[0]));
 $('sound').addEventListener('change', () => { if ($('sound').checked) enableSound(); });
 $('remember').addEventListener('change', () => {
-  try { localStorage.setItem(REMEMBER_KEY, String($('remember').checked)); if (!$('remember').checked) localStorage.removeItem(HISTORY_KEY); else saveHistory(); }
-  catch { $('remember').checked = false; showError('Your browser could not save this preference. Scans will stay in this page only.'); }
+  const requested = $('remember').checked;
+  try {
+    localStorage.setItem(REMEMBER_KEY, String(requested)); durableRemember = requested;
+    storageWarning = '';
+    if (requested) saveHistory();
+    else {
+      try { localStorage.removeItem(HISTORY_KEY); }
+      catch { storageWarning = 'Saving new scans is off, but previously saved history could not be removed. It remains on this device. Turn Remember on, then off to retry.'; showError(storageWarning); }
+    }
+  } catch {
+    // A failed preference write does not erase the existing durable preference.
+    try { durableRemember = localStorage.getItem(REMEMBER_KEY) === 'true'; } catch { /* Keep the last known durable state. */ }
+    $('remember').checked = durableRemember;
+    storageWarning = 'The Remember preference could not be changed. Previously saved scans may remain on this device.';
+    showError(storageWarning);
+  }
   updateStorageNote();
 });
 $('copy-latest').addEventListener('click', async () => {
@@ -541,7 +566,7 @@ $('copy-latest').addEventListener('click', async () => {
 });
 $('clear').addEventListener('click', () => {
   history = []; latest = null; lastAnnouncement = ''; renderHistory(); saveHistory();
-  $('result-empty').hidden = false; $('result-data').hidden = true; $('result-format').hidden = true; $('scan-announcement').textContent = 'Scan history cleared.';
+  $('result-empty').hidden = false; $('result-data').hidden = true; $('result-format').hidden = true; $('scan-announcement').textContent = storageWarning ? 'History cleared from this page. Device storage could not be updated.' : 'Scan history cleared.';
 });
 $('export').addEventListener('click', () => {
   const cell = (value) => '"' + String(value).replace(/^[=+@\-\t\r]/, (match) => "'" + match).replaceAll('"', '""') + '"';
