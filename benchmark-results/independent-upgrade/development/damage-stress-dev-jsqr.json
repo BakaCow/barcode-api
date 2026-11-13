@@ -1,0 +1,1544 @@
+{
+  "summary": {
+    "corpus": "damage-stress-dev",
+    "exact": 32,
+    "wrong": 0,
+    "negatives": 48,
+    "complementary": []
+  },
+  "results": [
+    {
+      "name": "qr/dev-qr-label-1/clean-0",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 9.1665
+    },
+    {
+      "name": "qr/dev-qr-label-1/blur-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 4.061600000000006
+    },
+    {
+      "name": "qr/dev-qr-label-1/motion-blur-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 3.730000000000004
+    },
+    {
+      "name": "qr/dev-qr-label-1/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.623999999999995
+    },
+    {
+      "name": "qr/dev-qr-label-1/perspective-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 2.7383000000000095
+    },
+    {
+      "name": "qr/dev-qr-label-1/angled-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 2.6757999999999953
+    },
+    {
+      "name": "qr/dev-qr-label-1/scratches-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 2.0515999999999934
+    },
+    {
+      "name": "qr/dev-qr-label-1/missing-patch-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.8305000000000007
+    },
+    {
+      "name": "qr/dev-qr-label-1/small-in-frame-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 17.751999999999995
+    },
+    {
+      "name": "qr/dev-qr-label-1/clipping-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.4890000000000043
+    },
+    {
+      "name": "qr/dev-qr-label-1/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 1.9177000000000106
+    },
+    {
+      "name": "qr/dev-qr-label-1/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 2.0427999999999997
+    },
+    {
+      "name": "qr/dev-qr-label-1/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 0.6555999999999926
+    },
+    {
+      "name": "qr/dev-qr-label-1/perspective-2",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.786600000000007
+    },
+    {
+      "name": "qr/dev-qr-label-1/angled-2",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "priorExact": true,
+      "ms": 2.21929999999999
+    },
+    {
+      "name": "qr/dev-qr-label-1/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 2.8597000000000037
+    },
+    {
+      "name": "qr/dev-qr-label-1/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.9462999999999937
+    },
+    {
+      "name": "qr/dev-qr-label-1/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 21.992599999999996
+    },
+    {
+      "name": "qr/dev-qr-label-1/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.8172999999999888
+    },
+    {
+      "name": "qr/dev-qr-label-2/clean-0",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.0682999999999936
+    },
+    {
+      "name": "qr/dev-qr-label-2/blur-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.044099999999986
+    },
+    {
+      "name": "qr/dev-qr-label-2/motion-blur-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.2704999999999984
+    },
+    {
+      "name": "qr/dev-qr-label-2/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 1.7254999999999825
+    },
+    {
+      "name": "qr/dev-qr-label-2/perspective-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.505500000000012
+    },
+    {
+      "name": "qr/dev-qr-label-2/angled-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.9659000000000049
+    },
+    {
+      "name": "qr/dev-qr-label-2/scratches-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.1526999999999816
+    },
+    {
+      "name": "qr/dev-qr-label-2/missing-patch-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.0164000000000044
+    },
+    {
+      "name": "qr/dev-qr-label-2/small-in-frame-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 22.325500000000005
+    },
+    {
+      "name": "qr/dev-qr-label-2/clipping-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.0620999999999867
+    },
+    {
+      "name": "qr/dev-qr-label-2/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 1.9183000000000163
+    },
+    {
+      "name": "qr/dev-qr-label-2/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.2604000000000042
+    },
+    {
+      "name": "qr/dev-qr-label-2/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 0.604299999999995
+    },
+    {
+      "name": "qr/dev-qr-label-2/perspective-2",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.5351
+    },
+    {
+      "name": "qr/dev-qr-label-2/angled-2",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.9313000000000216
+    },
+    {
+      "name": "qr/dev-qr-label-2/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 2.073599999999999
+    },
+    {
+      "name": "qr/dev-qr-label-2/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.8868999999999971
+    },
+    {
+      "name": "qr/dev-qr-label-2/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 21.378600000000006
+    },
+    {
+      "name": "qr/dev-qr-label-2/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.615700000000004
+    },
+    {
+      "name": "qr/dev-qr-label-3/clean-0",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.038800000000009
+    },
+    {
+      "name": "qr/dev-qr-label-3/blur-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.4769000000000005
+    },
+    {
+      "name": "qr/dev-qr-label-3/motion-blur-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.0541000000000054
+    },
+    {
+      "name": "qr/dev-qr-label-3/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 1.7675000000000125
+    },
+    {
+      "name": "qr/dev-qr-label-3/perspective-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.6668999999999983
+    },
+    {
+      "name": "qr/dev-qr-label-3/angled-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.60390000000001
+    },
+    {
+      "name": "qr/dev-qr-label-3/scratches-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.1910000000000025
+    },
+    {
+      "name": "qr/dev-qr-label-3/missing-patch-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.040300000000002
+    },
+    {
+      "name": "qr/dev-qr-label-3/small-in-frame-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 15.180399999999992
+    },
+    {
+      "name": "qr/dev-qr-label-3/clipping-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.2779000000000167
+    },
+    {
+      "name": "qr/dev-qr-label-3/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 1.2339000000000055
+    },
+    {
+      "name": "qr/dev-qr-label-3/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.2951000000000192
+    },
+    {
+      "name": "qr/dev-qr-label-3/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 0.5267000000000053
+    },
+    {
+      "name": "qr/dev-qr-label-3/perspective-2",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 1.4117999999999995
+    },
+    {
+      "name": "qr/dev-qr-label-3/angled-2",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "priorExact": true,
+      "ms": 2.032600000000002
+    },
+    {
+      "name": "qr/dev-qr-label-3/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.9273000000000025
+    },
+    {
+      "name": "qr/dev-qr-label-3/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.6607999999999947
+    },
+    {
+      "name": "qr/dev-qr-label-3/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 21.28970000000001
+    },
+    {
+      "name": "qr/dev-qr-label-3/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 1.7060999999999922
+    },
+    {
+      "name": "code128/dev-code128-label-1/clean-0",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.835800000000006
+    },
+    {
+      "name": "code128/dev-code128-label-1/blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.134500000000003
+    },
+    {
+      "name": "code128/dev-code128-label-1/motion-blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.014900000000011
+    },
+    {
+      "name": "code128/dev-code128-label-1/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.758699999999976
+    },
+    {
+      "name": "code128/dev-code128-label-1/perspective-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.003199999999993
+    },
+    {
+      "name": "code128/dev-code128-label-1/angled-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 13.569399999999973
+    },
+    {
+      "name": "code128/dev-code128-label-1/scratches-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.43380000000002
+    },
+    {
+      "name": "code128/dev-code128-label-1/missing-patch-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.595399999999984
+    },
+    {
+      "name": "code128/dev-code128-label-1/small-in-frame-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 28.89160000000004
+    },
+    {
+      "name": "code128/dev-code128-label-1/clipping-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.176600000000008
+    },
+    {
+      "name": "code128/dev-code128-label-1/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.1601
+    },
+    {
+      "name": "code128/dev-code128-label-1/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 6.060799999999972
+    },
+    {
+      "name": "code128/dev-code128-label-1/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 3.0033000000000243
+    },
+    {
+      "name": "code128/dev-code128-label-1/perspective-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 10.001899999999978
+    },
+    {
+      "name": "code128/dev-code128-label-1/angled-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.09209999999996
+    },
+    {
+      "name": "code128/dev-code128-label-1/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.210999999999956
+    },
+    {
+      "name": "code128/dev-code128-label-1/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.243799999999965
+    },
+    {
+      "name": "code128/dev-code128-label-1/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 25.76490000000001
+    },
+    {
+      "name": "code128/dev-code128-label-1/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 8.312899999999956
+    },
+    {
+      "name": "code128/dev-code128-label-2/clean-0",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.59699999999998
+    },
+    {
+      "name": "code128/dev-code128-label-2/blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.733499999999992
+    },
+    {
+      "name": "code128/dev-code128-label-2/motion-blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 10.017499999999984
+    },
+    {
+      "name": "code128/dev-code128-label-2/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.264599999999973
+    },
+    {
+      "name": "code128/dev-code128-label-2/perspective-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.130600000000072
+    },
+    {
+      "name": "code128/dev-code128-label-2/angled-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 13.606699999999933
+    },
+    {
+      "name": "code128/dev-code128-label-2/scratches-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.068300000000022
+    },
+    {
+      "name": "code128/dev-code128-label-2/missing-patch-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.94990000000007
+    },
+    {
+      "name": "code128/dev-code128-label-2/small-in-frame-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 27.39620000000002
+    },
+    {
+      "name": "code128/dev-code128-label-2/clipping-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.784599999999955
+    },
+    {
+      "name": "code128/dev-code128-label-2/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.355300000000057
+    },
+    {
+      "name": "code128/dev-code128-label-2/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 6.09820000000002
+    },
+    {
+      "name": "code128/dev-code128-label-2/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 2.828399999999988
+    },
+    {
+      "name": "code128/dev-code128-label-2/perspective-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.084600000000023
+    },
+    {
+      "name": "code128/dev-code128-label-2/angled-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 13.566200000000094
+    },
+    {
+      "name": "code128/dev-code128-label-2/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.760999999999967
+    },
+    {
+      "name": "code128/dev-code128-label-2/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.993400000000065
+    },
+    {
+      "name": "code128/dev-code128-label-2/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 24.072200000000066
+    },
+    {
+      "name": "code128/dev-code128-label-2/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 8.41960000000006
+    },
+    {
+      "name": "code128/dev-code128-label-3/clean-0",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.362199999999916
+    },
+    {
+      "name": "code128/dev-code128-label-3/blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.342999999999961
+    },
+    {
+      "name": "code128/dev-code128-label-3/motion-blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.44760000000008
+    },
+    {
+      "name": "code128/dev-code128-label-3/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.964399999999955
+    },
+    {
+      "name": "code128/dev-code128-label-3/perspective-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.458799999999997
+    },
+    {
+      "name": "code128/dev-code128-label-3/angled-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 17.850400000000036
+    },
+    {
+      "name": "code128/dev-code128-label-3/scratches-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.948699999999917
+    },
+    {
+      "name": "code128/dev-code128-label-3/missing-patch-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.935400000000072
+    },
+    {
+      "name": "code128/dev-code128-label-3/small-in-frame-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 26.390700000000038
+    },
+    {
+      "name": "code128/dev-code128-label-3/clipping-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 9.791299999999978
+    },
+    {
+      "name": "code128/dev-code128-label-3/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.458700000000022
+    },
+    {
+      "name": "code128/dev-code128-label-3/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 6.0552000000000135
+    },
+    {
+      "name": "code128/dev-code128-label-3/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 3.1866999999999734
+    },
+    {
+      "name": "code128/dev-code128-label-3/perspective-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 10.230300000000057
+    },
+    {
+      "name": "code128/dev-code128-label-3/angled-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 10.254500000000007
+    },
+    {
+      "name": "code128/dev-code128-label-3/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.764099999999985
+    },
+    {
+      "name": "code128/dev-code128-label-3/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.412599999999998
+    },
+    {
+      "name": "code128/dev-code128-label-3/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 25.74879999999996
+    },
+    {
+      "name": "code128/dev-code128-label-3/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 8.561600000000112
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/clean-0",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.5931000000000495
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.879199999999969
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/motion-blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.452200000000062
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.6480999999999995
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/perspective-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.489500000000021
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/angled-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 8.603700000000003
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/scratches-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.823600000000056
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/missing-patch-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.8840000000000146
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/small-in-frame-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 23.576099999999997
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/clipping-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.002399999999966
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.537500000000023
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 3.7124000000000024
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 2.0171000000000276
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/perspective-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.4221
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/angled-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.215100000000007
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.029999999999973
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.02660000000003
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 24.331199999999967
+    },
+    {
+      "name": "ean13/dev-ean13-label-1/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 4.323999999999842
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/clean-0",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.955500000000029
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.193199999999933
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/motion-blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.248800000000074
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.357500000000073
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/perspective-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.3547000000000935
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/angled-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 10.164700000000039
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/scratches-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.008100000000013
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/missing-patch-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.776299999999992
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/small-in-frame-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 22.943899999999985
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/clipping-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.996300000000019
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.904199999999946
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 3.865299999999934
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 1.9075000000000273
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/perspective-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.965900000000147
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/angled-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.9560999999998785
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.621599999999944
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.939200000000028
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 22.841300000000047
+    },
+    {
+      "name": "ean13/dev-ean13-label-2/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 4.345599999999877
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/clean-0",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.987699999999904
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.93060000000014
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/motion-blur-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.342499999999973
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/shading-lowcontrast-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.694600000000037
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/perspective-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.964200000000119
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/angled-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.248199999999997
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/scratches-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.523300000000063
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/missing-patch-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.988200000000006
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/small-in-frame-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 23.01189999999997
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/clipping-1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.113800000000083
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 4.550099999999929
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/motion-blur-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 3.4105999999999312
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/shading-lowcontrast-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 2.105199999999968
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/perspective-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.394800000000032
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/angled-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.401000000000067
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/scratches-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.846599999999853
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/missing-patch-2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.375600000000077
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/small-in-frame-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 24.081899999999905
+    },
+    {
+      "name": "ean13/dev-ean13-label-3/clipping-2",
+      "text": null,
+      "correct": false,
+      "priorExact": false,
+      "ms": 5.490000000000009
+    },
+    {
+      "name": "negative/receipt-text/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.781300000000101
+    },
+    {
+      "name": "negative/woven-texture/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.066199999999981
+    },
+    {
+      "name": "negative/short-random-bars/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.293700000000172
+    },
+    {
+      "name": "negative/finder-lookalikes/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 2.726599999999962
+    },
+    {
+      "name": "negative/noise-texture/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.412199999999984
+    },
+    {
+      "name": "negative/circles/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.152299999999968
+    },
+    {
+      "name": "negative/invalid-code128-checksum/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.052199999999857
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/1",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.626599999999826
+    },
+    {
+      "name": "negative/receipt-text/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.749900000000025
+    },
+    {
+      "name": "negative/woven-texture/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.53449999999998
+    },
+    {
+      "name": "negative/short-random-bars/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.17919999999981
+    },
+    {
+      "name": "negative/finder-lookalikes/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 2.7230999999999312
+    },
+    {
+      "name": "negative/noise-texture/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.355399999999918
+    },
+    {
+      "name": "negative/circles/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.6240999999999985
+    },
+    {
+      "name": "negative/invalid-code128-checksum/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.21160000000009
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/2",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.716499999999996
+    },
+    {
+      "name": "negative/receipt-text/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.205600000000004
+    },
+    {
+      "name": "negative/woven-texture/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.564000000000078
+    },
+    {
+      "name": "negative/short-random-bars/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.300799999999981
+    },
+    {
+      "name": "negative/finder-lookalikes/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 2.9519000000000233
+    },
+    {
+      "name": "negative/noise-texture/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.967300000000023
+    },
+    {
+      "name": "negative/circles/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 3.772999999999911
+    },
+    {
+      "name": "negative/invalid-code128-checksum/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.520300000000134
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/3",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.657200000000103
+    },
+    {
+      "name": "negative/receipt-text/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.675899999999956
+    },
+    {
+      "name": "negative/woven-texture/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.270900000000211
+    },
+    {
+      "name": "negative/short-random-bars/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.895099999999957
+    },
+    {
+      "name": "negative/finder-lookalikes/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 3.0958999999998014
+    },
+    {
+      "name": "negative/noise-texture/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.153500000000122
+    },
+    {
+      "name": "negative/circles/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 3.6800000000000637
+    },
+    {
+      "name": "negative/invalid-code128-checksum/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.911000000000058
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/4",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.002499999999827
+    },
+    {
+      "name": "negative/receipt-text/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 7.410499999999956
+    },
+    {
+      "name": "negative/woven-texture/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.765500000000202
+    },
+    {
+      "name": "negative/short-random-bars/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.304000000000087
+    },
+    {
+      "name": "negative/finder-lookalikes/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 3.7329999999999472
+    },
+    {
+      "name": "negative/noise-texture/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.66579999999999
+    },
+    {
+      "name": "negative/circles/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.063899999999876
+    },
+    {
+      "name": "negative/invalid-code128-checksum/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.07140000000004
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/5",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.4167999999999665
+    },
+    {
+      "name": "negative/receipt-text/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 6.716200000000072
+    },
+    {
+      "name": "negative/woven-texture/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.753400000000056
+    },
+    {
+      "name": "negative/short-random-bars/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 3.998199999999997
+    },
+    {
+      "name": "negative/finder-lookalikes/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 2.6333000000001903
+    },
+    {
+      "name": "negative/noise-texture/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 12.001199999999926
+    },
+    {
+      "name": "negative/circles/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 4.066600000000108
+    },
+    {
+      "name": "negative/invalid-code128-checksum/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 11.233199999999897
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/6",
+      "text": null,
+      "correct": false,
+      "priorExact": true,
+      "ms": 5.960699999999861
+    }
+  ]
+}

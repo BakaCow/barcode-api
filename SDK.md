@@ -1,6 +1,6 @@
 # Embed the camera scanner
 
-`web/sdk/scanner.js` is a browser ES module. It supplies camera lifecycle and controls, confirmed scan events, selected formats, adaptive frame selection and source-region retries without requiring the standalone scanner's HTML or history. It uses the same bundled ZXing worker and POS policy. It does not call the Python API, upload camera frames, or need a secret key.
+`web/sdk/scanner.js` is a browser ES module. It supplies camera lifecycle and controls, confirmed scan events, selected formats, adaptive frame selection and source-region retries without requiring the standalone scanner's HTML or history. It uses the shared worker with ZXing, independent ZBar checks and the project's Code 128 matcher, plus the POS policy. It does not call the Python API, upload camera frames, or need a secret key.
 
 Need a camera panel from your server without copying assets into the customer site? Use the [one-script hosted embed](EMBEDDING.md). The headless SDK documented below still requires its assets on the same origin as its own page.
 
@@ -8,7 +8,7 @@ Need a camera panel from your server without copying assets into the customer si
 
 Copy the `web/` directory to a same-origin static directory such as `/scanner-assets/`. Preserve its filenames and `vendor/` license notices. Serve `.js` as JavaScript and `.wasm` as `application/wasm`. No npm install or external CDN is required for the SDK itself.
 
-The required runtime files are `sdk/scanner.js`, `sdk/capture-tools.js`, `scan-policy.js`, `pos-policy.js`, `frame-analysis.js`, `capture-selection.js`, `capture-geometry.js`, `scanner-worker.js`, `vendor/zxing-reader.js` and `vendor/zxing_reader.wasm`. Keeping the full `web/` folder also supplies the existing app, examples and offline assets. `scanner.d.ts` provides TypeScript declarations. The optional [reusable controls](web/sdk/CONTROLS.md) supply camera, flashlight, zoom, capture-profile and target controls for plain JavaScript or React hosts.
+The required runtime files are `sdk/scanner.js`, `sdk/capture-tools.js`, `scan-policy.js`, `pos-policy.js`, `frame-analysis.js`, `capture-selection.js`, `capture-geometry.js`, `scanner-worker.js`, `independent-reader.js`, the three `engine/code128-*.js` modules, `vendor/zxing-reader.js`, `vendor/zxing_reader.wasm`, `vendor/zbar/index.js` and `vendor/zbar/zbar.wasm`. Keep their license notices and bundled corresponding source with distributions. Keeping the full `web/` folder supplies all of these together with the app, examples and offline assets. `scanner.d.ts` provides TypeScript declarations. The optional [reusable controls](web/sdk/CONTROLS.md) supply camera, flashlight, zoom, capture-profile and target controls for plain JavaScript or React hosts.
 
 Use HTTPS in deployment or localhost for development. Camera permission is still required. Same-origin worker assets are required; putting only the JavaScript module on another origin does not make a cross-origin worker usable. The SDK's default asset directory is the parent of its `sdk/` directory. Set `assetBaseUrl` only when the worker/runtime files live at another same-origin directory.
 

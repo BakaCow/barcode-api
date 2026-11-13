@@ -72,7 +72,7 @@ The API preserves `/v1` endpoints. Clients send exact multipart fields and retur
 
 Run `python tools/export-openapi.py` after changing server models/routes. CI runs it with `--check` to detect a stale committed contract. Other-language clients can be generated from this OpenAPI schema using a compatible generator; the included hand-written clients have focused multipart and error-handling tests. [FastAPI client-generation guidance](https://fastapi.tiangolo.com/advanced/generate-clients/).
 
-Original project code is distributed under the [MIT license](LICENSE), as selected by the owner. Copies of that notice accompany the browser assets and client packages. Third-party decoder, WebAssembly and font files keep their own notices in `web/vendor/`; experimental-engine attribution remains under `web/engine/`. Preserve those notices when redistributing a copied asset directory.
+Original project code is distributed under the [MIT license](LICENSE), as selected by the owner. Copies of that notice accompany the browser assets and client packages. Third-party decoder, WebAssembly and font files keep their own notices in `web/vendor/`; project-engine pattern-table attribution remains under `web/engine/`. ZBar and its browser wrapper retain LGPL-2.1-or-later; pinned corresponding source archives and build/replacement instructions are included under `web/vendor/zbar/`. Preserve those sources and notices when redistributing the asset directory. The pyzbar Python wrapper retains its MIT license and uses the separately licensed native ZBar library.
 
 ## Validation limits
 

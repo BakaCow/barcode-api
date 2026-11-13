@@ -7,3 +7,7 @@
 *.wasm binary
 *.png binary
 *.woff2 binary
+*.tar.gz binary
+# Preserve byte-for-byte provenance for vendored source maps and license text.
+web/vendor/zbar/index.js.map text eol=lf
+web/vendor/zbar/LICENSE.txt text eol=lf

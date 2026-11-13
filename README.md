@@ -1,12 +1,12 @@
 # Barcode API
 
-The latest [recognition update](ACCURACY-UPDATE.md) improves difficult-image recovery in the browser and API and makes the embedded camera reuse successful recovery methods for fresh-frame confirmation. It includes a separate frozen synthetic evaluation and preserves POS ambiguity and duplicate-frame safeguards.
+The latest [independent-decoder update](INDEPENDENT-DECODER.md) combines ZXing with ZBar and the project's own Code 128 matcher to correct a demonstrated wrong reading and recover more difficult labels. It preserves POS ambiguity and separate-frame confirmation and reports accuracy on a new frozen synthetic evaluation set.
 
 Version **0.9.0** includes optional camera controls, detailed source-pixel capture, an aiming area and tap targeting, and adaptive frame selection in the reusable [camera SDK](SDK.md) and [JavaScript/POS/React examples](INTEGRATION.md). The [recovery update](RECOVERY-UPDATE.md) adds automatic detail retries, scratched-QR recovery and a guarded retail-format reread, with a fresh synthetic evaluation. The [comparison benchmark](COMPARISON.md) records controlled trials with the bundled reader or an optional, separately licensed Scanbot SDK. Start the server and open `/scan/examples/` (or `/examples/` when serving `web/` statically).
 
 The project also includes [JavaScript/TypeScript](clients/javascript/README.md) and [Python](clients/python/README.md) API clients, [customer keys, request limits and monitoring](HOSTING.md), and an [MIT project license](LICENSE). Camera-only integration runs locally without a decoding server. No Scanbot accuracy or real-phone performance equivalence has been established; see [TESTING.md](TESTING.md).
 
-A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
+A live camera scanner with a Python API for uploaded images and barcode generation. The camera app decodes locally with bundled [ZXing-C++](https://github.com/Sec-ant/zxing-wasm), [ZBar WebAssembly](https://github.com/undecaf/zbar-wasm), and the project's Code 128 matcher. The server uses [FastAPI](https://fastapi.tiangolo.com/), [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp) and [pyzbar/ZBar](https://github.com/NaturalHistoryMuseum/pyzbar). Independent checks and measured limits are described in [INDEPENDENT-DECODER.md](INDEPENDENT-DECODER.md).
 
 Version 0.7.0 adds [live POS safeguards, clearer-frame selection and barcode-region retries](LIVE-SCANNING.md) to the on-device scanner. Enable **POS mode** above the camera and configure it under **Scanning options**. Frame selection and region retries are on by default. See [TESTING.md](TESTING.md) for verification and its limits.
 
@@ -14,7 +14,7 @@ Version 0.6.0 added [configurable server-side POS decoding](POS-DECODING.md): re
 
 Version 0.5.0 added broader damage testing and Android/iPhone capability simulations. See [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for measured improvements, examples, and an extra UPC-E reading still present in the unrestricted reader on an angled EAN-13. [MOBILE-TESTING.md](MOBILE-TESTING.md) describes 35 application simulations; these do not run real Android/iPhone browsers or cameras.
 
-An [experimental Code 128 lab](CODE128-LAB.md) adds a custom decoder, local photo/video collection, and comparison with ZXing. Open `/scan/lab/` when using the API server, or `/lab/` when hosting the `web/` contents directly. The regular scanner and API continue to use ZXing. The lab includes synthetic development examples; real-phone accuracy and Scanbot parity have not been established.
+An [experimental Code 128 lab](CODE128-LAB.md) provides local photo/video collection and comparison of the project matcher with ZXing. Open `/scan/lab/` when using the API server, or `/lab/` when hosting the `web/` contents directly. The regular browser scanner now also uses a guarded subset of this matcher alongside ZXing and ZBar; the API uses ZXing and ZBar. Real-phone accuracy and Scanbot parity have not been established.
 
 For a POS integration, [the burst decoding endpoint](POS-DECODING.md) accepts up to five images and returns `confirmed`, `ambiguous`, or `rescan`. It supports a format allowlist and configurable agreement across frames. Your POS handles catalogue lookup and cart updates.
 
@@ -100,6 +100,8 @@ Keep the terminal open. Visit <http://127.0.0.1:8000/scan/> for the camera app o
 The service requires `BARCODE_API_KEY` or the customer-key configuration described in [HOSTING.md](HOSTING.md). Keys must contain 24–256 printable ASCII characters without spaces. The environment variable lasts for that terminal session. The app does not automatically load `.env` files.
 
 For macOS or Linux:
+
+Install the independent native ZBar library first: `sudo apt-get install libzbar0` on Debian/Ubuntu, or `brew install zbar` on macOS. The supplied Dockerfile installs it automatically. Windows pyzbar wheels bundle the library. Missing native dependencies stop API startup with an installation message; they do not silently disable the independent checks. Browser-only static hosting needs no native packages.
 
 ```bash
 python3 -m venv .venv

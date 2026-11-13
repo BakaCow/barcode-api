@@ -1,0 +1,2409 @@
+{
+  "description": "Fixed synthetic images, one warmed decoder pass per case. Latency is host-specific and excludes camera capture, WASM startup, image import, and UI confirmation. This is not a Scanbot or real-device comparison.",
+  "worker": "C:\\Users\\1jyer\\Documents\\Codex\\2026-11-12\\what\\work\\independent-upgrade\\baseline\\web\\scanner-worker.js",
+  "corpusVersion": 1,
+  "corpusSha256": "23ad79f4bd98300cac4c886aac08e527abc013e07b6fc016562d661b99769a04",
+  "workerSha256": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c",
+  "mode": "image",
+  "retryIndex": 0,
+  "runtimeRoot": "C:\\Users\\1jyer\\Documents\\Codex\\2026-11-12\\what\\work\\independent-upgrade\\baseline",
+  "runtimeDependencySha256": {
+    "vendor/zxing-reader.js": "ffd72d59d54082194f7c086b384dcd930bdeb0c5b39fbb13779694e69bb0d344",
+    "vendor/zxing_reader.wasm": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e"
+  },
+  "payloadComparison": "Exact raw bytes and format when supplied; exact text additionally when supplied. No encoding normalization.",
+  "summary": {
+    "total": 60,
+    "positives": 52,
+    "exactPositiveReads": 52,
+    "negatives": 8,
+    "negativesCorrectlyRejected": 8,
+    "unexpectedResults": 0,
+    "errors": 0,
+    "medianMs": 99.42,
+    "p95Ms": 2914.62
+  },
+  "cases": [
+    {
+      "name": "code128/independent-code128-1/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-A-189850<NUL><SOH><US>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            0,
+            1,
+            31
+          ]
+        }
+      ],
+      "durationMs": 19.07,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-1/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-A-189850<NUL><SOH><US>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            0,
+            1,
+            31
+          ]
+        }
+      ],
+      "durationMs": 374.51,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-1/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-A-189850<NUL><SOH><US>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            0,
+            1,
+            31
+          ]
+        }
+      ],
+      "durationMs": 1076.15,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-1/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-A-189850<NUL><SOH><US>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            0,
+            1,
+            31
+          ]
+        }
+      ],
+      "durationMs": 2.7,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-2/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-b_189850|?!=~",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            98,
+            95,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            124,
+            63,
+            33,
+            61,
+            126
+          ]
+        }
+      ],
+      "durationMs": 2.97,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-2/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-b_189850|?!=~",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            98,
+            95,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            124,
+            63,
+            33,
+            61,
+            126
+          ]
+        }
+      ],
+      "durationMs": 372.79,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-2/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-b_189850|?!=~",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            98,
+            95,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            124,
+            63,
+            33,
+            61,
+            126
+          ]
+        }
+      ],
+      "durationMs": 10.06,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-2/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-b_189850|?!=~",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            98,
+            95,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            124,
+            63,
+            33,
+            61,
+            126
+          ]
+        }
+      ],
+      "durationMs": 3.85,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-3/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "254761393239269841272602",
+          "format": "Code128",
+          "bytes": [
+            50,
+            53,
+            52,
+            55,
+            54,
+            49,
+            51,
+            57,
+            51,
+            50,
+            51,
+            57,
+            50,
+            54,
+            57,
+            56,
+            52,
+            49,
+            50,
+            55,
+            50,
+            54,
+            48,
+            50
+          ]
+        }
+      ],
+      "durationMs": 3.93,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-3/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "254761393239269841272602",
+          "format": "Code128",
+          "bytes": [
+            50,
+            53,
+            52,
+            55,
+            54,
+            49,
+            51,
+            57,
+            51,
+            50,
+            51,
+            57,
+            50,
+            54,
+            57,
+            56,
+            52,
+            49,
+            50,
+            55,
+            50,
+            54,
+            48,
+            50
+          ]
+        }
+      ],
+      "durationMs": 314.55,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-3/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "254761393239269841272602",
+          "format": "Code128",
+          "bytes": [
+            50,
+            53,
+            52,
+            55,
+            54,
+            49,
+            51,
+            57,
+            51,
+            50,
+            51,
+            57,
+            50,
+            54,
+            57,
+            56,
+            52,
+            49,
+            50,
+            55,
+            50,
+            54,
+            48,
+            50
+          ]
+        }
+      ],
+      "durationMs": 99.42,
+      "diagnostics": {
+        "passes": 2,
+        "strategy": "contrast"
+      }
+    },
+    {
+      "name": "code128/independent-code128-3/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "254761393239269841272602",
+          "format": "Code128",
+          "bytes": [
+            50,
+            53,
+            52,
+            55,
+            54,
+            49,
+            51,
+            57,
+            51,
+            50,
+            51,
+            57,
+            50,
+            54,
+            57,
+            56,
+            52,
+            49,
+            50,
+            55,
+            50,
+            54,
+            48,
+            50
+          ]
+        }
+      ],
+      "durationMs": 2.33,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-4/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv:749279025189:end",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            58,
+            55,
+            52,
+            57,
+            50,
+            55,
+            57,
+            48,
+            50,
+            53,
+            49,
+            56,
+            57,
+            58,
+            101,
+            110,
+            100
+          ]
+        }
+      ],
+      "durationMs": 2.74,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-4/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv:749279025189:end",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            58,
+            55,
+            52,
+            57,
+            50,
+            55,
+            57,
+            48,
+            50,
+            53,
+            49,
+            56,
+            57,
+            58,
+            101,
+            110,
+            100
+          ]
+        }
+      ],
+      "durationMs": 342.96,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-4/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv:749279025189:end",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            58,
+            55,
+            52,
+            57,
+            50,
+            55,
+            57,
+            48,
+            50,
+            53,
+            49,
+            56,
+            57,
+            58,
+            101,
+            110,
+            100
+          ]
+        }
+      ],
+      "durationMs": 101.54,
+      "diagnostics": {
+        "passes": 2,
+        "strategy": "contrast"
+      }
+    },
+    {
+      "name": "code128/independent-code128-4/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv:749279025189:end",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            58,
+            55,
+            52,
+            57,
+            50,
+            55,
+            57,
+            48,
+            50,
+            53,
+            49,
+            56,
+            57,
+            58,
+            101,
+            110,
+            100
+          ]
+        }
+      ],
+      "durationMs": 2.76,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-5/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-shift-189850<STX>xy",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            115,
+            104,
+            105,
+            102,
+            116,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            2,
+            120,
+            121
+          ]
+        }
+      ],
+      "durationMs": 3.47,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-5/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-shift-189850<STX>xy",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            115,
+            104,
+            105,
+            102,
+            116,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            2,
+            120,
+            121
+          ]
+        }
+      ],
+      "durationMs": 521.93,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-5/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-shift-189850<STX>xy",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            115,
+            104,
+            105,
+            102,
+            116,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            2,
+            120,
+            121
+          ]
+        }
+      ],
+      "durationMs": 2898.06,
+      "diagnostics": {
+        "passes": 7,
+        "strategy": "upscale"
+      }
+    },
+    {
+      "name": "code128/independent-code128-5/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "Iv-shift-189850<STX>xy",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            115,
+            104,
+            105,
+            102,
+            116,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            2,
+            120,
+            121
+          ]
+        }
+      ],
+      "durationMs": 3.21,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-6/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-SHIFT-189850q<ETX>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            83,
+            72,
+            73,
+            70,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            113,
+            3
+          ]
+        }
+      ],
+      "durationMs": 3.38,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-6/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-SHIFT-189850q<ETX>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            83,
+            72,
+            73,
+            70,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            113,
+            3
+          ]
+        }
+      ],
+      "durationMs": 410.15,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-6/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-SHIFT-189850q<ETX>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            83,
+            72,
+            73,
+            70,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            113,
+            3
+          ]
+        }
+      ],
+      "durationMs": 96.51,
+      "diagnostics": {
+        "passes": 2,
+        "strategy": "contrast"
+      }
+    },
+    {
+      "name": "code128/independent-code128-6/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-SHIFT-189850q<ETX>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            83,
+            72,
+            73,
+            70,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            113,
+            3
+          ]
+        }
+      ],
+      "durationMs": 3.68,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-7/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "(01)97209898505659(10)IVLOT-189850(21)058981",
+          "format": "Code128",
+          "bytes": [
+            48,
+            49,
+            57,
+            55,
+            50,
+            48,
+            57,
+            56,
+            57,
+            56,
+            53,
+            48,
+            53,
+            54,
+            53,
+            57,
+            49,
+            48,
+            73,
+            86,
+            76,
+            79,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            50,
+            49,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49
+          ]
+        }
+      ],
+      "durationMs": 4.31,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-7/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "(01)97209898505659(10)IVLOT-189850(21)058981",
+          "format": "Code128",
+          "bytes": [
+            48,
+            49,
+            57,
+            55,
+            50,
+            48,
+            57,
+            56,
+            57,
+            56,
+            53,
+            48,
+            53,
+            54,
+            53,
+            57,
+            49,
+            48,
+            73,
+            86,
+            76,
+            79,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            50,
+            49,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49
+          ]
+        }
+      ],
+      "durationMs": 1036.27,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-7/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "(01)97209898505659(10)IVLOT-189850(21)058981",
+          "format": "Code128",
+          "bytes": [
+            48,
+            49,
+            57,
+            55,
+            50,
+            48,
+            57,
+            56,
+            57,
+            56,
+            53,
+            48,
+            53,
+            54,
+            53,
+            57,
+            49,
+            48,
+            73,
+            86,
+            76,
+            79,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            50,
+            49,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49
+          ]
+        }
+      ],
+      "durationMs": 102.76,
+      "diagnostics": {
+        "passes": 2,
+        "strategy": "contrast"
+      }
+    },
+    {
+      "name": "code128/independent-code128-7/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "(01)97209898505659(10)IVLOT-189850(21)058981",
+          "format": "Code128",
+          "bytes": [
+            48,
+            49,
+            57,
+            55,
+            50,
+            48,
+            57,
+            56,
+            57,
+            56,
+            53,
+            48,
+            53,
+            54,
+            53,
+            57,
+            49,
+            48,
+            73,
+            86,
+            76,
+            79,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            50,
+            49,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49
+          ]
+        }
+      ],
+      "durationMs": 4.73,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-8/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-GS-189850<GS>next",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            71,
+            83,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            110,
+            101,
+            120,
+            116
+          ]
+        }
+      ],
+      "durationMs": 3.31,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-8/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-GS-189850<GS>next",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            71,
+            83,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            110,
+            101,
+            120,
+            116
+          ]
+        }
+      ],
+      "durationMs": 396.17,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-8/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-GS-189850<GS>next",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            71,
+            83,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            110,
+            101,
+            120,
+            116
+          ]
+        }
+      ],
+      "durationMs": 99.8,
+      "diagnostics": {
+        "passes": 2,
+        "strategy": "contrast"
+      }
+    },
+    {
+      "name": "code128/independent-code128-8/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-GS-189850<GS>next",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            71,
+            83,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            110,
+            101,
+            120,
+            116
+          ]
+        }
+      ],
+      "durationMs": 3.31,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-9/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HB-189850ÉéúQ",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            66,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            201,
+            233,
+            250,
+            81
+          ]
+        }
+      ],
+      "durationMs": 3.34,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-9/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HB-189850ÉéúQ",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            66,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            201,
+            233,
+            250,
+            81
+          ]
+        }
+      ],
+      "durationMs": 515.95,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-9/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HB-189850ÉéúQ",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            66,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            201,
+            233,
+            250,
+            81
+          ]
+        }
+      ],
+      "durationMs": 2915.47,
+      "diagnostics": {
+        "passes": 7,
+        "strategy": "upscale"
+      }
+    },
+    {
+      "name": "code128/independent-code128-9/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HB-189850ÉéúQ",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            66,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            201,
+            233,
+            250,
+            81
+          ]
+        }
+      ],
+      "durationMs": 3.62,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-10/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HA-189850R",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            129,
+            150,
+            158,
+            82
+          ]
+        }
+      ],
+      "durationMs": 3.47,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-10/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HA-189850R",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            129,
+            150,
+            158,
+            82
+          ]
+        }
+      ],
+      "durationMs": 448.44,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-10/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HA-189850R",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            129,
+            150,
+            158,
+            82
+          ]
+        }
+      ],
+      "durationMs": 2914.62,
+      "diagnostics": {
+        "passes": 7,
+        "strategy": "upscale"
+      }
+    },
+    {
+      "name": "code128/independent-code128-10/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HA-189850R",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            129,
+            150,
+            158,
+            82
+          ]
+        }
+      ],
+      "durationMs": 4.15,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-11/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-LATCH-189850ÈÙêXñþ-END",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            76,
+            65,
+            84,
+            67,
+            72,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            200,
+            217,
+            234,
+            88,
+            241,
+            254,
+            45,
+            69,
+            78,
+            68
+          ]
+        }
+      ],
+      "durationMs": 4.15,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-11/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-LATCH-189850ÈÙêXñþ-END",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            76,
+            65,
+            84,
+            67,
+            72,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            200,
+            217,
+            234,
+            88,
+            241,
+            254,
+            45,
+            69,
+            78,
+            68
+          ]
+        }
+      ],
+      "durationMs": 956.14,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-11/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-LATCH-189850ÈÙêXñþ-END",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            76,
+            65,
+            84,
+            67,
+            72,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            200,
+            217,
+            234,
+            88,
+            241,
+            254,
+            45,
+            69,
+            78,
+            68
+          ]
+        }
+      ],
+      "durationMs": 2938.29,
+      "diagnostics": {
+        "passes": 7,
+        "strategy": "upscale"
+      }
+    },
+    {
+      "name": "code128/independent-code128-11/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-LATCH-189850ÈÙêXñþ-END",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            76,
+            65,
+            84,
+            67,
+            72,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            200,
+            217,
+            234,
+            88,
+            241,
+            254,
+            45,
+            69,
+            78,
+            68
+          ]
+        }
+      ],
+      "durationMs": 4.35,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-12/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "ticket|058981~!#$%&()*+,-./:;<=>?@[]^_{}",
+          "format": "Code128",
+          "bytes": [
+            116,
+            105,
+            99,
+            107,
+            101,
+            116,
+            124,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49,
+            126,
+            33,
+            35,
+            36,
+            37,
+            38,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            91,
+            93,
+            94,
+            95,
+            123,
+            125
+          ]
+        }
+      ],
+      "durationMs": 5.91,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "code128/independent-code128-12/rotated",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "ticket|058981~!#$%&()*+,-./:;<=>?@[]^_{}",
+          "format": "Code128",
+          "bytes": [
+            116,
+            105,
+            99,
+            107,
+            101,
+            116,
+            124,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49,
+            126,
+            33,
+            35,
+            36,
+            37,
+            38,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            91,
+            93,
+            94,
+            95,
+            123,
+            125
+          ]
+        }
+      ],
+      "durationMs": 1206.08,
+      "diagnostics": {
+        "passes": 6,
+        "strategy": "local-contrast-deskew"
+      }
+    },
+    {
+      "name": "code128/independent-code128-12/small",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "ticket|058981~!#$%&()*+,-./:;<=>?@[]^_{}",
+          "format": "Code128",
+          "bytes": [
+            116,
+            105,
+            99,
+            107,
+            101,
+            116,
+            124,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49,
+            126,
+            33,
+            35,
+            36,
+            37,
+            38,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            91,
+            93,
+            94,
+            95,
+            123,
+            125
+          ]
+        }
+      ],
+      "durationMs": 2917.43,
+      "diagnostics": {
+        "passes": 7,
+        "strategy": "upscale"
+      }
+    },
+    {
+      "name": "code128/independent-code128-12/blurred",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "ticket|058981~!#$%&()*+,-./:;<=>?@[]^_{}",
+          "format": "Code128",
+          "bytes": [
+            116,
+            105,
+            99,
+            107,
+            101,
+            116,
+            124,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49,
+            126,
+            33,
+            35,
+            36,
+            37,
+            38,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            91,
+            93,
+            94,
+            95,
+            123,
+            125
+          ]
+        }
+      ],
+      "durationMs": 5.91,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "multiple/independent-code128-pair-1/two-labels",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-A-189850<NUL><SOH><US>",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            0,
+            1,
+            31
+          ]
+        },
+        {
+          "text": "Iv-b_189850|?!=~",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            45,
+            98,
+            95,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            124,
+            63,
+            33,
+            61,
+            126
+          ]
+        }
+      ],
+      "durationMs": 5.78,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "multiple/independent-code128-pair-2/two-labels",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "254761393239269841272602",
+          "format": "Code128",
+          "bytes": [
+            50,
+            53,
+            52,
+            55,
+            54,
+            49,
+            51,
+            57,
+            51,
+            50,
+            51,
+            57,
+            50,
+            54,
+            57,
+            56,
+            52,
+            49,
+            50,
+            55,
+            50,
+            54,
+            48,
+            50
+          ]
+        },
+        {
+          "text": "Iv:749279025189:end",
+          "format": "Code128",
+          "bytes": [
+            73,
+            118,
+            58,
+            55,
+            52,
+            57,
+            50,
+            55,
+            57,
+            48,
+            50,
+            53,
+            49,
+            56,
+            57,
+            58,
+            101,
+            110,
+            100
+          ]
+        }
+      ],
+      "durationMs": 6.66,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "multiple/independent-code128-pair-3/two-labels",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "(01)97209898505659(10)IVLOT-189850(21)058981",
+          "format": "Code128",
+          "bytes": [
+            48,
+            49,
+            57,
+            55,
+            50,
+            48,
+            57,
+            56,
+            57,
+            56,
+            53,
+            48,
+            53,
+            54,
+            53,
+            57,
+            49,
+            48,
+            73,
+            86,
+            76,
+            79,
+            84,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            29,
+            50,
+            49,
+            48,
+            53,
+            56,
+            57,
+            56,
+            49
+          ]
+        },
+        {
+          "text": "IV-HB-189850ÉéúQ",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            66,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            201,
+            233,
+            250,
+            81
+          ]
+        }
+      ],
+      "durationMs": 8.63,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "multiple/independent-code128-pair-4/two-labels",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [
+        {
+          "text": "IV-HA-189850R",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            72,
+            65,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            129,
+            150,
+            158,
+            82
+          ]
+        },
+        {
+          "text": "IV-LATCH-189850ÈÙêXñþ-END",
+          "format": "Code128",
+          "bytes": [
+            73,
+            86,
+            45,
+            76,
+            65,
+            84,
+            67,
+            72,
+            45,
+            49,
+            56,
+            57,
+            56,
+            53,
+            48,
+            200,
+            217,
+            234,
+            88,
+            241,
+            254,
+            45,
+            69,
+            78,
+            68
+          ]
+        }
+      ],
+      "durationMs": 7.72,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-1/invalid-checksum",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 383.23,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-2/invalid-checksum",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 373.24,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-3/invalid-checksum",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 373.5,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-4/invalid-checksum",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 374.18,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-5/invalid-checksum",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 370.88,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-6/invalid-checksum",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 370.93,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-blank-1/blank",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 390.24,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    },
+    {
+      "name": "negative/independent-code128-negative-blank-2/blank",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "found": [],
+      "durationMs": 385.09,
+      "diagnostics": {
+        "passes": 8,
+        "strategy": "qr-denoise"
+      }
+    }
+  ]
+}

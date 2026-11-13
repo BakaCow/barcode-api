@@ -41,6 +41,7 @@ function harness({ offscreen = true, regions } = {}) {
     ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
     location: { href: 'https://test.local/scanner-worker.js' },
     ZXingWASM: { prepareZXingModule: async () => {} },
+    IndependentReader: { initialize: async () => {} },
     importScripts(path) {
       if (path === './vendor/zxing-reader.js') return;
       assert.ok(['./capture-geometry.js', './frame-analysis.js'].includes(path));

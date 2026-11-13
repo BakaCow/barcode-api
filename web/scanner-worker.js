@@ -27,10 +27,11 @@ const LINEAR_RECOVERY = new Set([
 ]);
 function initialize() {
   if (!decoder) {
-    decoder = ZXingWASM.prepareZXingModule({
+    if (typeof IndependentReader === 'undefined') importScripts('./independent-reader.js');
+    decoder = Promise.all([ZXingWASM.prepareZXingModule({
       overrides: { locateFile: (path) => new URL('./vendor/' + path, self.location.href).href },
       fireImmediately: true,
-    }).catch((error) => { decoder = null; throw error; });
+    }), IndependentReader.initialize()]).catch((error) => { decoder = null; throw error; });
   }
   return decoder;
 }
@@ -287,6 +288,89 @@ async function corroborateRetailOverlap(results, image, options, permitted, star
   }
 }
 
+const resultIdentity = result => JSON.stringify([result.format, result.text, result.bytes]);
+const matchingBytes = (a, b) => a.format === b.format && Array.isArray(a.bytes) && Array.isArray(b.bytes) &&
+  a.bytes.length > 0 && a.bytes.length === b.bytes.length && a.bytes.every((value, index) => value === b.bytes[index]);
+function uniqueResults(results) { return [...new Map(results.map(result => [resultIdentity(result), result])).values()]; }
+function incompleteEvidence(results) { const unique = uniqueResults(results); return unique.length > 1 ? unique : []; }
+// Native HRI presentation for GS1/control/extended bytes remains authoritative.
+// The new project's fallback currently supports unambiguous printable text only.
+const printableProject = result => result.gs1 === false && result.bytes.length > 0 && result.bytes.every(value => value >= 32 && value <= 126);
+const publicResult = ({ text, format, bytes, position }) => ({ text, format, bytes, position });
+function comparableFootprint(position, footprint) {
+  if (!sameSymbolSegment(position, footprint)) return false;
+  const vector = quad => ({ x: (quad.topRight.x + quad.bottomRight.x - quad.topLeft.x - quad.bottomLeft.x) / 2,
+    y: (quad.topRight.y + quad.bottomRight.y - quad.topLeft.y - quad.bottomLeft.y) / 2 });
+  const a = vector(position), b = vector(footprint), al = Math.hypot(a.x, a.y), bl = Math.hypot(b.x, b.y);
+  // A wide outer-label region must not absorb a shorter, separate barcode.
+  return al > 0 && bl > 0 && al / bl >= 0.8 && al / bl <= 1.25 && Math.abs(a.x * b.x + a.y * b.y) / (al * bl) >= Math.cos(Math.PI / 12);
+}
+
+async function corroborateCode128(original, image, started, budgetMs) {
+  if (!original.results.some(result => result.format === 'Code128')) return original;
+  const remaining = Math.max(0, budgetMs - (performance.now() - started));
+  let checked;
+  try { checked = await IndependentReader.read(image, { formats: ['Code128'], timeBudgetMs: Math.min(remaining, budgetMs === 350 ? 120 : 500) }); }
+  catch { return { ...original, diagnostics: { ...original.diagnostics, independentError: true } }; }
+  const diagnostics = { ...original.diagnostics, passes: original.diagnostics.passes + checked.passes,
+    independentPasses: checked.passes };
+  // ZBar 0.23.90 can drop FNC4 high bits. Never let its Code128 value alone
+  // override native bytes. Require a distinct project's checksum/row decoder
+  // to agree on every byte and on the physical symbol's footprint.
+  const corroborated = checked.complete ? checked.project.filter(project => printableProject(project) && checked.zbar.some(zbar => matchingBytes(zbar, project) &&
+    comparableFootprint(zbar.position, project.position))) : [];
+  let corrected = 0;
+  const results = original.results.map(result => {
+    if (result.format !== 'Code128') return result;
+    // Positive evidence for this original identity must not be erased by a
+    // neighbouring or overlapping label's larger footprint.
+    if ([...checked.zbar, ...checked.project].some(candidate => matchingBytes(result, candidate) &&
+      (comparableFootprint(result.position, candidate.position) || comparableFootprint(candidate.position, result.position)))) return result;
+    const candidates = corroborated.filter(candidate => comparableFootprint(result.position, candidate.position) &&
+      original.results.filter(other => other.format === 'Code128' && comparableFootprint(other.position, candidate.position)).length === 1);
+    if (candidates.length !== 1 || matchingBytes(result, candidates[0])) return result;
+    corrected++;
+    return publicResult(candidates[0]);
+  });
+  for (const candidate of checked.project.filter(printableProject)) {
+    // A newly observed separate label or unresolved interpretation remains
+    // visible to the caller's ambiguity policy, even when the native pass read
+    // something first. Never silently turn two credible values into one.
+    if (!results.some(result => matchingBytes(result, candidate) &&
+      (sameSymbolSegment(result.position, candidate.position) || sameSymbolSegment(candidate.position, result.position)))) {
+      results.push(publicResult(candidate));
+    }
+  }
+  return { results, diagnostics: { ...diagnostics,
+    ...(!checked.complete ? { strategy: 'independent-incomplete' } : {}),
+    ...(corrected ? { strategy: 'independent-code128-corroboration', corrected } : {}) } };
+}
+
+async function independentRecovery(image, formats, started, budgetMs) {
+  const selected = formats.filter(format => IndependentReader.supportedFormats.includes(format));
+  if (!selected.length || performance.now() - started >= budgetMs) return null;
+  let checked;
+  try { checked = await IndependentReader.read(image, { formats: selected,
+    timeBudgetMs: Math.min(budgetMs === 350 ? 120 : 500, Math.max(0, budgetMs - (performance.now() - started))) }); }
+  catch { return null; }
+  // The project matcher supplies supported Code128 values. ZBar's Code128
+  // interpretation is used only for corroboration, never as a lone fallback.
+  let gray;
+  const sourceAgrees = result => typeof result.text === 'string' && Array.isArray(result.bytes) && result.bytes.length > 0 &&
+    result.bytes.length <= 8192 && result.bytes.every(value => Number.isInteger(value) && value >= 0 && value <= 255) &&
+    result.position && ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'].every(name => {
+      const point = result.position[name];
+      return point && Number.isFinite(point.x) && Number.isFinite(point.y) && point.x >= 0 && point.y >= 0 && point.x <= image.width && point.y <= image.height;
+    }) && sourceGeometryAgrees(result.position, gray ||= luminance(image), image.width, image.height);
+  const project = checked.project.filter(printableProject).map(publicResult).filter(sourceAgrees);
+  let results = uniqueResults([...checked.zbar.filter(result => result.format === 'EAN13' && sourceAgrees(result)), ...project]);
+  const unverifiedCode128 = checked.zbar.some(zbar => zbar.format === 'Code128' && !project.some(project =>
+    matchingBytes(zbar, project) && comparableFootprint(zbar.position, project.position)));
+  if (!checked.complete || unverifiedCode128) results = incompleteEvidence(results);
+  return { results, diagnostics: { passes: 1 + checked.passes, independentPasses: checked.passes,
+    strategy: checked.complete ? 'independent-recovery' : 'independent-incomplete' } };
+}
+
 async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   const started = performance.now();
   const budgetMs = mode === 'live' ? 350 : 2500;
@@ -300,9 +384,14 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   // Always inspect the full supplied image first. A crop must not hide a
   // conflicting value that the whole-image reader already found.
   let results = permitted(validResults(await ZXingWASM.readBarcodes(image, firstOptions)));
-  if (results.length) return { ...await corroborateRetailOverlap(results, image, firstOptions, permitted, started, budgetMs), ...details };
+  if (results.length) {
+    const original = await corroborateRetailOverlap(results, image, firstOptions, permitted, started, budgetMs);
+    return { ...await corroborateCode128(original, image, started, budgetMs), ...details };
+  }
   // An empty native format list means all formats in some ZXing versions.
   if (!recoveryOptions.formats.length) return { results, ...details, diagnostics: { passes: 1, strategy: 'original' } };
+  const independent = await independentRecovery(image, recoveryOptions.formats, started, budgetMs);
+  if (independent?.results.length) return { ...independent, ...details };
   const gray = luminance(image);
   let passes = 1, strategy = 'original';
   if (analysis) {

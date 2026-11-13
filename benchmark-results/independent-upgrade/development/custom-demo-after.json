@@ -1,0 +1,427 @@
+{
+  "schemaVersion": 1,
+  "split": "dev",
+  "sourceCounts": {
+    "real": 0,
+    "synthetic": 8
+  },
+  "distinctGroups": 4,
+  "scope": "One pass per labelled still image. Host decoding time excludes capture, startup and live-frame confirmation. A real source label describes the supplied media, not proof of phone performance or label quality. No Scanbot comparison.",
+  "manifestSha256": "12144863942284b2b1ef7efac76ee216641b865a57c2ce4dbbec2090a4be14b1",
+  "fixtureSha256": "6badc65b68a4fbb04e9e2a483a022c88045082177de24ff5320fb4d53c738951",
+  "experimentalSourceSha256": "c5862718eda643b9af8c8525883ab8a69fcbcea299ed1ef2296af567a6e2fe25",
+  "zxingWasmSha256": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e",
+  "hashMethods": {
+    "experimentalSourceSha256": "SHA-256 of ordered filename + NUL + UTF-8 source, with CRLF normalized to LF, for decoder/detector/engine.",
+    "fixtureSha256": "SHA-256 of JSON.stringify(parsed fixture); ignores JSON whitespace and file line endings, retains object key order.",
+    "manifestSha256": "SHA-256 of UTF-8 manifest JSON with sorted object keys and compact separators, provided by the Python exporter.",
+    "zxingWasmSha256": "SHA-256 of the raw binary WASM bytes."
+  },
+  "summaries": {
+    "experimental": {
+      "images": 8,
+      "positiveImages": 6,
+      "exactPositiveReads": 6,
+      "correctReadRate": 1,
+      "negativeImages": 2,
+      "negativeFalsePositives": 0,
+      "negativeFalsePositiveRate": 0,
+      "imagesWithWrongRead": 0,
+      "wrongReadImageRate": 0,
+      "errors": 0,
+      "medianDecodeMs": 17.517,
+      "p95DecodeMs": 25.407,
+      "timeToConfirmedResultMs": null
+    },
+    "zxing": {
+      "images": 8,
+      "positiveImages": 6,
+      "exactPositiveReads": 5,
+      "correctReadRate": 0.8333333333333334,
+      "negativeImages": 2,
+      "negativeFalsePositives": 0,
+      "negativeFalsePositiveRate": 0,
+      "imagesWithWrongRead": 0,
+      "wrongReadImageRate": 0,
+      "errors": 0,
+      "medianDecodeMs": 1.144,
+      "p95DecodeMs": 7.795,
+      "timeToConfirmedResultMs": null
+    }
+  },
+  "bySource": {
+    "real": {
+      "experimental": {
+        "images": 0,
+        "positiveImages": 0,
+        "exactPositiveReads": 0,
+        "correctReadRate": null,
+        "negativeImages": 0,
+        "negativeFalsePositives": 0,
+        "negativeFalsePositiveRate": null,
+        "imagesWithWrongRead": 0,
+        "wrongReadImageRate": null,
+        "errors": 0,
+        "medianDecodeMs": null,
+        "p95DecodeMs": null,
+        "timeToConfirmedResultMs": null
+      },
+      "zxing": {
+        "images": 0,
+        "positiveImages": 0,
+        "exactPositiveReads": 0,
+        "correctReadRate": null,
+        "negativeImages": 0,
+        "negativeFalsePositives": 0,
+        "negativeFalsePositiveRate": null,
+        "imagesWithWrongRead": 0,
+        "wrongReadImageRate": null,
+        "errors": 0,
+        "medianDecodeMs": null,
+        "p95DecodeMs": null,
+        "timeToConfirmedResultMs": null
+      }
+    },
+    "synthetic": {
+      "experimental": {
+        "images": 8,
+        "positiveImages": 6,
+        "exactPositiveReads": 6,
+        "correctReadRate": 1,
+        "negativeImages": 2,
+        "negativeFalsePositives": 0,
+        "negativeFalsePositiveRate": 0,
+        "imagesWithWrongRead": 0,
+        "wrongReadImageRate": 0,
+        "errors": 0,
+        "medianDecodeMs": 17.517,
+        "p95DecodeMs": 25.407,
+        "timeToConfirmedResultMs": null
+      },
+      "zxing": {
+        "images": 8,
+        "positiveImages": 6,
+        "exactPositiveReads": 5,
+        "correctReadRate": 0.8333333333333334,
+        "negativeImages": 2,
+        "negativeFalsePositives": 0,
+        "negativeFalsePositiveRate": 0,
+        "imagesWithWrongRead": 0,
+        "wrongReadImageRate": 0,
+        "errors": 0,
+        "medianDecodeMs": 1.144,
+        "p95DecodeMs": 7.795,
+        "timeToConfirmedResultMs": null
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "alpha-clean",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-alpha",
+      "conditions": [
+        "clean"
+      ],
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "LAB-BOX-128",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 25.407
+        },
+        "zxing": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "LAB-BOX-128",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 7.795
+        }
+      }
+    },
+    {
+      "id": "alpha-angled",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-alpha",
+      "conditions": [
+        "angled"
+      ],
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "LAB-BOX-128",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 15.521
+        },
+        "zxing": {
+          "exact": false,
+          "missing": [
+            "LAB-BOX-128"
+          ],
+          "unexpected": [],
+          "results": [],
+          "durationMs": 1.909
+        }
+      }
+    },
+    {
+      "id": "alpha-lowcontrast",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-alpha",
+      "conditions": [
+        "lowcontrast"
+      ],
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "LAB-BOX-128",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 17.517
+        },
+        "zxing": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "LAB-BOX-128",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 1.173
+        }
+      }
+    },
+    {
+      "id": "alpha-blurred",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-alpha",
+      "conditions": [
+        "blur"
+      ],
+      "expected": [
+        {
+          "text": "LAB-BOX-128",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "LAB-BOX-128",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 8.522
+        },
+        "zxing": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "LAB-BOX-128",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 1.144
+        }
+      }
+    },
+    {
+      "id": "numeric-clean",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-numeric",
+      "conditions": [
+        "clean"
+      ],
+      "expected": [
+        {
+          "text": "00123456789012",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "00123456789012",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 18.001
+        },
+        "zxing": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "00123456789012",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 0.896
+        }
+      }
+    },
+    {
+      "id": "numeric-angled",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-numeric",
+      "conditions": [
+        "angled"
+      ],
+      "expected": [
+        {
+          "text": "00123456789012",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "00123456789012",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 11.541
+        },
+        "zxing": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [
+            {
+              "text": "00123456789012",
+              "format": "Code128"
+            }
+          ],
+          "durationMs": 0.772
+        }
+      }
+    },
+    {
+      "id": "negative-blank",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-blank",
+      "conditions": [
+        "negative"
+      ],
+      "expected": [],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [],
+          "durationMs": 2.467
+        },
+        "zxing": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [],
+          "durationMs": 0.453
+        }
+      }
+    },
+    {
+      "id": "negative-stripes",
+      "source": "synthetic",
+      "device": "Generated with ZXing-C++ and Pillow; no camera",
+      "groupId": "synthetic-stripes",
+      "conditions": [
+        "negative"
+      ],
+      "expected": [],
+      "engines": {
+        "experimental": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [],
+          "durationMs": 24.054
+        },
+        "zxing": {
+          "exact": true,
+          "missing": [],
+          "unexpected": [],
+          "results": [],
+          "durationMs": 0.507
+        }
+      }
+    }
+  ]
+}

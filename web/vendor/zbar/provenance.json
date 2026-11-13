@@ -1,0 +1,28 @@
+{
+  "wrapper": {
+    "package": "@undecaf/zbar-wasm",
+    "version": "0.11.0",
+    "gitCommit": "c04ab59682681e27a24b36b36084806437a5d224",
+    "source": "https://github.com/undecaf/zbar-wasm",
+    "npmIntegrity": "sha512-z2UZ+Uc50+qyE+HbU+Obdk/E5ecB7xYiu0i99bHQ9VlZVH0JMmE/5mJQa16Cutvwt80C9OZl8jEVayf5s5Azow=="
+  },
+  "engine": {
+    "name": "ZBar",
+    "version": "0.23.90",
+    "source": "https://github.com/mchehab/zbar/tree/0.23.90"
+  },
+  "buildToolchain": {
+    "emscripten": "3.1.44",
+    "source": "Pinned wrapper Makefile"
+  },
+  "license": "LGPL-2.1-or-later",
+  "modifications": "None to vendored runtime; project adapter is separate. Core source archive is the matching Git tag and requires autoreconf before the upstream build.",
+  "sha256": {
+    "index.js": "31ba69c462230c7c7333e5eb75fb3d694b2c8b4ac8430dd7f9f74a62cf92160a",
+    "index.js.map": "4fda778b456a3fe9caff8498beb7400ff878745c2f98360ecb1fdedb89851a79",
+    "LICENSE.txt": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331",
+    "zbar.wasm": "438f95e4b5d122c4c2a8da2b72ad19faa4ba4e541f473dcae0371e4cfc8159ee",
+    "sources/zbar-0.23.90.tar.gz": "25fdd6726d5c4c6f95c95d37591bfbb2dde63d13d0b10cb1350923ea8b11963b",
+    "sources/zbar-wasm-c04ab596.tar.gz": "69eddfeefa65519c9d313e055b7a3041c08becc78f639d1c8890c1cf5c6cffd7"
+  }
+}

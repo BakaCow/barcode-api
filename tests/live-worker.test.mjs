@@ -35,13 +35,17 @@ function harness({ read, frameAnalysis, clock = performance } = {}) {
     ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
     location: { href: 'https://offline.test/nested/scanner-worker.js' },
     importScripts(path) {
-      assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js'].includes(path), path);
+      assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js', './vendor/zbar/index.js',
+        './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
       imports.push(path);
       if (path === './vendor/zxing-reader.js' && read) {
         context.ZXingWASM = {
           prepareZXingModule: async () => { initialized++; },
           readBarcodes: async (image, options) => { calls.push({ image, options }); return read(image, options, calls.length); },
         };
+      } else if (path === './independent-reader.js' && read) {
+        context.IndependentReader = { initialize: async () => {}, supportedFormats: ['Code128', 'EAN13', 'QRCode'],
+          read: async () => ({ zbar: [], project: [], passes: 0, complete: true }) };
       } else if (path === './frame-analysis.js' && frameAnalysis) {
         context.FrameAnalysis = frameAnalysis;
       } else {
@@ -50,8 +54,10 @@ function harness({ read, frameAnalysis, clock = performance } = {}) {
     },
     async fetch(url) {
       fetches.push(String(url));
-      assert.equal(String(url), 'https://offline.test/nested/vendor/zxing_reader.wasm');
-      return new Response(wasm, { headers: { 'Content-Type': 'application/wasm' } });
+      const assets = { 'https://offline.test/nested/vendor/zxing_reader.wasm': wasm,
+        'https://offline.test/nested/vendor/zbar/zbar.wasm': readFileSync(new URL('web/vendor/zbar/zbar.wasm', project)) };
+      assert.ok(assets[String(url)], String(url));
+      return new Response(assets[String(url)], { headers: { 'Content-Type': 'application/wasm' } });
     },
     postMessage(message) { responses.push(message); },
   });
@@ -302,7 +308,7 @@ test('enhanced real scanning needs no external code or network resources', async
   const response = await actual.send({ image: imageFor(fixture), mode: 'live', enhanceLive: true, posOptions: {} });
   assert.equal(response.type, 'result', response.message);
   assert.equal(response.results[0].text, fixture.expected[0].text);
-  assert.deepEqual(actual.fetches, ['https://offline.test/nested/vendor/zxing_reader.wasm']);
+  assert.deepEqual(actual.fetches, ['https://offline.test/nested/vendor/zxing_reader.wasm', 'https://offline.test/nested/vendor/zbar/zbar.wasm']);
   assert.ok(actual.imports.includes('./pos-policy.js'));
   assert.ok(actual.imports.includes('./frame-analysis.js'));
 });
@@ -316,8 +322,10 @@ for (const [fixtureName, format] of [['QR code', 'qr'], ['Code 128', 'code128']]
       pixels.set(source.subarray(row * fixture.width * 4, (row + 1) * fixture.width * 4), ((y + row) * image.width + x) * 4);
     }
     const worker = harness(), nativeRead = worker.context.ZXingWASM.readBarcodes;
+    await worker.send({ type: 'init' });
+    worker.context.IndependentReader.read = async () => ({ zbar: [], project: [], passes: 0, complete: true });
     let calls = 0;
-    // Force only the primary miss to exercise crop routing deterministically.
+    // Force both whole-view readers to miss to exercise crop routing deterministically.
     // Region detection, cropped pixels, native crop decoding and coordinate
     // mapping are real. This test does not claim the original was unreadable.
     worker.context.ZXingWASM.readBarcodes = async (...args) => ++calls === 1 ? [] : nativeRead(...args);

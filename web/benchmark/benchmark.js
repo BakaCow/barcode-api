@@ -63,7 +63,7 @@ form.addEventListener('submit', async event => {
     if (!isSecureContext || !navigator.mediaDevices?.getUserMedia) throw new Error('Camera trials require HTTPS or localhost.');
     if (!$('negative').checked && !$('truth').value) throw new Error('Enter the known exact barcode text before preparing a trial.');
     // Validate labels/formats before asking for camera access or loading vendor code.
-    readMetadata({ id: $('engine').value, version: 'pending', configuration: $('engine').value === 'scanbot' ? 'scanbot-single-shot' : 'worker-image-recovery' }, { width: 1, height: 1 });
+    readMetadata({ id: $('engine').value, version: 'pending', configuration: $('engine').value === 'scanbot' ? 'scanbot-single-shot' : 'worker-image-independent-v1' }, { width: 1, height: 1 });
     if ($('engine').value === 'scanbot') {
       if (!$('vendor-module').value || !$('vendor-engine').value) throw new Error('Scanbot is unconfigured. Supply your own locally hosted SDK module and engine directory.');
       const moduleUrl = localUrl($('vendor-module').value, location.href), engineUrl = localUrl($('vendor-engine').value, location.href);

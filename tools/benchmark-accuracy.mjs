@@ -8,7 +8,7 @@ import { inflateSync } from 'node:zlib';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
 function option(name, fallback) {
   const index = args.indexOf(name);
@@ -16,6 +16,8 @@ function option(name, fallback) {
   if (!args[index + 1] || args[index + 1].startsWith('--')) throw new Error(`Missing value for ${name}`);
   return args[index + 1];
 }
+// A complete runtime root keeps paired baselines from importing newer helpers.
+const root = resolve(option('--runtime-root', projectRoot));
 const workerPath = option('--worker', resolve(root, 'web/scanner-worker.js'));
 const corpusPath = option('--corpus', resolve(root, 'tests/fixtures/accuracy-pixels.json'));
 const outputPath = option('--output', null);
@@ -44,9 +46,15 @@ for (const filename of [...(enhanceLive ? ['frame-analysis.js'] : []), ...(posOp
 }
 const workerSource = readFileSync(workerPath, 'utf8');
 const readerSource = readFileSync(resolve(root, 'web/vendor/zxing-reader.js'), 'utf8');
-const wasmBytes = readFileSync(resolve(root, 'web/vendor/zxing_reader.wasm'));
+const runtimeDependencySha256 = {};
+const recordDependency = (path, bytes) => { runtimeDependencySha256[path] = createHash('sha256').update(bytes).digest('hex'); };
 const corpusBytes = readFileSync(corpusPath);
 const fixtures = JSON.parse(corpusBytes);
+const compareBytes = fixtures.cases.some(item => item.expected.some(truth => Object.hasOwn(truth, 'bytes')));
+for (const fixture of fixtures.cases) for (const truth of fixture.expected) {
+  assert.ok(typeof truth.text === 'string' || Array.isArray(truth.bytes), 'truth needs text or raw bytes');
+  if (Object.hasOwn(truth, 'bytes')) assert.ok(Array.isArray(truth.bytes) && truth.bytes.every(byte => Number.isInteger(byte) && byte >= 0 && byte <= 255), 'truth bytes must be unsigned bytes');
+}
 const base = 'https://offline.test/scan/';
 const messages = new Map();
 let context;
@@ -63,12 +71,16 @@ const globals = {
     for (const path of paths) {
       assert.ok(path.startsWith('./') && !path.includes('..'), 'worker imports must stay in its web folder');
       const source = path === './vendor/zxing-reader.js' ? readerSource : readFileSync(resolve(root, 'web', path), 'utf8');
+      recordDependency(path.slice(2), Buffer.from(source));
       vm.runInContext(source, context, { filename: path });
     }
   },
   async fetch(url) {
-    assert.equal(String(url), new URL('vendor/zxing_reader.wasm', base).href, 'all WASM dependencies remain local');
-    return new Response(wasmBytes, { status: 200, headers: { 'Content-Type': 'application/wasm' } });
+    const path = ['vendor/zxing_reader.wasm', 'vendor/zbar/zbar.wasm'].find(path => String(url) === new URL(path, base).href);
+    assert.ok(path, 'all WASM dependencies remain local and explicitly allowed');
+    const bytes = readFileSync(resolve(root, 'web', path));
+    recordDependency(path, bytes);
+    return new Response(bytes, { status: 200, headers: { 'Content-Type': 'application/wasm' } });
   },
   postMessage(message) { messages.set(message.id, message); },
 };
@@ -95,13 +107,16 @@ for (const fixture of fixtures.cases) {
   const durationMs = performance.now() - start;
   const found = response.results || [];
   const expected = fixture.expected;
-  const matches = (a, b) => a.text === b.text && b.formats.includes(a.format);
+  const matches = (a, b) => b.formats.includes(a.format) &&
+    (!Object.hasOwn(b, 'text') || a.text === b.text) &&
+    (!Object.hasOwn(b, 'bytes') || Array.isArray(a.bytes) && a.bytes.length === b.bytes.length && a.bytes.every((byte, i) => byte === b.bytes[i]));
   const missing = expected.filter((item) => !found.some((result) => matches(result, item)));
   const unexpected = found.filter((result) => !expected.some((item) => matches(result, item)));
   results.push({ name: fixture.name, expectedCount: expected.length,
     exact: response.type === 'result' && !missing.length && !unexpected.length,
-    missing: missing.map((item) => item.text),
-    unexpected: unexpected.map(({ text, format }) => ({ text, format })),
+    missing: missing.map(item => item.text ?? `bytes:${Buffer.from(item.bytes).toString('hex')}`),
+    unexpected: unexpected.map(({ text, format, bytes }) => ({ text, format, ...(compareBytes ? { bytes } : {}) })),
+    ...(compareBytes ? { found: found.map(({ text, format, bytes }) => ({ text, format, bytes })) } : {}),
     durationMs: +durationMs.toFixed(2), ...(response.diagnostics ? { diagnostics: response.diagnostics } : {}),
     ...(response.type === 'error' ? { error: response.message } : {}),
   });
@@ -115,6 +130,8 @@ const report = {
   worker: workerPath, corpusVersion: fixtures.version,
   corpusSha256: createHash('sha256').update(corpusBytes).digest('hex'),
   workerSha256: createHash('sha256').update(workerSource).digest('hex'), mode, retryIndex,
+  runtimeRoot: root, runtimeDependencySha256,
+  ...(compareBytes ? { payloadComparison: 'Exact raw bytes and format when supplied; exact text additionally when supplied. No encoding normalization.' } : {}),
   ...(profileEnabled ? {
     settings: { enhanceLive, posOptions: posOptions || null, cameraFrameSelection: false, posConfirmation: false },
     dependencySha256,

@@ -491,11 +491,13 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
         location: { href: String(url) },
         ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
         fetch: async path => {
-          assert.equal(String(path), 'https://scanner.test/assets/vendor/zxing_reader.wasm');
-          return new Response(readFileSync(new URL('vendor/zxing_reader.wasm', root)), { headers: { 'Content-Type': 'application/wasm' } });
+          const localPaths = new Map(['vendor/zxing_reader.wasm', 'vendor/zbar/zbar.wasm'].map(asset => ['https://scanner.test/assets/' + asset, asset]));
+          assert.ok(localPaths.has(String(path)), 'scanner dependencies remain local');
+          return new Response(readFileSync(new URL(localPaths.get(String(path)), root)), { headers: { 'Content-Type': 'application/wasm' } });
         },
         importScripts: path => {
-          assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js'].includes(path));
+          assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js',
+            './vendor/zbar/index.js', './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path));
           vm.runInContext(readFileSync(new URL(path, root), 'utf8'), context);
         },
         postMessage: data => { if (!this.terminated) this.onmessage({ data }); },
@@ -556,6 +558,39 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     const result = await h.scanner.scanImage(new Blob(['fixture'],{type:'image/png'}));
     assert.ok(result); assert.ok(fixture.expected.some(item=>item.text===result.text));
     assert.ok(result.position.topRight.x<=fixture.width/2); h.scanner.destroy();
+  });
+  await t.test('independent Code128 correction reaches the POS callback only after two real decoded frames', async () => {
+    const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-recovery.json', import.meta.url))).cases;
+    const fixture = cases.find(item => item.name === 'code128/recovery-code128-label-3/small-in-frame-1');
+    const pixels = inflateSync(Buffer.from(fixture.rgba_zlib_base64, 'base64'));
+    const h = harness({ confirmationFrames: 2, automaticRecovery: false });
+    h.video.videoWidth = fixture.width; h.video.videoHeight = fixture.height;
+    let completed = 0;
+    h.env.Worker = class extends NativeWorker {
+      postMessage(data) {
+        if (data.type !== 'decode') return super.postMessage(data);
+        void this.context.onmessage({ data }).finally(() => { completed++; });
+      }
+    };
+    await h.scanner.start();
+    for (let frame = 0; frame < 2; frame++) {
+      // Only the empty background changes between simulated camera frames.
+      // The decoder receives the original difficult barcode pixels unchanged.
+      for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
+        const p = (y * fixture.width + x) * 4;
+        pixels[p] = pixels[p + 1] = pixels[p + 2] = 250 - frame;
+      }
+      h.state.fixture = { ...fixture, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+      await h.tick({ advance: 250 });
+      for (let attempt = 0; attempt < 100 && completed <= frame; attempt++) await flush();
+      assert.equal(completed, frame + 1);
+      if (frame === 0) assert.equal(h.results.length, 0, 'independent decoder agreement is still one camera frame');
+    }
+    assert.equal(h.results.length, 1);
+    assert.equal(h.results[0].text, fixture.expected[0].text);
+    assert.equal(h.results[0].format, 'code128');
+    assert.equal(h.results[0].bytesBase64, Buffer.from(fixture.expected[0].text, 'utf8').toString('base64'));
+    h.scanner.destroy();
   });
   await t.test('detail recovery decodes preserved source pixels after a forced broad-pass miss',async()=>{
     const label = fixtures.find(f=>f.name==='Code 128'), pixels=inflateSync(Buffer.from(label.rgba_zlib_base64,'base64'));

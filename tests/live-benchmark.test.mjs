@@ -83,6 +83,36 @@ test('incorrect payloads and unexpected results on negative cases still fail the
   assert.ok(result.report.cases.every(item => !item.exact && item.unexpected[0].text === qr.expected[0].text));
 });
 
+test('raw-byte truth is checked independently of a matching display string', () => {
+  const truth = qr.expected[0], bytes = Array.from(Buffer.from(truth.text, 'utf8'));
+  const correct = { ...qr, name: 'bytes-correct', expected: [{ ...truth, bytes }] };
+  const incorrect = { ...qr, name: 'bytes-wrong-but-text-correct', expected: [{ ...truth, bytes: [bytes[0] ^ 1, ...bytes.slice(1)] }] };
+  const result = run([correct, incorrect]);
+  assert.equal(result.status, 1, result.stderr);
+  assert.equal(result.report.summary.exactPositiveReads, 1);
+  assert.equal(result.report.summary.unexpectedResults, 1);
+  assert.equal(result.report.cases[0].exact, true);
+  assert.equal(result.report.cases[1].exact, false);
+  assert.deepEqual(result.report.cases[1].unexpected[0].bytes, bytes);
+  assert.equal(result.report.cases[1].unexpected[0].text, truth.text);
+  assert.match(result.report.payloadComparison, /No encoding normalization/);
+});
+
+test('byte-only truth supports presentation-independent payload checks and rejects malformed bytes', () => {
+  const truth = qr.expected[0], bytes = Array.from(Buffer.from(truth.text, 'utf8'));
+  const result = run([{ ...qr, expected: [{ formats: truth.formats, bytes }] }], ['--runtime-root', project]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.report.summary.exactPositiveReads, 1);
+  assert.deepEqual(result.report.cases[0].found[0].bytes, bytes);
+  assert.ok(result.report.runtimeDependencySha256['vendor/zxing_reader.wasm']);
+  for (const invalid of [[256], [-1], [1.5], ['1']]) {
+    const rejected = run([{ ...qr, expected: [{ formats: truth.formats, bytes: invalid }] }]);
+    assert.notEqual(rejected.status, 0);
+    assert.equal(rejected.report, null);
+    assert.match(rejected.stderr, /unsigned bytes/);
+  }
+});
+
 test('enhancement alone keeps the unrestricted format behavior and hashes only its dependency', () => {
   const result = run([qr, blank], ['--enhance-live', '--mode', 'live']);
   assert.equal(result.status, 0, result.stderr);

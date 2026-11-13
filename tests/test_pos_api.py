@@ -341,6 +341,16 @@ def test_real_separate_ean_and_upce_remain_ambiguous_when_both_requested(client)
         ('ean13', '4006381333931'), ('upce', '0042100005264')}
 
 
+def test_known_wrong_code128_confirms_only_the_independently_corroborated_bytes(client):
+    content, expected = fixture_png('damage-stress-recovery.json', 'code128/recovery-code128-label-3/small-in-frame-1')
+    with Image.open(BytesIO(content)) as source, source.convert('RGB') as first, changed_pixel(first) as second:
+        payload = result(upload(client, [encode(first), encode(second)], {
+            'allowed_formats': ['code128'], 'confirmation_frames': 2}))
+    assert payload['status'] == 'confirmed'
+    assert len(payload['candidates']) == 1
+    assert_candidate(payload['barcode'], expected[0]['text'], 'code128', [0, 1])
+
+
 def test_known_invalid_checksum_negative_has_no_pos_candidate(client):
     content, expected = fixture_png("damage-regressions.json", "regression/invalid-ean13-oblique-upce")
     assert expected == []

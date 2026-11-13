@@ -63,6 +63,8 @@ Collect counters periodically with your monitoring system. Useful alerts include
 
 ## Container and HTTPS deployment
 
+The API requires both the pinned Python dependencies and the native ZBar library. The Dockerfile installs `libzbar0` and includes `independent_zbar.py`. For a non-container Debian/Ubuntu deployment, install `libzbar0` before running `pip install -r requirements.txt`; on macOS use `brew install zbar`. A hosted build that only runs pip needs a supported way to install the system library, or should use the Dockerfile. Windows pyzbar wheels include a native ZBar library. Its version can differ from Linux packages and the browser's pinned WASM version; see [the evaluation limits](INDEPENDENT-DECODER.md). Missing libraries cause a clear startup failure rather than a silently weaker reader.
+
 1. Copy `deploy/runtime.env.example` to `deploy/runtime.env`, replace every placeholder and restrict access to that file. It is ignored by Git. Select account IDs and limits for your own customers.
 2. From the repository root, run `docker compose -f deploy/compose.yaml up --build -d` on a Docker host. The API listens on the host's loopback port 8000. The service runs as a non-root user with a read-only root filesystem and bounded temporary storage, memory, CPU, process count and connection admission. It runs one Uvicorn worker.
 3. Install nginx (or your platform's HTTPS ingress), obtain a certificate for your own domain, and adapt `deploy/nginx.conf.example`. Replace the domain and certificate paths, validate the configuration with `nginx -t`, and reload nginx. The example is an HTTPS template, not a pre-provisioned domain or certificate.

@@ -80,6 +80,14 @@ test('fail closed on fabricated incomplete completion, malformed schema and dupl
   assert.throws(() => report(Array(2001).fill(trial())));
 });
 function opposite(original = trial()) { return { ...original, runId: 'run-b', engine: { id: 'engine-b', version: 'simulation', configuration: 'scanbot-single-shot' } }; }
+test('independent decoder reports retain their configuration and cannot mix with older trials', () => {
+  const old = trial(), updated = trial({ runId: 'new-run', repeat: 2,
+    engine: { ...trial().engine, configuration: 'worker-image-independent-v1' } });
+  assert.equal(parseReport(report([updated])).trials[0].engine.configuration, 'worker-image-independent-v1');
+  assert.equal(parseReport(report([old])).trials[0].engine.configuration, 'worker-image-recovery');
+  assert.throws(() => compare(report([old, updated]), report([opposite(old), { ...opposite(updated), runId: 'run-c' }])), /configuration/);
+  assert.throws(() => report([trial({ engine: { ...old.engine, configuration: 'unknown-reader' } })]), /metadata/);
+});
 test('paired comparison ignores JSON property order and allowlist order', () => {
   const a = trial(), b = opposite();
   b.protocol = Object.fromEntries(Object.entries(b.protocol).reverse()); b.protocol.formats.reverse();
@@ -164,8 +172,13 @@ test('our actual bundled WASM goes through the benchmark adapter, two-frame poli
         ArrayBuffer, Uint8Array, Uint8ClampedArray, Int8Array, Uint16Array, Int16Array, Uint32Array, Int32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Array, Blob,
         ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
         location: { href: 'https://local.test/scanner-worker.js' },
-        importScripts(filename) { assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js'].includes(filename)); vm.runInContext(fs.readFileSync(new URL('web/' + filename.slice(2), root), 'utf8'), context); },
-        async fetch(url) { assert.equal(String(url), 'https://local.test/vendor/zxing_reader.wasm'); return new Response(wasm, { headers: { 'Content-Type': 'application/wasm' } }); },
+        importScripts(filename) { assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js',
+          './independent-reader.js', './vendor/zbar/index.js', './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(filename)); vm.runInContext(fs.readFileSync(new URL('web/' + filename.slice(2), root), 'utf8'), context); },
+        async fetch(url) {
+          const paths = new Map(['vendor/zxing_reader.wasm', 'vendor/zbar/zbar.wasm'].map(path => ['https://local.test/' + path, path]));
+          assert.ok(paths.has(String(url)), 'all decoder dependencies are local');
+          return new Response(fs.readFileSync(new URL('web/' + paths.get(String(url)), root)), { headers: { 'Content-Type': 'application/wasm' } });
+        },
         postMessage(data) { if (!worker.closed) queueMicrotask(() => worker.onmessage?.({ data })); },
       });
       context.self = context;

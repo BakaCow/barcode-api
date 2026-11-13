@@ -14,6 +14,8 @@ function harness(read, clock = { now: () => 0 }) {
     location: { href: 'https://local.test/scan/scanner-worker.js' },
     ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
     importScripts() {},
+    IndependentReader: { initialize: async () => {}, supportedFormats: ['Code128', 'EAN13', 'QRCode'],
+      read: async () => ({ zbar: [], project: [], passes: 0, complete: true }) },
     ZXingWASM: {
       prepareZXingModule: () => Promise.resolve(),
       readBarcodes: async (image, options) => { calls.push({ image, options }); return read(image, options, calls.length); },
@@ -23,7 +25,7 @@ function harness(read, clock = { now: () => 0 }) {
   const context = vm.createContext(globals); context.self = context;
   vm.runInContext(source, context);
   return {
-    calls,
+    calls, context,
     async send(message) { await context.onmessage({ data: { id: 1, type: 'decode', ...message } }); return JSON.parse(JSON.stringify(responses.at(-1))); },
   };
 }
@@ -46,6 +48,102 @@ test('clean images return immediately without enhancement work', async () => {
   const result = await worker.send({ image: image() });
   assert.equal(result.results[0].text, 'verified');
   assert.equal(worker.calls.length, 1);
+});
+
+const box = (left, top, right, bottom) => ({ topLeft: { x: left, y: top }, topRight: { x: right, y: top },
+  bottomRight: { x: right, y: bottom }, bottomLeft: { x: left, y: bottom } });
+const code = (text, position, extra = {}) => ({ ...valid, text, bytes: Array.from(text, value => value.charCodeAt(0)), position, ...extra });
+
+test('Code128 correction needs positive byte agreement and a uniquely comparable footprint', async () => {
+  const original = code('WRONG', box(10, 10, 110, 50)), independent = code('RIGHT', box(0, 0, 120, 60), { gs1: false });
+  const worker = harness(() => [original]);
+  worker.context.IndependentReader.read = async () => ({ zbar: [independent], project: [independent], passes: 2, complete: true });
+  const result = await worker.send({ image: image() });
+  assert.deepEqual(result.results.map(value => value.text), ['RIGHT']);
+  assert.equal(result.diagnostics.corrected, 1);
+  assert.equal(result.results[0].gs1, undefined, 'internal project metadata stays internal');
+});
+
+test('an outer Code128 footprint cannot erase independently reproduced nested labels', async () => {
+  const outer = code('OUTER', box(0, 0, 120, 60)), inner = code('INNER', box(25, 20, 85, 40));
+  const worker = harness(() => [outer, inner]);
+  worker.context.IndependentReader.read = async () => ({ zbar: [outer, inner], project: [{ ...outer, gs1: false }], passes: 2, complete: true });
+  const result = await worker.send({ image: image() });
+  assert.deepEqual(result.results.map(value => value.text).sort(), ['INNER', 'OUTER']);
+  assert.equal(result.diagnostics.corrected, undefined);
+});
+
+test('corroboration preserves native positions for separate copies of the same payload', async () => {
+  const first = code('SAME', box(0, 0, 120, 60)), second = code('SAME', box(160, 0, 280, 60));
+  const worker = harness(() => [first, second]);
+  worker.context.IndependentReader.read = async () => ({ zbar: [first, second], project: [{ ...first, gs1: false }], passes: 2, complete: true });
+  const reply = await worker.send({ image: image(300, 70) });
+  assert.equal(reply.results.length, 2);
+  assert.deepEqual(reply.results.map(item => item.position), [first.position, second.position]);
+});
+
+test('project Code128 disagreement and genuine separate labels remain ambiguous', async () => {
+  const original = code('FIRST', box(10, 10, 110, 50));
+  for (const position of [box(0, 0, 120, 60), box(160, 0, 280, 60)]) {
+    const other = code('SECOND', position, { gs1: false }), worker = harness(() => [original]);
+    worker.context.IndependentReader.read = async () => ({ zbar: [], project: [other], passes: 2, complete: true });
+    const result = await worker.send({ image: image(300, 70) });
+    assert.deepEqual(result.results.map(value => value.text).sort(), ['FIRST', 'SECOND']);
+  }
+});
+
+test('incomplete optional checking preserves native extended bytes and presentation', async () => {
+  const original = code('A<NUL><GS>é', box(10, 10, 110, 50), { bytes: [65, 0, 29, 233] });
+  const worker = harness(() => [original]);
+  worker.context.IndependentReader.read = async () => ({ zbar: [], project: [], passes: 1, complete: false });
+  const result = await worker.send({ image: image() });
+  assert.equal(result.results[0].text, original.text);
+  assert.deepEqual(result.results[0].bytes, original.bytes);
+  assert.equal(result.diagnostics.strategy, 'independent-incomplete');
+});
+
+test('independent initialization failure cannot silently disable the advertised guard', async () => {
+  const worker = harness(() => [valid]);
+  worker.context.IndependentReader.initialize = async () => { throw new Error('Independent WASM unavailable'); };
+  const reply = await worker.send({ type: 'init' });
+  assert.equal(reply.type, 'error');
+  assert.match(reply.message, /Independent WASM unavailable/);
+  assert.equal(worker.calls.length, 0);
+});
+
+test('an optional per-image checker error preserves valid original evidence', async () => {
+  const original = code('NATIVE', box(10, 10, 110, 50)), worker = harness(() => [original]);
+  worker.context.IndependentReader.read = async () => { throw new Error('Per-image checker failed'); };
+  const reply = await worker.send({ image: image() });
+  assert.equal(reply.type, 'result');
+  assert.deepEqual(reply.results.map(item => item.text), ['NATIVE']);
+  assert.equal(reply.diagnostics.independentError, true);
+});
+
+test('unverified independent Code128 blocks a unique fallback and preserves the remaining native retry budget', async () => {
+  const worker = harness(() => []);
+  const ean = code('7512429728388', box(2, 2, 118, 58), { format: 'EAN13' });
+  worker.context.IndependentReader.read = async (_image, options) => {
+    assert.ok(options.timeBudgetMs <= 120, 'leave live time for the original recovery path');
+    return { zbar: [ean, code('UNTRUSTED', box(2, 2, 118, 58))], project: [], passes: 1, complete: true };
+  };
+  const reply = await worker.send({ image: verticalBars(), mode: 'live' });
+  assert.deepEqual(reply.results, []);
+  assert.equal(worker.calls.length, 2, 'the original live fallback still runs');
+  worker.context.IndependentReader.read = async () => ({ zbar: [ean], project: [], passes: 1, complete: true });
+  const unopposed = await worker.send({ image: verticalBars(), mode: 'live' });
+  assert.deepEqual(unopposed.results.map(item => item.text), [ean.text], 'the same source-supported EAN is available when no unverified competing label was observed');
+});
+
+test('independent linear fallback still requires coherent source bars and valid bytes/geometry', async () => {
+  const candidate = code('7512429728388', box(2, 2, 118, 58), { format: 'EAN13' });
+  for (const [input, value] of [[image(), candidate], [verticalBars(), { ...candidate, bytes: [-1] }],
+    [verticalBars(), { ...candidate, position: box(-5, 2, 118, 58) }]]) {
+    const worker = harness(() => []);
+    worker.context.IndependentReader.read = async () => ({ zbar: [value], project: [], passes: 1, complete: true });
+    const reply = await worker.send({ image: input, mode: 'live' });
+    assert.deepEqual(reply.results, []);
+  }
 });
 
 test('an invalid/error result cannot short-circuit retries or reach the app', async () => {

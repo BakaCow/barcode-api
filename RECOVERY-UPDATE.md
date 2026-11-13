@@ -1,5 +1,7 @@
 # Camera recovery and retail safeguards — 13 November 2026
 
+This is the previous release's evidence. The [14 November independent-decoder update](INDEPENDENT-DECODER.md) adds ZBar and guarded project Code 128 decoding; its new evaluation is reported separately.
+
 This update improves the standalone scanner, camera SDK, hosted one-script embed and server reader. It adds bounded automatic camera detail recovery, a QR scratch retry, and a conservative reread for a known false UPC-E interpretation. No Scanbot comparison or physical Android/iPhone accuracy test was performed.
 
 ## What changed

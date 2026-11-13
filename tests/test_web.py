@@ -1,6 +1,7 @@
 """The offline scanner is public, self-contained, and separate from the API."""
 
 from pathlib import Path
+import hashlib
 
 import pytest
 from fastapi.testclient import TestClient
@@ -20,6 +21,19 @@ def test_home_redirects_to_camera_app_without_a_key(client):
     response = client.get("/", follow_redirects=False)
     assert response.status_code in {302, 307}
     assert response.headers["location"] == "/scan/"
+
+
+def test_independent_decoder_notices_and_matching_sources_are_distributed(client):
+    manifest = client.get('/scan/vendor/zbar/provenance.json')
+    assert manifest.status_code == 200
+    assert manifest.json()['license'] == 'LGPL-2.1-or-later'
+    for path in ['LICENSE.txt', 'sources/zbar-0.23.90.tar.gz', 'sources/zbar-wasm-c04ab596.tar.gz']:
+        response = client.get('/scan/vendor/zbar/' + path)
+        assert response.status_code == 200
+        assert hashlib.sha256(response.content).hexdigest() == manifest.json()['sha256'][path]
+        if path.endswith('.tar.gz'):
+            assert response.content[:2] == b'\x1f\x8b'
+    assert 'Rebuilding or modifying' in client.get('/scan/vendor/zbar/README.md').text
 
 
 def test_camera_app_is_public_while_api_still_requires_a_key(client):
@@ -53,6 +67,7 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
         ("examples/plain/app.js", "application/javascript"),
         ("examples/pos/cart.mjs", "application/javascript"),
         ("scanner-worker.js", "application/javascript"),
+        ("independent-reader.js", "application/javascript"),
         ("pos-policy.js", "application/javascript"),
         ("frame-analysis.js", "application/javascript"),
         ("capture-selection.js", "application/javascript"),
@@ -62,6 +77,8 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
         ("engine/code128-engine.js", "application/javascript"),
         ("vendor/zxing-reader.js", "application/javascript"),
         ("vendor/zxing_reader.wasm", "application/wasm"),
+        ("vendor/zbar/index.js", "application/javascript"),
+        ("vendor/zbar/zbar.wasm", "application/wasm"),
         ("manifest.webmanifest", "application/manifest+json"),
     ],
 )

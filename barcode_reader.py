@@ -13,6 +13,7 @@ from typing import Callable
 
 from PIL import Image, ImageChops, ImageFilter, ImageOps
 import zxingcpp
+from independent_zbar import observations as zbar_observations
 
 
 MAX_RETRY_PIXELS = 4_000_000
@@ -303,6 +304,103 @@ def _corroborate_retail_overlap(records, image, first_options, requested, starte
             not any(_same_symbol_segment(record, footprint) for footprint in footprints)]
 
 
+def _independent_observations(working, mapping, original_size, requested, started):
+    if monotonic() - started >= RETRY_SECONDS:
+        return []
+    families = {'code128', 'ean13'} if requested is None else set(requested) & {'code128', 'ean13'}
+    if not families:
+        return []
+    try:
+        candidates = zbar_observations(working, families)
+    except Exception:
+        return []  # A failed optional observation cannot invalidate native evidence.
+    if len(candidates) > 32 or monotonic() - started >= RETRY_SECONDS:
+        return []
+    records = []
+    for candidate in candidates:
+        points = tuple((max(0, min(original_size[0], round(x))), max(0, min(original_size[1], round(y))))
+                       for x, y in (mapping(x, y) for x, y in candidate.points))
+        # Code128 text is intentionally not interpreted here. Only native
+        # corroboration can publish its bytes and established presentation.
+        record = DecodedBarcode(candidate.data.decode('ascii') if candidate.family == 'ean13' else '',
+                                POS_FORMATS[candidate.family], candidate.data, points)
+        if _source_bars_agree(record, working, original_size):
+            records.append(record)
+    return records
+
+
+def _same_code128_footprint(first, second):
+    """A mutual association for full Code128s, separate from retail aliases."""
+    def vector(record):
+        return tuple((record.points[1][axis] - record.points[0][axis] +
+                      record.points[2][axis] - record.points[3][axis]) / 2 for axis in (0, 1))
+    a, b = vector(first), vector(second)
+    la, lb = math.hypot(*a), math.hypot(*b)
+    if min(la, lb) < 1 or min(la, lb) / max(la, lb) < 0.75:
+        return False
+    if abs(a[0] * b[0] + a[1] * b[1]) / (la * lb) < math.cos(math.radians(20)):
+        return False
+    return _same_symbol_segment(first, second) and _same_symbol_segment(second, first)
+
+
+def _independent_agreement(records, observed, working, mapping, original_size, started, proof_cache=None):
+    """Use positive agreement, never absence or a Unicode/GS1 payload blacklist.
+
+    ZBar's Code128 FNC4 behavior can lose the high bit. It is not a tie-breaker
+    by itself: independently sampled ZXing must reproduce its exact bytes in
+    the same source footprint. Unproved disagreements preserve original reads.
+    """
+    code128 = [record for record in records if record.format.name == 'Code128']
+    observations = [record for record in observed if record.format.name == 'Code128']
+    if records:
+        observations = [candidate for candidate in observations if any(
+            candidate.bytes != record.bytes and _same_code128_footprint(record, candidate)
+            for record in code128)]
+    if proof_cache is None:
+        proof_cache = {}
+    checked = proof_cache.get('records', [])
+    factor = min(2.0, math.sqrt(MAX_RETRY_PIXELS / (working.width * working.height)))
+    if observations and 'records' not in proof_cache and factor > 1.05 and monotonic() - started < RETRY_SECONDS:
+        width, height = math.floor(working.width * factor), math.floor(working.height * factor)
+        with working.resize((width, height), Image.Resampling.BILINEAR) as enlarged:
+            if monotonic() - started < RETRY_SECONDS:
+                def to_source(x, y):
+                    return mapping((x + 0.5) * working.width / width - 0.5,
+                                   (y + 0.5) * working.height / height - 0.5)
+                try:
+                    checked = _records(zxingcpp.read_barcodes(enlarged, formats=zxingcpp.BarcodeFormat.Code128),
+                                       original_size, to_source, recovery=True, allowed_names=['code128'])
+                    checked = [record for record in checked if _source_bars_agree(record, working, original_size)]
+                except Exception:
+                    checked = []
+                proof_cache['records'] = checked
+    supported = [proof for proof in checked if any(
+        proof.bytes == candidate.bytes and _same_code128_footprint(proof, candidate)
+        for candidate in observations)]
+    if records:
+        result = []
+        for original in records:
+            if any(candidate.format.name == 'Code128' and candidate.bytes == original.bytes and
+                   _same_code128_footprint(original, candidate) for candidate in observed):
+                result.append(original)
+                continue
+            options = [proof for proof in supported if original.format.name == 'Code128' and
+                       _same_code128_footprint(original, proof) and
+                       sum(_same_code128_footprint(record, proof) for record in code128) == 1 and any(
+                           candidate.bytes == proof.bytes and _same_code128_footprint(original, candidate) and
+                           sum(_same_code128_footprint(record, candidate) for record in code128) == 1
+                           for candidate in observations)]
+            identities = {proof.bytes for proof in options}
+            result.append(options[0] if len(identities) == 1 else original)
+        return result
+    # Do not publish a partial unique result while another observed Code128
+    # candidate remains unverified. Its FNC4 semantics may not be trustworthy.
+    if any(not any(proof.bytes == candidate.bytes and _same_code128_footprint(proof, candidate)
+                   for proof in supported) for candidate in observations):
+        return []
+    return [record for record in observed if record.format.name == 'EAN13'] + supported
+
+
 def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None = None) -> list[DecodedBarcode]:
     """Read the requested families on every pass, or retain legacy behavior for None."""
     requested = _requested_formats(allowed_formats)
@@ -311,7 +409,13 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
         "formats": zxingcpp.BarcodeFormats([POS_FORMATS[name] for name in requested])}
     records = _records(zxingcpp.read_barcodes(image, **first_options), image.size, allowed_names=requested)
     if records:
-        return _corroborate_retail_overlap(records, image, first_options, requested, started)
+        records = _corroborate_retail_overlap(records, image, first_options, requested, started)
+        if not any(record.format.name == 'Code128' for record in records) or monotonic() - started >= RETRY_SECONDS:
+            return records
+        working, to_original = _working_image(image)
+        with working:
+            observed = _independent_observations(working, to_original, image.size, requested, started)
+            return _independent_agreement(records, observed, working, to_original, image.size, started)
     if monotonic() - started >= RETRY_SECONDS:
         return []
     recovery_formats = RECOVERY_FORMATS
@@ -324,6 +428,11 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
         recovery_formats = zxingcpp.BarcodeFormats(recovery_values)
     working, to_original = _working_image(image)
     with working:
+        observed = _independent_observations(working, to_original, image.size, requested, started)
+        proof_cache = {}
+        independent = _independent_agreement([], observed, working, to_original, image.size, started, proof_cache)
+        if independent:
+            return independent
         with ImageOps.autocontrast(working, cutoff=0.5) as contrast:
             for attempt in range(9):
                 if monotonic() - started >= RETRY_SECONDS:
@@ -388,5 +497,5 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
                                        image.size, mapping, recovery=True, allowed_names=requested)
                     records = [record for record in records if _source_bars_agree(record, working, image.size)]
                 if records:
-                    return records
+                    return _independent_agreement(records, observed, working, to_original, image.size, started, proof_cache)
     return []

@@ -1,0 +1,957 @@
+{
+  "summary": {
+    "corpus": "damage-stress-dev",
+    "exact": 30,
+    "wrong": 0,
+    "negatives": 48,
+    "errors": 0,
+    "complementary": []
+  },
+  "results": [
+    {
+      "name": "qr/dev-qr-label-1/clean-0",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.628
+    },
+    {
+      "name": "qr/dev-qr-label-1/blur-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.078
+    },
+    {
+      "name": "qr/dev-qr-label-1/motion-blur-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.742
+    },
+    {
+      "name": "qr/dev-qr-label-1/shading-lowcontrast-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.773
+    },
+    {
+      "name": "qr/dev-qr-label-1/perspective-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.561
+    },
+    {
+      "name": "qr/dev-qr-label-1/angled-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.689
+    },
+    {
+      "name": "qr/dev-qr-label-1/scratches-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.25
+    },
+    {
+      "name": "qr/dev-qr-label-1/missing-patch-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.335
+    },
+    {
+      "name": "qr/dev-qr-label-1/small-in-frame-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 10.227
+    },
+    {
+      "name": "qr/dev-qr-label-1/clipping-1",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.204
+    },
+    {
+      "name": "qr/dev-qr-label-1/blur-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 5.507
+    },
+    {
+      "name": "qr/dev-qr-label-1/motion-blur-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 2.741
+    },
+    {
+      "name": "qr/dev-qr-label-1/shading-lowcontrast-2",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.822
+    },
+    {
+      "name": "qr/dev-qr-label-1/perspective-2",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.734
+    },
+    {
+      "name": "qr/dev-qr-label-1/angled-2",
+      "text": "https://example.com/stress/dev/8785228019/0",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.927
+    },
+    {
+      "name": "qr/dev-qr-label-1/scratches-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.656
+    },
+    {
+      "name": "qr/dev-qr-label-1/missing-patch-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.57
+    },
+    {
+      "name": "qr/dev-qr-label-1/small-in-frame-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 10.438
+    },
+    {
+      "name": "qr/dev-qr-label-1/clipping-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.731
+    },
+    {
+      "name": "qr/dev-qr-label-2/clean-0",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.469
+    },
+    {
+      "name": "qr/dev-qr-label-2/blur-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.767
+    },
+    {
+      "name": "qr/dev-qr-label-2/motion-blur-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.77
+    },
+    {
+      "name": "qr/dev-qr-label-2/shading-lowcontrast-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.615
+    },
+    {
+      "name": "qr/dev-qr-label-2/perspective-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.048
+    },
+    {
+      "name": "qr/dev-qr-label-2/angled-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.249
+    },
+    {
+      "name": "qr/dev-qr-label-2/scratches-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.95
+    },
+    {
+      "name": "qr/dev-qr-label-2/missing-patch-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.573
+    },
+    {
+      "name": "qr/dev-qr-label-2/small-in-frame-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 19.876
+    },
+    {
+      "name": "qr/dev-qr-label-2/clipping-1",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.293
+    },
+    {
+      "name": "qr/dev-qr-label-2/blur-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 5.209
+    },
+    {
+      "name": "qr/dev-qr-label-2/motion-blur-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.06
+    },
+    {
+      "name": "qr/dev-qr-label-2/shading-lowcontrast-2",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.132
+    },
+    {
+      "name": "qr/dev-qr-label-2/perspective-2",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.137
+    },
+    {
+      "name": "qr/dev-qr-label-2/angled-2",
+      "text": "https://example.com/stress/dev/1883696942/1",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.992
+    },
+    {
+      "name": "qr/dev-qr-label-2/scratches-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.992
+    },
+    {
+      "name": "qr/dev-qr-label-2/missing-patch-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.669
+    },
+    {
+      "name": "qr/dev-qr-label-2/small-in-frame-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 11.201
+    },
+    {
+      "name": "qr/dev-qr-label-2/clipping-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 4.046
+    },
+    {
+      "name": "qr/dev-qr-label-3/clean-0",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.643
+    },
+    {
+      "name": "qr/dev-qr-label-3/blur-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.846
+    },
+    {
+      "name": "qr/dev-qr-label-3/motion-blur-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.45
+    },
+    {
+      "name": "qr/dev-qr-label-3/shading-lowcontrast-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.58
+    },
+    {
+      "name": "qr/dev-qr-label-3/perspective-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.206
+    },
+    {
+      "name": "qr/dev-qr-label-3/angled-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.677
+    },
+    {
+      "name": "qr/dev-qr-label-3/scratches-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.89
+    },
+    {
+      "name": "qr/dev-qr-label-3/missing-patch-1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.118
+    },
+    {
+      "name": "qr/dev-qr-label-3/small-in-frame-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 18.131
+    },
+    {
+      "name": "qr/dev-qr-label-3/clipping-1",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 4.561
+    },
+    {
+      "name": "qr/dev-qr-label-3/blur-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 6.262
+    },
+    {
+      "name": "qr/dev-qr-label-3/motion-blur-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 2.872
+    },
+    {
+      "name": "qr/dev-qr-label-3/shading-lowcontrast-2",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.551
+    },
+    {
+      "name": "qr/dev-qr-label-3/perspective-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 2.964
+    },
+    {
+      "name": "qr/dev-qr-label-3/angled-2",
+      "text": "https://example.com/stress/dev/7798338653/2",
+      "correct": true,
+      "wrong": false,
+      "priorExact": true,
+      "negative": false,
+      "ms": 3.849
+    },
+    {
+      "name": "qr/dev-qr-label-3/scratches-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 4.068
+    },
+    {
+      "name": "qr/dev-qr-label-3/missing-patch-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.133
+    },
+    {
+      "name": "qr/dev-qr-label-3/small-in-frame-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 9.485
+    },
+    {
+      "name": "qr/dev-qr-label-3/clipping-2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": false,
+      "negative": false,
+      "ms": 3.982
+    },
+    {
+      "name": "negative/receipt-text/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.525
+    },
+    {
+      "name": "negative/woven-texture/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.442
+    },
+    {
+      "name": "negative/short-random-bars/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.212
+    },
+    {
+      "name": "negative/finder-lookalikes/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.533
+    },
+    {
+      "name": "negative/noise-texture/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.753
+    },
+    {
+      "name": "negative/circles/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.385
+    },
+    {
+      "name": "negative/invalid-code128-checksum/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 28.899
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/1",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 14.264
+    },
+    {
+      "name": "negative/receipt-text/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.519
+    },
+    {
+      "name": "negative/woven-texture/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.376
+    },
+    {
+      "name": "negative/short-random-bars/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.307
+    },
+    {
+      "name": "negative/finder-lookalikes/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.852
+    },
+    {
+      "name": "negative/noise-texture/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 8.025
+    },
+    {
+      "name": "negative/circles/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.295
+    },
+    {
+      "name": "negative/invalid-code128-checksum/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 18.031
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/2",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 12.673
+    },
+    {
+      "name": "negative/receipt-text/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.524
+    },
+    {
+      "name": "negative/woven-texture/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.402
+    },
+    {
+      "name": "negative/short-random-bars/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.098
+    },
+    {
+      "name": "negative/finder-lookalikes/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 5.835
+    },
+    {
+      "name": "negative/noise-texture/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.737
+    },
+    {
+      "name": "negative/circles/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.173
+    },
+    {
+      "name": "negative/invalid-code128-checksum/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 17.132
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/3",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 14.436
+    },
+    {
+      "name": "negative/receipt-text/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.456
+    },
+    {
+      "name": "negative/woven-texture/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.228
+    },
+    {
+      "name": "negative/short-random-bars/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.605
+    },
+    {
+      "name": "negative/finder-lookalikes/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.631
+    },
+    {
+      "name": "negative/noise-texture/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.117
+    },
+    {
+      "name": "negative/circles/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.49
+    },
+    {
+      "name": "negative/invalid-code128-checksum/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 18.741
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/4",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 14.728
+    },
+    {
+      "name": "negative/receipt-text/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.718
+    },
+    {
+      "name": "negative/woven-texture/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.814
+    },
+    {
+      "name": "negative/short-random-bars/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.964
+    },
+    {
+      "name": "negative/finder-lookalikes/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 5.53
+    },
+    {
+      "name": "negative/noise-texture/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.343
+    },
+    {
+      "name": "negative/circles/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.378
+    },
+    {
+      "name": "negative/invalid-code128-checksum/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 17.659
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/5",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.912
+    },
+    {
+      "name": "negative/receipt-text/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.623
+    },
+    {
+      "name": "negative/woven-texture/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.865
+    },
+    {
+      "name": "negative/short-random-bars/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.202
+    },
+    {
+      "name": "negative/finder-lookalikes/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 5.167
+    },
+    {
+      "name": "negative/noise-texture/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 4.202
+    },
+    {
+      "name": "negative/circles/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.361
+    },
+    {
+      "name": "negative/invalid-code128-checksum/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 16.977
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/6",
+      "text": "",
+      "correct": false,
+      "wrong": false,
+      "priorExact": true,
+      "negative": true,
+      "ms": 3.682
+    }
+  ]
+}

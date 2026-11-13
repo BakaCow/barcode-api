@@ -6,6 +6,13 @@ C++ bindings: Apache-2.0 (ZXING-WASM-CPP-LICENSE.txt).
 Reader engine ZXing-C++: Apache-2.0 (ZXING-CPP-LICENSE.txt).
 Reader-only build; no Zint writer is included.
 
+@undecaf/zbar-wasm 0.11.0: https://github.com/undecaf/zbar-wasm
+ZBar reader 0.23.90: https://github.com/mchehab/zbar
+LGPL-2.1-or-later (zbar/LICENSE.txt). Unmodified JS/WASM runtime.
+Pinned corresponding sources and build/replacement instructions are provided
+in zbar/sources/ and zbar/README.md; file hashes are in zbar/provenance.json.
+The project's adapter and original code remain MIT-licensed.
+
 Public Sans Variable 5.3.0 via Fontsource: https://github.com/uswds/public-sans
 SIL Open Font License 1.1 (PUBLIC-SANS-LICENSE.txt).
 

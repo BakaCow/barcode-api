@@ -6,6 +6,9 @@
  */
 (function (root) {
   'use strict';
+  // Cache intrinsics for bounded scan loops in browser and worker realms.
+  const { abs, ceil, floor, max, min } = Math;
+  const finite = Number.isFinite, integer = Number.isInteger;
   const patterns = [
     '212222','222122','222221','121223','121322','131222','122213','122312','132212','221213',
     '221312','231212','112232','122132','122231','113222','123122','123221','223211','221132',
@@ -26,7 +29,7 @@
       throw new Error('Code128 requires unsigned grayscale bytes.');
     }
     if (
-        !Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 ||
+        !integer(width) || !integer(height) || width < 1 || height < 1 ||
         width > 8192 || width * height > 4_000_000 || gray.length !== width * height) {
       throw new Error('Code128 requires a grayscale byte array of valid dimensions (maximum 4 megapixels, width 8192).');
     }
@@ -35,7 +38,7 @@
   function thresholds(gray) {
     const histogram = new Uint32Array(256);
     let low = 255, high = 0, total = 0;
-    for (const value of gray) { histogram[value]++; low = Math.min(low, value); high = Math.max(high, value); total += value; }
+    for (const value of gray) { histogram[value]++; low = min(low, value); high = max(high, value); total += value; }
     if (high - low < 12) return [];
     let count = 0, sum = 0, bestVariance = -1, threshold = low;
     for (let value = low; value < high; value++) {
@@ -45,7 +48,7 @@
       const variance = count * (gray.length - count) * meanDifference * meanDifference;
       if (variance > bestVariance) { bestVariance = variance; threshold = value; }
     }
-    return [...new Set([threshold, Math.floor((low + high) / 2)])];
+    return [...new Set([threshold, floor((low + high) / 2)])];
   }
 
   function runsFor(gray, threshold, reverse, invert) {
@@ -64,7 +67,7 @@
     const prefix = new Float64Array(gray.length + 1), binary = new Uint8Array(gray.length);
     for (let i = 0; i < gray.length; i++) prefix[i + 1] = prefix[i] + gray[i];
     for (let i = 0; i < gray.length; i++) {
-      const left = Math.max(0, i - radius), right = Math.min(gray.length, i + radius + 1);
+      const left = max(0, i - radius), right = min(gray.length, i + radius + 1);
       binary[i] = gray[i] < (prefix[right] - prefix[left]) / (right - left) - 2 ? 0 : 255;
     }
     return binary;
@@ -72,7 +75,7 @@
 
   function hasSourceQuietZones(gray, result) {
     const mean = (from, to) => {
-      const left = Math.max(0, Math.floor(from)), right = Math.min(gray.length, Math.ceil(to));
+      const left = max(0, floor(from)), right = min(gray.length, ceil(to));
       if (right <= left) return NaN;
       let sum = 0; for (let i = left; i < right; i++) sum += gray[i];
       return sum / (right - left);
@@ -94,7 +97,7 @@
     let squared = 0;
     for (let i = 0; i < count; i++) {
       const difference = runs[offset + i].length / unit - pattern[i];
-      if (Math.abs(difference) > 0.8) return null;
+      if (abs(difference) > 0.8) return null;
       squared += difference * difference;
     }
     const error = squared / count;
@@ -107,7 +110,7 @@
       const fit = patternError(runs, offset, patterns[code], 6);
       if (!fit) continue;
       if (!best || fit.error < best.error) { runnerUp = best?.error ?? Infinity; best = { code, ...fit }; }
-      else runnerUp = Math.min(runnerUp, fit.error);
+      else runnerUp = min(runnerUp, fit.error);
     }
     // Ambiguous geometric matches are rejected rather than repaired by guessing.
     return best && runnerUp - best.error >= 0.018 ? best : null;
@@ -132,7 +135,7 @@
         continue;
       }
       if (set === 2) {
-        if (code < 100) { bytes.push(48 + Math.floor(code / 10), 48 + code % 10); continue; }
+        if (code < 100) { bytes.push(48 + floor(code / 10), 48 + code % 10); continue; }
         if (code === 100 || code === 101) { set = code === 100 ? 1 : 0; continue; }
         return null;
       }
@@ -215,9 +218,9 @@
   function decodeRows(gray, width, height, options = {}) {
     validatePixels(gray, width, height);
     if (height < 2) return null;
-    const maximum = Math.min(height, 31, Math.max(2, Math.floor(options.maxRows ?? 15)));
+    const maximum = min(height, 31, max(2, floor(options.maxRows ?? 15)));
     const rows = new Set();
-    for (let i = 0; i < maximum; i++) rows.add(Math.min(height - 1, Math.floor(height * (i + 0.5) / maximum)));
+    for (let i = 0; i < maximum; i++) rows.add(min(height - 1, floor(height * (i + 0.5) / maximum)));
     const groups = new Map();
     for (const y of rows) {
       const result = decodeScanline(gray.subarray(y * width, (y + 1) * width), options);
@@ -226,16 +229,16 @@
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push({ result, y });
     }
-    const minimum = Math.max(2, Math.min(31, Math.floor(options.minLineCount ?? 2)));
+    const minimum = max(2, min(31, floor(options.minLineCount ?? 2)));
     const eligible = [...groups.values()].filter((group) => group.length >= minimum);
     // A candidate crop containing competing valid values needs a tighter detector crop.
     if (eligible.length !== 1) return null;
     const group = eligible[0], best = group.reduce((a, b) => a.result.meanPatternError <= b.result.meanPatternError ? a : b);
-    const left = Math.min(...group.map((item) => item.result.left)), right = Math.max(...group.map((item) => item.result.right));
-    const top = Math.min(...group.map((item) => item.y)), bottom = Math.max(...group.map((item) => item.y));
+    const left = min(...group.map((item) => item.result.left)), right = max(...group.map((item) => item.result.right));
+    const top = min(...group.map((item) => item.y)), bottom = max(...group.map((item) => item.y));
     const result = { ...best.result, lineCount: group.length,
-      quietLeft: Math.max(...group.map((item) => item.result.quietLeft)),
-      quietRight: Math.max(...group.map((item) => item.result.quietRight)), position: {
+      quietLeft: max(...group.map((item) => item.result.quietLeft)),
+      quietRight: max(...group.map((item) => item.result.quietRight)), position: {
       topLeft: { x: left, y: top }, topRight: { x: right, y: top },
       bottomRight: { x: right, y: bottom }, bottomLeft: { x: left, y: bottom },
     } };

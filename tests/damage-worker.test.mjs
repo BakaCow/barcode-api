@@ -24,12 +24,15 @@ context = vm.createContext({
   ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
   location: { href: 'https://offline.test/scan/scanner-worker.js' },
   importScripts(path) {
-    assert.equal(path, './vendor/zxing-reader.js');
-    vm.runInContext(reader, context);
+    assert.ok(['./vendor/zxing-reader.js', './independent-reader.js', './vendor/zbar/index.js',
+      './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
+    vm.runInContext(path === './vendor/zxing-reader.js' ? reader : readFileSync(new URL('web/' + path.slice(2), project), 'utf8'), context);
   },
   async fetch(url) {
-    assert.equal(String(url), 'https://offline.test/scan/vendor/zxing_reader.wasm');
-    return new Response(wasm, { headers: { 'Content-Type': 'application/wasm' } });
+    const assets = { 'https://offline.test/scan/vendor/zxing_reader.wasm': wasm,
+      'https://offline.test/scan/vendor/zbar/zbar.wasm': readFileSync(new URL('web/vendor/zbar/zbar.wasm', project)) };
+    assert.ok(assets[String(url)], String(url));
+    return new Response(assets[String(url)], { headers: { 'Content-Type': 'application/wasm' } });
   },
   postMessage(message) { messages.set(message.id, message); },
 });

@@ -83,6 +83,24 @@ test('missing cached assets remove offline-ready status', async () => {
   assert.equal((await app.message('OFFLINE_STATUS')).ready, false);
 });
 
+for (const path of ['./independent-reader.js', './vendor/zbar/index.js', './vendor/zbar/zbar.wasm', './engine/code128-engine.js']) {
+  test(`independent decoder assets are required for offline readiness: ${path}`, async () => {
+    const app = harness();
+    app.state.failURL = new URL(path, 'https://example.test/scan/').href;
+    await assert.rejects(app.lifecycle('install'), /Network unavailable/);
+    assert.equal((await app.message('OFFLINE_STATUS')).ready, false);
+    app.state.failURL = null;
+    await app.lifecycle('install');
+    assert.equal((await app.message('OFFLINE_STATUS')).ready, true);
+    app.state.offline = true;
+    const before = app.state.fetched.length;
+    assert.ok((await app.request(path))?.ok);
+    assert.equal(app.state.fetched.length, before);
+    [...app.stores.values()][0].delete(new URL(path, 'https://example.test/scan/').href);
+    assert.equal((await app.message('OFFLINE_STATUS')).ready, false);
+  });
+}
+
 test('explicit repair restores files after partial cache eviction', async () => {
   const app = harness();
   await app.lifecycle('install');

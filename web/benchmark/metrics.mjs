@@ -36,7 +36,7 @@ export function validateTrial(value) {
   const expected = value.expected === null ? null : identity(value.expected), protocol = validateProtocol(value.protocol);
   if (expected && !protocol.formats.includes(expected.format)) fail('Expected format must be enabled.');
   keys(value.engine, ['id', 'version', 'configuration']);
-  if (!id(value.engine.id) || typeof value.engine.version !== 'string' || !value.engine.version.length || value.engine.version.length > 100 || !['worker-image-recovery', 'scanbot-single-shot'].includes(value.engine.configuration)) fail('Invalid engine metadata.');
+  if (!id(value.engine.id) || typeof value.engine.version !== 'string' || !value.engine.version.length || value.engine.version.length > 100 || !['worker-image-recovery', 'worker-image-independent-v1', 'scanbot-single-shot'].includes(value.engine.configuration)) fail('Invalid engine metadata.');
   keys(value.outcome, ['status', 'elapsedMs', 'frames', 'confirmations']);
   const outcome = value.outcome;
   if (!['completed', 'cancelled', 'error'].includes(outcome.status) || !finite(outcome.elapsedMs, 120000) || !Number.isInteger(outcome.frames) || outcome.frames < 0 || outcome.frames > 1000 || !Array.isArray(outcome.confirmations) || outcome.confirmations.length > 128) fail('Invalid trial outcome.');

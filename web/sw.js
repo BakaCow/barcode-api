@@ -1,5 +1,5 @@
 /* Everything needed to scan is cached here; camera frames never pass through it. */
-const VERSION = "1.9.0";
+const VERSION = "1.10.0";
 const FEATURES = ["code128-lab", "live-pos", "integration-examples", "camera-controls", "comparison-benchmark"];
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `barcode-camera:${SCOPE.href}:`;
@@ -19,6 +19,7 @@ const CORE_PATHS = [
   "./examples/pos/labels/oats.svg", "./examples/pos/labels/oats.png",
   "./examples/pos/labels/bag.svg", "./examples/pos/labels/bag.png",
   "./vendor/zxing-reader.js", "./vendor/zxing_reader.wasm",
+  "./independent-reader.js", "./vendor/zbar/index.js", "./vendor/zbar/zbar.wasm", "./vendor/zbar/LICENSE.txt",
   "./vendor/public-sans-latin.woff2", "./manifest.webmanifest",
   "./icon.svg", "./icon-192.png", "./icon-512.png",
   "./vendor/THIRD-PARTY.txt", "./vendor/ZXING-WASM-LICENSE.txt",

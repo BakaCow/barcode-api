@@ -14,7 +14,8 @@ const fixtures = JSON.parse(readFileSync(new URL('fixtures/barcode-pixels.json',
 function decoderHarness(base = 'https://offline.test/scan/') {
   const requests = [];
   const messages = [];
-  const localWasmUrl = new URL('vendor/zxing_reader.wasm', base).href;
+  const localWasm = new Map(['vendor/zxing_reader.wasm', 'vendor/zbar/zbar.wasm'].map(path =>
+    [new URL(path, base).href, readFileSync(new URL('web/' + path, project))]));
   let context;
   const globals = {
     console, URL, WebAssembly, Response, TextDecoder, TextEncoder, performance,
@@ -26,13 +27,14 @@ function decoderHarness(base = 'https://offline.test/scan/') {
     },
     location: { href: new URL('scanner-worker.js', base).href },
     importScripts(path) {
-      assert.equal(path, './vendor/zxing-reader.js', 'the worker must use its vendored reader');
-      vm.runInContext(readerSource, context, { filename: 'zxing-reader.js' });
+      assert.ok(['./vendor/zxing-reader.js', './vendor/zbar/index.js', './independent-reader.js',
+        './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
+      vm.runInContext(readFileSync(new URL('web/' + path.slice(2), project), 'utf8'), context, { filename: path });
     },
     async fetch(url) {
       requests.push(String(url));
-      assert.equal(String(url), localWasmUrl, 'decoding must never contact a CDN or API server');
-      return new Response(wasmBytes, { status: 200, headers: { 'Content-Type': 'application/wasm' } });
+      assert.ok(localWasm.has(String(url)), 'decoding must never contact a CDN or API server');
+      return new Response(localWasm.get(String(url)), { status: 200, headers: { 'Content-Type': 'application/wasm' } });
     },
     postMessage(message) { messages.push(message); },
   };
@@ -66,7 +68,8 @@ const decoder = decoderHarness();
 test('worker starts from local assets and reuses its initialized decoder', async () => {
   assert.equal((await decoder.send({ type: 'init' })).type, 'ready');
   assert.equal((await decoder.send({ type: 'init' })).type, 'ready');
-  assert.equal(decoder.requests.length, 1);
+  assert.equal(decoder.requests.length, 2);
+  assert.equal(new Set(decoder.requests).size, 2, 'each local engine is initialized once');
 });
 
 test('worker also resolves its assets under a GitHub Pages project subpath', async () => {
@@ -74,7 +77,8 @@ test('worker also resolves its assets under a GitHub Pages project subpath', asy
   const response = await nested.send({ type: 'decode', image: imageFor(fixtures.cases[0]) });
   assert.equal(response.type, 'result', response.message);
   assert.equal(response.results[0].text, 'offline-camera-42');
-  assert.deepEqual(nested.requests, ['https://offline.test/barcode-api/vendor/zxing_reader.wasm']);
+  assert.deepEqual([...nested.requests].sort(), ['https://offline.test/barcode-api/vendor/zxing_reader.wasm',
+    'https://offline.test/barcode-api/vendor/zbar/zbar.wasm'].sort());
 });
 
 for (const fixture of fixtures.cases) {
@@ -97,7 +101,7 @@ for (const fixture of fixtures.cases) {
         assert.ok(corner.y >= 0 && corner.y <= fixture.height);
       }
     }
-    assert.equal(decoder.requests.length, 1, 'reading more frames makes no network request');
+    assert.equal(decoder.requests.length, 2, 'reading more frames makes no network request');
   });
 }
 
