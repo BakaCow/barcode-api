@@ -1,5 +1,7 @@
 # Browser integration examples
 
+Version 0.9.0 adds a shared **Camera and targeting** disclosure to the JavaScript and POS examples. It includes available-camera selection, capability-aware flashlight/zoom, Balanced/More detail capture, adaptive clear-frame selection, and a centre/tap target with an explicit full-view reset. Camera controls do not change the two-frame confirmation policy. See [the reusable controls guide](../sdk/CONTROLS.md) for adding the same controls to another app.
+
 Serve the `web/` directory on localhost or an HTTPS host, preserving its directory layout. From the project root:
 
 ```powershell

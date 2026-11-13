@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { inflateSync } from 'node:zlib';
+import { inflateSync, deflateSync } from 'node:zlib';
 import vm from 'node:vm';
 import { createScanner } from '../web/sdk/scanner.js';
 const flush = async () => { for (let i = 0; i < 3; i++) await new Promise(resolve => setImmediate(resolve)); };
@@ -15,14 +15,25 @@ function deferred() { let resolve, reject; const promise = new Promise((a, b) =>
 
 function harness(settings = {}, frameSupport = 'decoded') {
   const messages = [], waiting = [], workers = [], streams = [], events = new Map(), timers = new Map(), bitmaps = [];
-  const results = [], statuses = [], errors = [], constraints = [], frameCallbacks = new Map();
+  const results = [], statuses = [], errors = [], constraints = [], frameCallbacks = new Map(), captures = [], cameraRequests = [], canvases = [];
   const state = { now: 1000, frame: 1, frozen: false, scene: 'sharp', calls: 0, next: 0, permission: null, bitmapRequest: null };
   const listen = prefix => ({ addEventListener(type, fn) { events.set(prefix + type, fn); }, removeEventListener(type, fn) { if (events.get(prefix + type) === fn) events.delete(prefix + type); } });
-  const context = { fillRect() {}, drawImage() {}, getImageData(_x, _y, width, height) {
+  function makeCanvas() {
+  const context = { fillRect() {}, drawImage(...args) { this.draw = args; captures.push(args); }, getImageData(_x, _y, width, height) {
     if (state.fixture) {
       const pixels = inflateSync(Buffer.from(state.fixture.rgba_zlib_base64, 'base64'));
-      assert.equal(width, state.fixture.width); assert.equal(height, state.fixture.height);
-      return { width, height, data: new Uint8ClampedArray(pixels) };
+      const output = new Uint8ClampedArray(width * height * 4);
+      const resolve = (draw, x, y) => {
+        const [source, sx, sy, sw, sh, , , dw, dh] = draw;
+        const px = sx + (x + 0.5) * sw / dw, py = sy + (y + 0.5) * sh / dh;
+        if (source._context) return resolve(source._context.draw, px - 0.5, py - 0.5);
+        return [Math.min(state.fixture.width - 1, Math.floor(px)), Math.min(state.fixture.height - 1, Math.floor(py))];
+      };
+      for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+        const [px, py] = resolve(this.draw, x, y);
+        output.set(pixels.subarray((py * state.fixture.width + px) * 4, (py * state.fixture.width + px) * 4 + 4), (y * width + x) * 4);
+      }
+      return { width, height, data: output };
     }
     const data = new Uint8ClampedArray(width * height * 4).fill(255);
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
@@ -33,8 +44,9 @@ function harness(settings = {}, frameSupport = 'decoded') {
     data[0] = state.frozen ? 1 : state.frame % 256;
     return { width, height, data };
   } };
-  const canvas = { getContext: () => context, width: 0, height: 0 };
-  const doc = { ...listen('document:'), hidden: false, baseURI: 'https://scanner.test/examples/', createElement: () => canvas };
+  const canvas = { getContext: () => context, _context: context, width: 0, height: 0 }; canvases.push(canvas); return canvas;
+  }
+  const doc = { ...listen('document:'), hidden: false, baseURI: 'https://scanner.test/examples/', createElement: makeCanvas };
   const video = { ownerDocument: doc, play: async () => {}, srcObject: null, readyState: 4,
     videoWidth: 64, videoHeight: 48, currentTime: 0 };
   if (frameSupport === 'decoded') video.getVideoPlaybackQuality = () => ({ totalVideoFrames: state.frame });
@@ -44,7 +56,9 @@ function harness(settings = {}, frameSupport = 'decoded') {
   }
   function makeStream() {
     const track = { ...listen(`track${streams.length}:`), stopped: 0, stop() { this.stopped++; },
-      getCapabilities: () => ({ focusMode: ['continuous'] }), applyConstraints: async value => constraints.push(value) };
+      getCapabilities: () => ({ focusMode: ['continuous'], ...state.capabilities }),
+      getSettings: () => ({ deviceId: `camera-${streams.indexOf(stream)}`, width: video.videoWidth, height: video.videoHeight, ...state.cameraSettings }),
+      applyConstraints: async value => { constraints.push(value); if (state.constraintRequest) await state.constraintRequest.promise; } };
     const stream = { track, getTracks: () => [track], getVideoTracks: () => [track] }; streams.push(stream); return stream;
   }
   class Worker {
@@ -59,7 +73,8 @@ function harness(settings = {}, frameSupport = 'decoded') {
   const env = { ...listen('window:'), Worker, location: new URL('https://scanner.test/examples/'), isSecureContext: true,
     performance: { now: () => state.now }, crypto: { randomUUID: () => `scan-${++state.next}` }, btoa: value => Buffer.from(value, 'binary').toString('base64'),
     setTimeout(fn, ms) { const id = ++state.next; timers.set(id, { fn, ms }); return id; }, clearTimeout: id => timers.delete(id),
-    navigator: { mediaDevices: { getUserMedia() { state.calls++; return state.permission?.promise || Promise.resolve(makeStream()); } } },
+    navigator: { mediaDevices: { getUserMedia(request) { state.calls++; cameraRequests.push(request); return state.permission?.promise || Promise.resolve(makeStream()); },
+      enumerateDevices: async () => state.devices || [] } },
     createImageBitmap() {
       if (state.bitmapRequest) return state.bitmapRequest.promise;
       const bitmap = { width: state.fixture?.width || 64, height: state.fixture?.height || 48, closed: 0, close() { this.closed++; } }; bitmaps.push(bitmap); return Promise.resolve(bitmap);
@@ -85,8 +100,8 @@ function harness(settings = {}, frameSupport = 'decoded') {
     request.worker.onmessage({ data: { id: request.message.id, type: 'result', results, ...extra } }); await flush();
     return request;
   }
-  return { scanner, state, env, doc, video, canvas, messages, waiting, workers, streams, events, timers, bitmaps,
-    results, statuses, errors, constraints, frameCallbacks, makeStream, tick, reply };
+  return { scanner, state, env, doc, video, canvas: canvases[0], canvases, messages, waiting, workers, streams, events, timers, bitmaps,
+    results, statuses, errors, constraints, frameCallbacks, captures, cameraRequests, makeStream, tick, reply };
 }
 
 test('constructor validates format allowlist, options and same-origin assets', () => {
@@ -101,7 +116,8 @@ test('concurrent starts acquire one camera and initialize same-origin assets onc
   assert.equal(h.state.calls, 1); assert.equal(h.workers.length, 1);
   assert.equal(h.workers[0].url, 'https://scanner.test/assets/scanner-worker.js');
   assert.equal(h.video.muted, true); assert.equal(h.video.playsInline, true);
-  assert.deepEqual(h.constraints, [{ advanced: [{ focusMode: 'continuous' }] }]);
+  assert.deepEqual(h.constraints[0].advanced, [{ focusMode: 'continuous' }]);
+  assert.deepEqual(h.constraints[0].width, { ideal: 1920 });
   h.scanner.destroy();
 });
 
@@ -160,6 +176,37 @@ test('two distinct frames emit one canonical result and pause until explicit res
   assert.equal(h.results.length, 2); assert.notEqual(h.results[1].scanId, id); h.scanner.destroy();
 });
 
+test('confirmed scans stay paused through controls, target changes and camera/profile restarts until rescan', async () => {
+  const h = harness(); h.state.capabilities = { torch: true, zoom: { min: 1, max: 4, step: 0.5 } };
+  await h.scanner.start(); await h.tick(); await h.reply(); await h.tick(); await h.reply();
+  assert.equal(h.results.length, 1); const id = h.results[0].scanId;
+  const changes = [
+    () => h.scanner.setTorch(true), () => h.scanner.setZoom(2),
+    () => h.scanner.setOptions({ targetRegion: { x: 0.1, y: 0.1, width: 0.8, height: 0.8 } }),
+    () => h.scanner.setOptions({ targetRegion: null, formats: ['code128'], adaptiveFrameSelection: false }),
+    () => h.scanner.switchCamera('next-camera'), () => h.scanner.setCaptureMode('detail'),
+  ];
+  for (const change of changes) {
+    await change(); await h.tick();
+    assert.equal(h.waiting.length, 0, 'a control change must not begin a new decode attempt');
+    assert.equal(h.results.length, 1); assert.equal(h.statuses.at(-1).state, 'confirmed');
+  }
+  h.scanner.rescan(); await h.tick(); await h.reply(); assert.equal(h.results.length, 1);
+  await h.tick(); await h.reply(); assert.equal(h.results.length, 2);
+  assert.notEqual(h.results[1].scanId, id); h.scanner.destroy();
+});
+
+test('explicit start after stop and explicit image imports rearm a previously confirmed scanner', async () => {
+  const h = harness({ confirmationFrames: 1 });
+  await h.scanner.start(); await h.tick(); await h.reply(); assert.equal(h.results.length, 1);
+  h.scanner.stop(); await h.scanner.start(); await h.tick(); await h.reply();
+  assert.equal(h.results.length, 2);
+  const reading = h.scanner.scanImage(new Blob(['fixture'], { type: 'image/png' }));
+  await flush(); await h.reply(); assert.ok(await reading); assert.equal(h.results.length, 3);
+  await h.scanner.start(); await h.tick(); await h.reply(); assert.equal(h.results.length, 4);
+  assert.equal(new Set(h.results.map(result => result.scanId)).size, 4); h.scanner.destroy();
+});
+
 test('duplicate pixel frames cannot reach confirmation even with increasing counters', async () => {
   const h = harness(); h.state.frozen = true; await h.scanner.start();
   for (let i = 0; i < 4; i++) { await h.tick(); await h.reply(); }
@@ -172,7 +219,7 @@ test('a host status callback cannot stop an attempt then receive its stale scan 
       if (status.state === 'confirmed') h.scanner[action](...(action === 'setOptions' ? [{ formats: ['qr'] }] : []));
     } });
     await h.scanner.start(); await h.tick(); await h.reply();
-    assert.equal(h.results.length, 0, action); h.scanner.destroy();
+    assert.equal(h.results.length, 0, action); assert.equal(h.errors.length, 0, 'status changes must not recurse'); h.scanner.destroy();
   }
 });
 
@@ -286,7 +333,91 @@ test('invalid and oversized uploads are rejected before disturbing an active cam
   assert.equal(h.video.srcObject, stream); h.scanner.destroy();
 });
 
-test('SDK image path reads Code128 and QR with the real local WASM worker and rejects conflicting QR labels', async () => {
+test('camera enumeration never prompts, excludes microphones and keeps generic unnamed labels', async () => {
+  const h = harness(); h.state.devices = [{kind:'audioinput',deviceId:'mic',label:'Mic'},
+    {kind:'videoinput',deviceId:'first',label:''},{kind:'videoinput',deviceId:'second',label:'Rear camera'}];
+  assert.deepEqual(await h.scanner.listCameras(),[{deviceId:'first',label:'Camera 1'},{deviceId:'second',label:'Rear camera'}]);
+  assert.equal(h.state.calls,0); assert.equal(h.scanner.getCameraCapabilities().active,false); h.scanner.destroy();
+});
+
+test('unsupported flashlight and zoom reject without changing a camera', async () => {
+  const h = harness(); await h.scanner.start();
+  await assert.rejects(h.scanner.setTorch(true),/not supported/);
+  await assert.rejects(h.scanner.setZoom(2),/not supported/);
+  assert.equal(h.constraints.length,1); h.scanner.destroy();
+});
+
+test('torch and zoom changes serialize, suspend capture and clear confirmation before/after', async () => {
+  const h = harness(); h.state.capabilities = {torch:true,zoom:{min:1,max:4,step:0.5}};
+  await h.scanner.start(); await h.tick(); await h.reply();
+  h.state.constraintRequest = deferred();
+  const torch = h.scanner.setTorch(true), zoom = h.scanner.setZoom(1.31);
+  await flush(); await h.tick(); assert.equal(h.waiting.length,0);
+  assert.deepEqual(h.constraints.at(-1).advanced.at(-1),{torch:true});
+  h.state.constraintRequest.resolve(); await torch; const caps = await zoom;
+  assert.deepEqual(h.constraints.at(-1).advanced.at(-1),{zoom:1.5});
+  assert.ok(h.constraints.at(-1).advanced.some(value=>value.torch===true));
+  assert.deepEqual(h.constraints.at(-1).width,{ideal:1920});
+  assert.equal(caps.torch.enabled,true); assert.equal(caps.zoom.value,1.5);
+  await h.tick(); await h.reply(); assert.equal(h.results.length,0);
+  await h.tick(); await h.reply(); assert.equal(h.results.length,1); h.scanner.destroy();
+});
+
+test('torch-after-zoom preserves zoom, resolution and autofocus constraints',async()=>{
+  const h=harness({captureMode:'detail'});h.state.capabilities={torch:true,zoom:{min:1,max:4,step:0.5}};
+  await h.scanner.start();await h.scanner.setZoom(2);await h.scanner.setTorch(true);
+  const applied=h.constraints.at(-1);
+  assert.equal(applied.width.ideal,3840);assert.equal(applied.height.ideal,2160);
+  assert.ok(applied.advanced.some(value=>value.zoom===2));assert.ok(applied.advanced.some(value=>value.focusMode==='continuous'));
+  assert.ok(applied.advanced.some(value=>value.torch===true));h.scanner.destroy();
+});
+
+test('stopping cancels a pending camera setting and prevents late state changes', async () => {
+  const h = harness(); h.state.capabilities = {torch:true}; await h.scanner.start();
+  h.state.constraintRequest = deferred(); const changing = h.scanner.setTorch(true);
+  const rejected = assert.rejects(changing,{name:'AbortError'}); await flush(); h.scanner.stop(); await rejected;
+  h.state.constraintRequest.resolve(); await flush();
+  assert.equal(h.scanner.getCameraCapabilities().torch.enabled,false);
+  assert.equal(h.video.srcObject,null); h.scanner.destroy();
+});
+
+test('camera switching closes the previous stream and explicit detail profile requests higher ideals', async () => {
+  const h = harness(); await h.scanner.start(); const old = h.streams[0];
+  await h.scanner.switchCamera('chosen-camera');
+  assert.ok(old.track.stopped); assert.deepEqual(h.cameraRequests.at(-1).video.deviceId,{exact:'chosen-camera'});
+  assert.throws(()=>h.scanner.setOptions({captureMode:'detail'}),/setCaptureMode/);
+  await h.scanner.setCaptureMode('detail');
+  assert.equal(h.cameraRequests.at(-1).video.width.ideal,3840);
+  assert.equal(h.cameraRequests.at(-1).video.height.ideal,2160);
+  assert.equal(h.cameraRequests.at(-1).video.deviceId.exact,'chosen-camera');
+  assert.equal(h.scanner.getCameraCapabilities().captureMode,'detail'); h.scanner.destroy();
+});
+
+test('capture profile changes while idle never silently open a camera and effective options are copied', async () => {
+  const h = harness({targetRegion:{x:0.2,y:0.2,width:0.5,height:0.5}});
+  await h.scanner.setCaptureMode('detail'); assert.equal(h.state.calls,0);
+  const options = h.scanner.getOptions(); options.formats.length = 0; options.targetRegion.x=0;
+  assert.ok(h.scanner.getOptions().formats.length); assert.equal(h.scanner.getOptions().targetRegion.x,0.2);
+  assert.equal(h.scanner.getOptions().captureMode,'detail'); h.scanner.destroy();
+});
+
+test('target regions crop original source coordinates and still reject conflicts within the target', async () => {
+  const h = harness({confirmationFrames:1,targetRegion:{x:0.25,y:0.25,width:0.5,height:0.5}});
+  h.video.videoWidth=800; h.video.videoHeight=600; await h.scanner.start(); await h.tick();
+  const draw = h.captures.at(-1); assert.deepEqual(draw.slice(1,5),[200,150,400,300]);
+  await h.reply([item,other]); assert.equal(h.results.length,0); assert.equal(h.statuses.at(-1).state,'ambiguous');
+  h.scanner.rescan(); await h.tick(); await h.reply([item]);
+  assert.deepEqual(h.results[0].position.topLeft,{x:204,y:155}); h.scanner.destroy();
+});
+
+test('candidate callbacks cannot change the target then decode a stale capture', async () => {
+  let change = true;
+  const h = harness({confirmationFrames:1,onCandidates(){if(change){change=false;h.scanner.setOptions({targetRegion:{x:0.1,y:0.1,width:0.7,height:0.7}});}}});
+  await h.scanner.start(); await h.tick(); assert.equal(h.waiting.length,0);
+  await h.tick(); await h.reply(); assert.equal(h.results.length,1); h.scanner.destroy();
+});
+
+test('SDK image path reads Code128 and QR with the real local WASM worker and rejects conflicting QR labels', async (t) => {
   const root = new URL('../web/', import.meta.url);
   const fixtures = JSON.parse(readFileSync(new URL('fixtures/barcode-pixels.json', import.meta.url))).cases;
   class NativeWorker {
@@ -324,4 +455,75 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     }
     h.scanner.destroy();
   }
+  await t.test('explicit target isolates one actual label from a two-label image',async()=>{
+    const fixture = fixtures.find(f=>f.name==='Multiple QR codes');
+    const h = harness({confirmationFrames:1,targetRegion:{x:0,y:0,width:0.5,height:1}}); h.state.fixture=fixture; h.env.Worker=NativeWorker;
+    const result = await h.scanner.scanImage(new Blob(['fixture'],{type:'image/png'}));
+    assert.ok(result); assert.ok(fixture.expected.some(item=>item.text===result.text));
+    assert.ok(result.position.topRight.x<=fixture.width/2); h.scanner.destroy();
+  });
+  await t.test('detail recovery decodes preserved source pixels after a forced broad-pass miss',async()=>{
+    const label = fixtures.find(f=>f.name==='Code 128'), pixels=inflateSync(Buffer.from(label.rgba_zlib_base64,'base64'));
+    const width=3840,height=2160,large=Buffer.alloc(width*height*4,255),left=1200,top=800;
+    for(let y=0;y<label.height;y++) pixels.copy(large,((top+y)*width+left)*4,y*label.width*4,(y+1)*label.width*4);
+    const h=harness({confirmationFrames:1,captureMode:'detail'});
+    h.state.fixture={width,height,rgba_zlib_base64:deflateSync(large).toString('base64')};
+    h.video.videoWidth=width;h.video.videoHeight=height;
+    const decoded=[];
+    h.env.Worker=class extends NativeWorker {
+      postMessage(data){
+        if(data.type==='decode'){
+          decoded.push({width:data.image.width,height:data.image.height});
+          if(decoded.length===1){queueMicrotask(()=>this.onmessage({data:{id:data.id,type:'result',results:[]}}));return;}
+        }
+        super.postMessage(data);
+      }
+    };
+    await h.scanner.start(); await h.tick();
+    for(let attempt=0;attempt<100&&!h.results.length;attempt++) await flush();
+    assert.equal(h.results[0]?.text,label.expected[0].text);
+    assert.ok(decoded.length>=2); assert.equal(decoded[0].width,1920);
+    assert.equal(h.captures.filter(draw=>draw[0]===h.video).length,1,'video snapshot is taken once for all recovery passes');
+    assert.ok(h.results[0].position.topLeft.x>=left-10); assert.ok(h.results[0].position.topLeft.y>=top-10);
+    h.scanner.destroy();
+  });
+  await t.test('a real clear padded barcode decodes immediately but still needs distinct agreeing frames',async()=>{
+    const label=fixtures.find(f=>f.name==='Code 128'), pixels=inflateSync(Buffer.from(label.rgba_zlib_base64,'base64'));
+    const width=label.width+400,height=label.height+300,large=Buffer.alloc(width*height*4,255);
+    for(let y=0;y<label.height;y++) pixels.copy(large,((y+150)*width+200)*4,y*label.width*4,(y+1)*label.width*4);
+    const fixture=()=>({width,height,rgba_zlib_base64:deflateSync(large).toString('base64')});
+    const h=harness({preferClearFrames:true});h.state.fixture=fixture();h.video.videoWidth=width;h.video.videoHeight=height;
+    let decodes=0;
+    h.env.Worker=class extends NativeWorker {postMessage(data){if(data.type==='decode')decodes++;super.postMessage(data);}};
+    await h.scanner.start();await h.tick({advance:80});assert.equal(decodes,1,'clear first sample bypasses burst wait');
+    await flush();assert.equal(h.results.length,0,'one frame is insufficient');
+    await h.tick({advance:80});await flush();assert.equal(decodes,2);assert.equal(h.results.length,0,'identical pixels add no vote');
+    large[0]=254;h.state.fixture=fixture();await h.tick({advance:80});
+    for(let attempt=0;attempt<50&&!h.results.length;attempt++)await flush();
+    assert.equal(h.results[0]?.text,label.expected[0].text);h.scanner.destroy();
+    const buffered=harness({preferClearFrames:true,adaptiveFrameSelection:false});
+    buffered.state.fixture=fixture();buffered.video.videoWidth=width;buffered.video.videoHeight=height;
+    await buffered.scanner.start();await buffered.tick({advance:80});assert.equal(buffered.waiting.length,0);buffered.scanner.destroy();
+  });
+  await t.test('same-frame detail crops retain conflicting identities instead of selecting the first',async()=>{
+    const width=3840,height=2160,large=Buffer.alloc(width*height*4,255);
+    for(const [name,left] of [['Code 128',350],['EAN-13',2500]]){
+      const label=fixtures.find(f=>f.name===name),pixels=inflateSync(Buffer.from(label.rgba_zlib_base64,'base64'));
+      for(let y=0;y<label.height;y++)pixels.copy(large,((y+900)*width+left)*4,y*label.width*4,(y+1)*label.width*4);
+    }
+    const h=harness({confirmationFrames:1,captureMode:'detail'});h.state.fixture={width,height,rgba_zlib_base64:deflateSync(large).toString('base64')};
+    h.video.videoWidth=width;h.video.videoHeight=height;let decodes=0;
+    h.env.Worker=class extends NativeWorker {postMessage(data){if(data.type==='decode'&&++decodes===1){queueMicrotask(()=>this.onmessage({data:{id:data.id,type:'result',results:[]}}));return;}super.postMessage(data);}};
+    await h.scanner.start();await h.tick();
+    for(let attempt=0;attempt<100&&h.statuses.at(-1)?.state!=='ambiguous';attempt++)await flush();
+    assert.equal(decodes,3);assert.equal(h.results.length,0);assert.equal(h.statuses.at(-1).state,'ambiguous');h.scanner.destroy();
+    const slow=harness({confirmationFrames:1,captureMode:'detail'});
+    slow.state.fixture=h.state.fixture;slow.video.videoWidth=width;slow.video.videoHeight=height;
+    await slow.scanner.start();await slow.tick();await slow.reply([]);
+    assert.equal(slow.waiting.length,1,'first source crop is attempted');
+    slow.state.now+=351;await slow.reply([item]);
+    assert.equal(slow.waiting.length,0,'remaining crop does not start after the recovery budget');
+    assert.equal(slow.results.length,0,'partial recovery cannot accept one label while another crop remains unchecked');
+    assert.equal(slow.statuses.at(-1).reason,'no_code');slow.scanner.destroy();
+  });
 });

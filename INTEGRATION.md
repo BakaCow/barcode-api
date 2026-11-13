@@ -1,6 +1,8 @@
 # Add scanning to your project
 
-Version 0.8.0 provides a browser camera SDK, JavaScript/TypeScript and Python backend clients, three working integration examples, a versioned OpenAPI contract, and customer access controls. These are source packages in this repository, not a published npm/PyPI service or a hosted subscription.
+Version 0.9.0 provides a browser camera SDK with optional camera/target controls, JavaScript/TypeScript and Python backend clients, three working integration examples, a versioned OpenAPI contract, and customer access controls. These are source packages in this repository, not a published npm/PyPI service or a hosted subscription.
+
+For camera-only POS integration, use `createScanner` and its confirmed `onScan` callback. The optional `attachScannerControls` UI adds supported flashlight/zoom controls, camera switching, balanced/detail capture, an aiming area and tap targeting. All three examples include it. Keep the complete `web/` asset tree together; copying only `scanner.js` is insufficient. See [SDK.md](SDK.md) for imports and options, and [COMPARISON.md](COMPARISON.md) for repeatable device trials.
 
 ## Pick the integration
 

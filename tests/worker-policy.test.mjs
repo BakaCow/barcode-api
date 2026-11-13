@@ -4,10 +4,13 @@ import vm from 'node:vm';
 import test from 'node:test';
 
 const source = readFileSync(new URL('../web/scanner-worker.js', import.meta.url), 'utf8');
-function harness(read) {
+// Policy/geometry assertions must not depend on CPU contention in other test
+// processes. Timing cases advance this clock explicitly instead of benchmarking
+// pixel transforms against the production wall-clock deadline.
+function harness(read, clock = { now: () => 0 }) {
   const calls = [], responses = [];
   const globals = {
-    URL, performance, ArrayBuffer, Uint8Array, Uint8ClampedArray, Uint32Array,
+    URL, performance: clock, ArrayBuffer, Uint8Array, Uint8ClampedArray, Uint32Array,
     location: { href: 'https://local.test/scan/scanner-worker.js' },
     ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
     importScripts() {},
@@ -61,6 +64,17 @@ test('empty still images use a finite retry budget', async () => {
   const worker = harness(() => []);
   await worker.send({ image: image(), mode: 'image' });
   assert.ok(worker.calls.length <= 7, 'at most one primary and six recovery attempts');
+});
+
+test('elapsed live and image deadlines prevent starting additional recovery passes', async () => {
+  for (const [mode, budget] of [['live', 350], ['image', 2500]]) {
+    let now = 0;
+    const worker = harness(() => { now += budget + 1; return []; }, { now: () => now });
+    const result = await worker.send({ image: verticalBars(), mode, retryIndex: 2 });
+    assert.deepEqual(result.results, []);
+    assert.equal(worker.calls.length, 1, `${mode} recovery is skipped after the original pass exhausts its budget`);
+    assert.deepEqual(result.diagnostics, { passes: 1, strategy: 'original' });
+  }
 });
 
 test('rotated results map precisely back to the supplied image coordinates', async () => {

@@ -1,0 +1,20 @@
+{
+  "schema": "barcode-case-plan/v1",
+  "purpose": "Example plan only. These are not measured results. Verify every label's truth independently before entering a trial.",
+  "sessionId": "pos-study-1",
+  "devices": ["android-chrome-1", "iphone-safari-1"],
+  "protocol": {
+    "formats": ["code128", "qr"],
+    "confirmationFrames": 2,
+    "trialMs": 10000,
+    "repetitionsPerEnginePerDevice": 5,
+    "engineOrder": "Alternate the first engine for successive repetitions.",
+    "conditions": "Record label size, distance in cm, angle, lighting and phone/browser version in a separate non-personal study log. Fix these within each case."
+  },
+  "cases": [
+    {"caseId":"code128-clean", "source":"synthetic", "expected":{"format":"code128","text":"DEMO-TEA-01"}, "condition":"Print a generated Code 128 label; measured source remains synthetic."},
+    {"caseId":"code128-distance", "source":"synthetic", "expected":{"format":"code128","text":"DEMO-TEA-01"}, "condition":"Same generated label at a recorded greater distance; do not change distance during a trial."},
+    {"caseId":"qr-oblique", "source":"synthetic", "expected":{"format":"qr","text":"offline-camera-42"}, "condition":"Generated QR code held at a recorded angle."},
+    {"caseId":"negative-texture", "source":"real", "expected":null, "condition":"Photograph ordinary packaging with no supported barcode in view."}
+  ]
+}

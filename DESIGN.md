@@ -126,6 +126,10 @@ The JavaScript, POS and React examples preserve the existing Public Sans typogra
 
 The POS example separates exact catalogue matching from scan confirmation, explains unknown-item rejection inline, and labels its catalogue, prices and session cart as demonstration data. Manual entry sits in a disclosure; removing and clearing items remain explicit controls. The static examples reuse the app's versioned offline cache and explain when a main-app update is needed without silently activating it. React demonstrates ownership of lifecycle cleanup and states that its host must supply offline caching.
 
+### Camera and targeting
+
+The integration examples now share an optional Camera and targeting disclosure. Camera choice, capability-aware flashlight/zoom and capture detail use native form controls; disabled hardware functions keep a visible explanation. The video is contained rather than cropped so a tap and its overlay refer to the same source pixels. Dashed blue proposals indicate possible regions; a solid green border with a light outer edge indicates the user's selected scan area. Neither is a successful-read signal. A centre-aim button and full-view reset provide keyboard alternatives to tapping, and the active-area message explains that conflicts inside the selection still reject the scan. The component reads effective SDK options so externally configured targets remain visible.
+
 ## Experimental lab flow
 
 The Code 128 lab reuses the same self-hosted typography, paper and green palette, camera surface, buttons, field styling and focus treatment. An Experimental label identifies its scope and a persistent Back to scanner link returns to the regular app. The wider desktop layout pairs capture controls with label details, then places comparison results below; phone layouts stack these sections in the same reading order.

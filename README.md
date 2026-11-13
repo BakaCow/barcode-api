@@ -1,6 +1,8 @@
 # Barcode API
 
-Version **0.8.0** adds a reusable [camera SDK](SDK.md), [JavaScript/POS/React examples](INTEGRATION.md), [JavaScript/TypeScript](clients/javascript/README.md) and [Python](clients/python/README.md) API clients, [customer keys, request limits and monitoring](HOSTING.md), and an [MIT project license](LICENSE). Start with [INTEGRATION.md](INTEGRATION.md) to add scanning to your project. Run the server and open `/scan/examples/`, or serve `web/` statically and open `/examples/`.
+Version **0.9.0** adds optional camera controls, detailed source-pixel capture, an aiming area and tap targeting, and adaptive frame selection to the reusable [camera SDK](SDK.md) and [JavaScript/POS/React examples](INTEGRATION.md). The [comparison benchmark](COMPARISON.md) records controlled trials with the bundled reader or an optional, separately licensed Scanbot SDK. Start the server and open `/scan/examples/` (or `/examples/` when serving `web/` statically).
+
+The project also includes [JavaScript/TypeScript](clients/javascript/README.md) and [Python](clients/python/README.md) API clients, [customer keys, request limits and monitoring](HOSTING.md), and an [MIT project license](LICENSE). Camera-only integration runs locally without a decoding server. No Scanbot accuracy or real-phone performance equivalence has been established; see [TESTING.md](TESTING.md).
 
 A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
 

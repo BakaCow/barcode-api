@@ -1,9 +1,11 @@
 import { createScanner } from '../../sdk/scanner.js';
+import { attachScannerControls } from '../../sdk/controls.js';
 import { createCart, DEMO_CATALOGUE } from './cart.mjs';
 
 const $ = (id) => document.getElementById(id), cart = createCart();
 const money = (cents) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100);
 let busy = false;
+let cameraControls;
 function errorMessage(error) { $('error').textContent = error.message || String(error); $('error').hidden = false; }
 function controls() {
   const running = Boolean($('video').srcObject);
@@ -33,9 +35,11 @@ function accept(event) {
 }
 const scanner = createScanner({ video: $('video'), formats: ['code128', 'qr'], confirmationFrames: 2,
   onScan: accept,
-  onStatus(status) { $('status').textContent = status.message; $('status').dataset.state = status.state; controls(); },
+  onStatus(status) { $('status').textContent = status.message; $('status').dataset.state = status.state; cameraControls?.updateStatus(status); controls(); },
+  onCandidates: (candidates) => cameraControls?.updateCandidates(candidates),
   onError: errorMessage,
 });
+cameraControls = attachScannerControls({ container: $('camera-controls'), video: $('video'), scanner });
 $('start').addEventListener('click', async () => { $('error').hidden = true; busy = true; controls(); try { await scanner.start(); } catch (error) { errorMessage(error); } finally { busy = false; controls(); } });
 $('stop').addEventListener('click', () => { scanner.stop(); busy = false; controls(); });
 $('next').addEventListener('click', () => { $('error').hidden = true; scanner.rescan(); $('next').disabled = true; });

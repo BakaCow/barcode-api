@@ -38,6 +38,13 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
     [
         ("app.js", "application/javascript"),
         ("sdk/scanner.js", "application/javascript"),
+        ("sdk/capture-tools.js", "application/javascript"),
+        ("sdk/controls.js", "application/javascript"),
+        ("sdk/controls.css", "text/css"),
+        ("benchmark/benchmark.js", "application/javascript"),
+        ("benchmark/adapters.mjs", "application/javascript"),
+        ("benchmark/metrics.mjs", "application/javascript"),
+        ("benchmark/recorder.mjs", "application/javascript"),
         ("examples/plain/app.js", "application/javascript"),
         ("examples/pos/cart.mjs", "application/javascript"),
         ("scanner-worker.js", "application/javascript"),

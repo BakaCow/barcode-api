@@ -1,7 +1,9 @@
 import { createScanner } from '../../sdk/scanner.js';
+import { attachScannerControls } from '../../sdk/controls.js';
 
 const $ = (id) => document.getElementById(id);
 let busy = false;
+let cameraControls;
 function showError(error) { $('error').textContent = error.message || String(error); $('error').hidden = false; }
 function clearError() { $('error').hidden = true; }
 function controls() {
@@ -25,9 +27,11 @@ const scanner = createScanner({
     while ($('events').children.length > 10) $('events').lastElementChild.remove();
     $('next').disabled = false;
   },
-  onStatus(status) { $('status').textContent = status.message; $('status').dataset.state = status.state; controls(); },
+  onStatus(status) { $('status').textContent = status.message; $('status').dataset.state = status.state; cameraControls?.updateStatus(status); controls(); },
+  onCandidates: (candidates) => cameraControls?.updateCandidates(candidates),
   onError: showError,
 });
+cameraControls = attachScannerControls({ container: $('camera-controls'), video: $('video'), scanner });
 $('start').addEventListener('click', async () => {
   clearError(); busy = true; controls();
   try { await scanner.start(); } catch (error) { showError(error); }

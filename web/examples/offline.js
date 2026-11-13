@@ -24,14 +24,14 @@ async function check(repair = false) {
   busy = true; button.disabled = true;
   try {
     let response = await ask(target, 'OFFLINE_STATUS');
-    needsUpdate = !response.features?.includes('integration-examples');
+    needsUpdate = !response.features?.includes('integration-examples') || !response.features?.includes('camera-controls');
     updateNotice();
     if (needsUpdate) { message('An app update is needed for offline examples. Open the main scanner to finish updating.'); return; }
     if (repair && !response.ready) {
       message('Downloading missing offline files…');
       response = await ask(target, 'REPAIR_OFFLINE');
     }
-    const ready = response.ready === true && response.features?.includes('integration-examples') === true;
+    const ready = response.ready === true && response.features?.includes('integration-examples') === true && response.features?.includes('camera-controls') === true;
     message(ready ? (navigator.onLine ? 'Offline examples ready on this browser.' : 'Offline · Examples ready.') : (response.error || 'Offline files are incomplete. Connect and check again.'), ready ? 'ready' : 'error');
   } finally { busy = false; if (!disposed) button.disabled = false; }
 }

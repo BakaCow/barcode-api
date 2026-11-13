@@ -1,5 +1,22 @@
 # Verification
 
+## Embedded camera update (0.9.0)
+
+Verified on 13 November 2026:
+
+- **385 Node tests passed; 287 Python tests passed, 1 skipped** (the existing Windows symlink restriction). Python retains the upstream Starlette HTTPX adapter warning. The Python suite used a workspace temporary directory because the sandbox's default numbered-temp directory could not be created.
+- The SDK has **47 checks**, including supported/unsupported hardware controls, serialized constraints, preserved zoom/torch/resolution/focus, camera switching, explicit capture profiles, normalized targets, candidate callback cancellation, and accepted-scan pausing. Changing controls, targets or options after confirmation cannot emit another event; explicit rescan or a new start/import is required. Real bundled-WASM checks exercise Code 128/QR, adjacent-label conflicts, source coordinates, detailed crops and adaptive immediate capture with independent confirmation evidence.
+- Source and worker crop retries cannot accept a lone partial result when a deadline leaves another planned crop unchecked. Existing conflicts remain visible. Deterministic deadline tests cover live and image budgets; a pre-existing mocked worker test now uses a controlled clock so CPU contention cannot change its geometry assertion.
+- **15 controls tests** cover letterboxed/portrait geometry, keyboard aiming, tap selection, supported hardware, effective-option synchronization and cleanup. **13 comparison tests** cover exact truth, leading zeros, wrong-first/eventual-correct accounting, interrupted trials, strict paired reports/CLI export, optional Scanbot API contracts and actual bundled-WASM confirmation.
+- TypeScript usage/declarations, the OpenAPI export check and the React production build passed. The existing four CI benchmark commands passed: browser **128/171**, unrestricted API **126/171**, experimental Code 128 **44/57** exact development positives; each damage benchmark rejects **48/48** negatives with zero unexpected results/errors. These synthetic development results do not show a recognition-rate improvement.
+- Browser verification used generated labels through a canvas-backed simulated camera, with the real local WASM decoder. It checked full-view conflict rejection, tap targeting and exact confirmation, a requested 3840×2160 detail source, flashlight/zoom state, camera switching to unsupported controls, adaptive selection and the confirmation pause. In the demo POS, controls preserved quantity one; explicit next-scan increased it to two. Desktop and 390px layouts were inspected. The React production example mounted, unmounted and remounted its controls without console errors.
+- A five-second synthetic benchmark trial completed with the expected Code 128 value, no wrong confirmations and an exported JSON report marked `synthetic`. The Scanbot option reported its unconfigured state without recording a trial. This validates the workflow, not real-device latency or vendor performance.
+- Offline cache **1.6.0** includes the new SDK controls/capture helper and comparison assets. With the preview server stopped and its port verified closed, a clean cached JavaScript example reloaded and decoded `DEMO-TEA-01` in explicit one-frame image mode. Readiness rejects the older cache lacking `camera-controls`. Scanbot vendor assets/licenses are not precached. Host React/POS apps still own their own service worker and business-data caching.
+
+Physical Android/iPhone cameras and a licensed Scanbot binary were unavailable. Hardware controls were simulated; a phone-width layout is not a Safari/Android device test. The comparison harness uses a common full-image capture/confirmation pipeline and does not benchmark the complete SDK camera pipelines. See [SDK.md](SDK.md), [reusable controls](web/sdk/CONTROLS.md) and [COMPARISON.md](COMPARISON.md).
+
+Run `node --test tests/*.test.mjs` and `python -m pytest -q`, plus the TypeScript, OpenAPI and React commands below. On restricted Windows environments, pass a new writable `--basetemp` directory to pytest. The comparison guide includes the paired-report command.
+
 ## Business integration update (0.8.0)
 
 Verified on 13 November 2026:

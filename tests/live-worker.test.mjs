@@ -159,6 +159,59 @@ test('the live deadline prevents starting crop or recovery work after a slow nat
   assert.equal(worker.calls.length, 1);
 });
 
+test('a crop deadline cannot accept a lone value while another planned region is unchecked', async () => {
+  for (const [mode, budget] of [['live', 350], ['image', 2500]]) {
+    for (const expiresDuring of ['decode', 'allocation']) {
+      let now = 0, crops = 0;
+      const frameAnalysis = proposedRegions(), crop = frameAnalysis.crop;
+      frameAnalysis.crop = (image, region, maxPixels) => {
+        crops++;
+        if (expiresDuring === 'allocation' && crops === 2) now = budget + 1;
+        return crop(image, region, maxPixels);
+      };
+      const worker = harness({ clock: { now: () => now }, frameAnalysis,
+        read: (_image, _options, count) => {
+          if (count === 1) return [];
+          if (expiresDuring === 'decode') now = budget + 1;
+          return [valid('first-label')];
+        } });
+      const response = await worker.send({ image: blank(), mode, enhanceLive: true });
+      assert.deepEqual(response.results, [], `${mode}: expiration during ${expiresDuring} must not hide an unchecked label`);
+      assert.equal(worker.calls.length, 2, 'no crop decode or fallback starts after expiration');
+      assert.equal(crops, expiresDuring === 'decode' ? 1 : 2);
+      assert.equal(response.diagnostics.passes, 2);
+    }
+  }
+});
+
+test('incomplete crop recovery preserves already observed conflicts instead of returning a miss', async () => {
+  for (const [mode, budget] of [['live', 350], ['image', 2500]]) {
+    let now = 0;
+    const worker = harness({ clock: { now: () => now }, frameAnalysis: proposedRegions(),
+      read: (_image, _options, count) => {
+        if (count === 1) return [];
+        now = budget + 1;
+        return [valid('first-label'), valid('second-label')];
+      } });
+    const response = await worker.send({ image: blank(), mode, enhanceLive: true });
+    assert.deepEqual(response.results.map(item => item.text), ['first-label', 'second-label']);
+    assert.equal(worker.calls.length, 2);
+  }
+});
+
+test('a deadline after the last planned crop does not discard a fully checked unique identity', async () => {
+  let now = 0;
+  const worker = harness({ clock: { now: () => now }, frameAnalysis: proposedRegions(1),
+    read: (_image, _options, count) => {
+      if (count === 1) return [];
+      now = 351;
+      return [valid('only-label')];
+    } });
+  const response = await worker.send({ image: blank(), mode: 'live', enhanceLive: true });
+  assert.deepEqual(response.results.map(item => item.text), ['only-label']);
+  assert.equal(worker.calls.length, 2);
+});
+
 test('malformed enhancement settings and analysis buffers fail without native decoding', async () => {
   const worker = harness({ read: () => assert.fail('malformed input reached decoding') });
   for (const request of [{ image: blank(), enhanceLive: 'true' },

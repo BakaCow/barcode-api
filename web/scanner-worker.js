@@ -231,10 +231,15 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   let passes = 1, strategy = 'original';
   if (analysis) {
     const seen = new Set(), croppedResults = [];
+    // A unique partial result is unsafe when an unchecked planned crop may
+    // contain a different label. Keep conflicts already observed, but do not
+    // let the recovery deadline turn this into first-crop-wins acceptance.
+    const incomplete = () => ({ results: seen.size > 1 ? croppedResults : [], ...details,
+      diagnostics: { passes, strategy } });
     for (const region of analysis.regions.slice(0, mode === 'live' ? 2 : 3)) {
-      if (performance.now() - started > budgetMs) break;
+      if (performance.now() - started > budgetMs) return incomplete();
       const crop = FrameAnalysis.crop(image, region, MAX_PIXELS);
-      if (performance.now() - started > budgetMs) break;
+      if (performance.now() - started > budgetMs) return incomplete();
       const candidate = new ImageData(new Uint8ClampedArray(crop.image.data), crop.image.width, crop.image.height);
       const found = permitted(validResults(await ZXingWASM.readBarcodes(candidate, recoveryOptions),
         crop.mapPoint, image.width, image.height, true, gray));

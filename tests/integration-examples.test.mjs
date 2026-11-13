@@ -85,7 +85,7 @@ async function offlineHarness({ reply, waiting = false } = {}) {
   const elements = Object.fromEntries(['offline-status', 'offline-check', 'offline-update'].map((id) => [id, { textContent: '', dataset: {}, hidden: true, disabled: true, addEventListener(name, callback) { events.set(`${id}:${name}`, callback); } }]));
   const target = { postMessage(data, ports) {
     messages.push(data.type);
-    const value = reply?.(data.type) ?? { ready: true, features: ['integration-examples'] };
+    const value = reply?.(data.type) ?? { ready: true, features: ['integration-examples', 'camera-controls'] };
     queueMicrotask(() => ports[0].peer.onmessage?.({ data: value }));
   } };
   const registration = { active: target, waiting: waiting ? target : null, installing: null, addEventListener() {}, async update() {} };
@@ -123,8 +123,14 @@ test('a waiting update is offered without silently activating it', async () => {
   assert.equal(state.elements['offline-update'].href, 'https://example.test/scan/');
   assert.ok(!state.messages.includes('ACTIVATE_UPDATE'));
 });
+
+test('the previous examples cache cannot claim camera controls are available offline', async () => {
+  const state = await offlineHarness({ reply: () => ({ ready: true, features: ['integration-examples'] }) });
+  assert.match(state.elements['offline-status'].textContent, /update is needed/);
+  assert.notEqual(state.elements['offline-status'].dataset.state, 'ready');
+});
 test('explicit offline check repairs an incomplete current cache', async () => {
-  const state = await offlineHarness({ reply: (type) => ({ ready: type === 'REPAIR_OFFLINE', features: ['integration-examples'] }) });
+  const state = await offlineHarness({ reply: (type) => ({ ready: type === 'REPAIR_OFFLINE', features: ['integration-examples', 'camera-controls'] }) });
   assert.equal(state.elements['offline-status'].dataset.state, 'error');
   state.events.get('offline-check:click')(); await state.flush();
   assert.ok(state.messages.includes('REPAIR_OFFLINE'));

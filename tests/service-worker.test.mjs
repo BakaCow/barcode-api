@@ -72,7 +72,7 @@ test('precache is complete before offline-ready; failed install never claims rea
   await app.lifecycle('install');
   const status = await app.message('OFFLINE_STATUS');
   assert.equal(status.ready, true);
-  assert.deepEqual(Array.from(status.features), ['code128-lab', 'live-pos', 'integration-examples']);
+  assert.deepEqual(Array.from(status.features), ['code128-lab', 'live-pos', 'integration-examples', 'camera-controls', 'comparison-benchmark']);
   assert.equal(app.state.skipped, false);
 });
 
@@ -93,7 +93,7 @@ test('explicit repair restores files after partial cache eviction', async () => 
   assert.equal((await app.message('OFFLINE_STATUS')).ready, false);
   const repaired = await app.message('REPAIR_OFFLINE');
   assert.equal(repaired.ready, true);
-  assert.deepEqual(Array.from(repaired.features), ['code128-lab', 'live-pos', 'integration-examples']);
+  assert.deepEqual(Array.from(repaired.features), ['code128-lab', 'live-pos', 'integration-examples', 'camera-controls', 'comparison-benchmark']);
   assert.equal(repaired.error, undefined);
   assert.equal(items.size, total);
   app.state.offline = true;
@@ -160,6 +160,19 @@ test('unknown in-scope navigations pass through instead of displaying the app sh
   assert.equal(await app.request('./missing-page.html', { mode: 'navigate' }), undefined);
   app.state.offline = true;
   assert.equal(await app.request('./unrelated/', { mode: 'navigate' }), undefined);
+});
+
+test('camera controls and comparison assets work offline without caching vendor licenses or reports', async () => {
+  const app = harness();
+  await app.lifecycle('install');
+  app.state.offline = true;
+  for (const path of ['./sdk/capture-tools.js', './sdk/controls.js', './sdk/controls.css',
+    './benchmark/', './benchmark/benchmark.js', './benchmark/adapters.mjs', './benchmark/metrics.mjs', './benchmark/recorder.mjs']) {
+    assert.ok((await app.request(path))?.ok, path);
+  }
+  for (const path of ['./vendor/scanbot.js', './benchmark/license.txt', './benchmark/results.json']) {
+    assert.equal(await app.request(path), undefined, path);
+  }
 });
 
 test('does not intercept APIs, writes, cross-origin, out-of-scope, or unknown assets', async () => {

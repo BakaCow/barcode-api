@@ -1,5 +1,7 @@
 # React camera example
 
+Version 0.9.0 includes the reusable **Camera and targeting** controls. Flashlight and zoom are enabled only when the active camera/browser exposes them; camera choice, capture detail and adaptive frame selection use the SDK's public methods. Use **Aim at centre**, tap an area in the contained video, or choose **Scan full view**. Suggestions are possible barcode regions, not confirmed results. Conflicts inside the selected target still reject the scan.
+
 This runnable React/Vite app uses the local camera SDK. It needs no API key or Python server. Keep this directory inside the source project for the asset-copy script.
 
 Use Node 22.12 or newer. From the project root:
