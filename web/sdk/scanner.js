@@ -9,10 +9,11 @@ const Pos = globalThis.PosPolicy || posModule.default;
 const Selection = globalThis.CaptureSelection || selectionModule.default;
 const Capture = globalThis.ScanPolicy || captureModule.default;
 const DEFAULTS = { formats: ['ean13', 'upca', 'code128', 'qr'], confirmationFrames: 2,
-  preferClearFrames: true, cropBarcodes: true, captureMode: 'balanced', adaptiveFrameSelection: true, targetRegion: null };
+  preferClearFrames: true, cropBarcodes: true, captureMode: 'balanced', adaptiveFrameSelection: true, automaticRecovery: true, targetRegion: null };
 const OPTION_KEYS = Object.keys(DEFAULTS);
 const MAX_FRAME_AGE = 1200;
 const QUALITY = { dark: 'Add light to the label.', 'low-detail': 'Hold still and let the camera focus.',
+  blurred: 'Hold still and add light so the barcode edges become clearer.',
   glare: 'Tilt the label slightly to reduce possible glare.', small: 'Move closer while keeping the full label visible.',
   clipped: 'Move back to include the barcode and its border.' };
 
@@ -21,7 +22,7 @@ function checkedOptions(input, previous = DEFAULTS) {
       Reflect.ownKeys(input).some(key => !OPTION_KEYS.includes(key))) throw new TypeError('Unknown scanner option.');
   const next = { ...previous, ...input };
   const policy = Pos.validateOptions({ allowedFormats: next.formats, confirmationFrames: next.confirmationFrames });
-  if (typeof next.preferClearFrames !== 'boolean' || typeof next.cropBarcodes !== 'boolean' || typeof next.adaptiveFrameSelection !== 'boolean') {
+  if (typeof next.preferClearFrames !== 'boolean' || typeof next.cropBarcodes !== 'boolean' || typeof next.adaptiveFrameSelection !== 'boolean' || typeof next.automaticRecovery !== 'boolean') {
     throw new TypeError('Frame-selection and crop options must be booleans.');
   }
   if (!['balanced', 'detail'].includes(next.captureMode)) throw new TypeError('captureMode must be balanced or detail.');
@@ -59,7 +60,7 @@ export function createScanner(configuration = {}) {
   const canvas = doc.createElement('canvas'), context = canvas.getContext('2d', { willReadFrequently: true });
   const snapshot = doc.createElement('canvas'), snapshotContext = snapshot.getContext('2d');
   if (!context) throw new Error('This browser cannot capture camera images.');
-  let selection = Selection.create(), stream = null, active = false, destroyed = false, accepted = false;
+  let selection = Selection.create(), recovery = Selection.createRecovery(), stream = null, active = false, destroyed = false, accepted = false;
   let generation = 0, revision = 0, retry = 0, timer = null, loop = null, startPromise = null;
   let operation = null, worker = null, ready = null, requestId = 0, lastFrame = null, offscreenCapture = false;
   let frameCallback = null, presented = null, trackCleanup = null;
@@ -87,7 +88,7 @@ export function createScanner(configuration = {}) {
     else status(active ? 'scanning' : 'idle', message);
   }
   function resetEvidence(rearm = false) {
-    revision++; policy = Pos.createConfirmation(policyOptions()); selection.reset();
+    revision++; policy = Pos.createConfirmation(policyOptions()); selection.reset(); recovery.reset();
     if (rearm) accepted = false;
     lastFrame = null; retry = 0;
   }
@@ -174,7 +175,7 @@ export function createScanner(configuration = {}) {
   }
   async function captureSample(source, width, height, imported = false) {
     const token = generation, currentRevision = revision;
-    const detail = options.captureMode === 'detail', target = options.targetRegion;
+    const detail = options.captureMode === 'detail' || (!imported && options.automaticRecovery && recovery.detailed(now())), target = options.targetRegion;
     const valid = () => token === generation && currentRevision === revision && !destroyed && !controlsPending.size;
     let input = source, scale = { x: 1, y: 1 };
     if (offscreenCapture && typeof env.createImageBitmap === 'function' && snapshotContext && (detail || !target || imported)) {
@@ -197,7 +198,7 @@ export function createScanner(configuration = {}) {
         if (!valid()) { bitmap.close(); throw aborted(); }
         clear(bitmapDeadline); submitted = true;
         const response = await call('prepare', { bitmap, sourceWidth: width, sourceHeight: height,
-          imported, captureMode: options.captureMode, targetRegion: target, cropBarcodes: options.cropBarcodes }, [bitmap]);
+          imported, captureMode: detail ? 'detail' : 'balanced', targetRegion: target, cropBarcodes: options.cropBarcodes }, [bitmap]);
         if (!valid()) throw aborted();
         return response.sample;
       } catch (error) {
@@ -281,7 +282,7 @@ export function createScanner(configuration = {}) {
     if (results.length) retainMethod();
     return results;
   }
-  function publish(decision) {
+  function publish(decision, analysis) {
     if (decision.status === 'confirmed') {
       if (accepted) return null;
       accepted = true; selection.reset();
@@ -300,7 +301,7 @@ export function createScanner(configuration = {}) {
       conflicting_values: 'Conflicting codes. Isolate one label and start a new scan.',
       unreliable_frames: 'Distinct camera frames could not be verified. Try another browser or explicitly select one-frame confirmation.',
       insufficient_confirmation: `Hold steady: ${decision.matchedFrames} of ${decision.requiredFrames} matching frames.`,
-      no_code: 'No allowed code found. Keep one complete label in view.',
+      no_code: QUALITY[analysis?.hint] || 'No allowed code found. Keep one complete label in view.',
     };
     status(decision.status, messages[decision.reason] || 'Rescan the label.', decision.reason);
     return null;
@@ -318,10 +319,11 @@ export function createScanner(configuration = {}) {
       if (video.readyState >= 2 && video.videoWidth && video.videoHeight && id !== null && id !== lastFrame) {
         lastFrame = id;
         const capturedAt = now();
+        const cameraFingerprint = Selection.cameraIdentity(video, video.videoWidth, video.videoHeight, canvas, context);
         const sample = await captureSample(video, video.videoWidth, video.videoHeight);
         if (!active || token !== generation || currentRevision !== revision || controlsPending.size) return;
         const { analysis } = sample;
-        const candidate = { ...sample, analysis, capturedAt, frameId: id, revision: currentRevision };
+        const candidate = { ...sample, analysis, capturedAt, frameId: id, revision: currentRevision, cameraFingerprint };
         emit(onCandidates, { regions: sample.proposals, sourceWidth: video.videoWidth, sourceHeight: video.videoHeight, frameId: id });
         if (!active || token !== generation || currentRevision !== revision || controlsPending.size) return;
         if (options.preferClearFrames && options.adaptiveFrameSelection && clearFrame(analysis, sample.image.width, sample.image.height)) {
@@ -333,10 +335,16 @@ export function createScanner(configuration = {}) {
         const { analysis, capturedAt } = selected;
         const results = await decodeSample(selected, 'live');
         if (!active || accepted || token !== generation || revision !== currentRevision || selected.revision !== revision) return;
-        if (now() - capturedAt > MAX_FRAME_AGE) {
+        const stale = now() - capturedAt > MAX_FRAME_AGE;
+        const moreDetail = options.automaticRecovery && recovery.observe({ now: now(), frameId: selected.frameId, analysis,
+          hasResults: results.length > 0, stale });
+        if (stale) {
           policy.reset(); status('rescan', 'That image is too old. Hold still for a fresh scan.', 'stale_frame');
         } else {
-          publish(policy.observe(results, selected.frameId, capturedAt, analysis.fingerprint));
+          publish(policy.observe(results, selected.frameId, capturedAt, analysis.fingerprint, selected.cameraFingerprint), analysis);
+          if (moreDetail && active && !accepted && token === generation && revision === currentRevision) {
+            status('scanning', 'Trying more image detail. Keep the full label steady.', 'detail_recovery');
+          }
         }
       }
     } catch (error) {
@@ -370,7 +378,10 @@ export function createScanner(configuration = {}) {
         if (!env.isSecureContext || !env.navigator.mediaDevices?.getUserMedia) throw new Error('Camera scanning requires HTTPS or localhost and camera permission.');
         if (doc.hidden) throw new Error('Open the page before starting the camera.');
         await abortable(initialize(), abort.signal);
-        const videoConstraints = { width: { ideal: options.captureMode === 'detail' ? 3840 : 1920 }, height: { ideal: options.captureMode === 'detail' ? 2160 : 1080 },
+        // Keep normal decoding bounded, but retain source detail for occasional
+        // recovery without reopening the camera or clearing confirmation.
+        const highResolution = options.captureMode === 'detail' || options.automaticRecovery;
+        const videoConstraints = { width: { ideal: highResolution ? 3840 : 1920 }, height: { ideal: highResolution ? 2160 : 1080 },
           ...(camera.deviceId ? { deviceId: { exact: camera.deviceId } } : { facingMode: { ideal: camera.facingMode || 'environment' } }) };
         const request = env.navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints });
         request.then(value => { if (token !== generation) value.getTracks().forEach(track => track.stop()); }, () => {});
@@ -382,11 +393,14 @@ export function createScanner(configuration = {}) {
         const track = stream.getVideoTracks()[0];
         const ended = () => { if (generation === token) stop(); };
         track?.addEventListener('ended', ended); trackCleanup = () => track?.removeEventListener('ended', ended);
-        let focusModes = [];
-        try { focusModes = track?.getCapabilities?.().focusMode || []; } catch { /* Capability probing must not disable a usable camera. */ }
-        if (focusModes.includes('continuous')) {
+        let cameraModes = {};
+        try { cameraModes = track?.getCapabilities?.() || {}; } catch { /* Capability probing must not disable a usable camera. */ }
+        const automaticModes = {};
+        if (cameraModes.focusMode?.includes('continuous')) automaticModes.focusMode = 'continuous';
+        if (options.automaticRecovery && cameraModes.exposureMode?.includes('continuous')) automaticModes.exposureMode = 'continuous';
+        if (Object.keys(automaticModes).length) {
           try {
-            const constraints = withConstraints(track, { focusMode: 'continuous' });
+            const constraints = withConstraints(track, automaticModes);
             await abortable(track.applyConstraints(constraints), abort.signal);
             if (token === generation) controlConstraints = constraints;
           }

@@ -78,12 +78,11 @@ def test_restricted_first_pass_removes_known_upce_false_result(reader, monkeypat
         zxingcpp.BarcodeFormat.Code128, zxingcpp.BarcodeFormat.QRCode])
 
 
-def test_requested_conflicting_formats_preserve_both_values_for_pos_policy(reader):
+def test_requested_formats_reject_a_corroborated_same_symbol_upce_alias(reader):
     image, _ = fixture_image('damage-stress-verify.json', 'ean13/verify-ean13-label-2/angled-2')
     with image:
         found = reader.read_barcodes(image, allowed_formats=['ean13', 'upce'])
-    assert {(code.text, code.format.name) for code in found} == {
-        ('7695101115611', 'EAN13'), ('0169100005107', 'UPCE')}
+    assert {(code.text, code.format.name) for code in found} == {('7695101115611', 'EAN13')}
 
 
 def test_result_filter_rejects_disallowed_output_even_if_native_ignores_options(reader, monkeypatch):

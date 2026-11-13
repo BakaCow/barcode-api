@@ -19,6 +19,8 @@ const RECOVERY_RESULTS = new Set([
   'DataBarOmni', 'DataBarStk', 'DataBarStkOmni', 'DataBarExpStk', 'DataBarExpanded', 'DataBarLimited',
 ]);
 const RECOVERY_OPTIONS = { ...OPTIONS, formats: RECOVERY_FORMATS };
+const QR_RECOVERY_FORMATS = ['QRCode', 'MicroQRCode', 'RMQRCode'];
+const QR_RECOVERY_RESULTS = new Set([...QR_RECOVERY_FORMATS, 'QRCodeModel1', 'QRCodeModel2']);
 const LINEAR_RECOVERY = new Set([
   'Code128', 'Code93', 'EAN13', 'EAN8', 'UPCA', 'UPCE', 'DataBar', 'DataBarExp', 'DataBarLtd',
   'DataBarOmni', 'DataBarStk', 'DataBarStkOmni', 'DataBarExpStk', 'DataBarExpanded', 'DataBarLimited',
@@ -183,14 +185,14 @@ function upscaled(gray, width, height) {
   return { image: rgba(output, outWidth, outHeight), inverse: ({ x, y }) => ({ x: (x + 0.5) / 2 - 0.5, y: (y + 0.5) / 2 - 0.5 }) };
 }
 
-function sourceGeometryAgrees(position, gray, width, height) {
-  if (!position || !gray || width < 3 || height < 3) return false;
+function sourceTensor(position, gray, width, height) {
+  if (!position || !gray || width < 3 || height < 3) return null;
   const { topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br } = position;
   const corners = [tl, tr, bl, br];
-  if (corners.some((point) => !point || !Number.isFinite(point.x) || !Number.isFinite(point.y))) return false;
+  if (corners.some((point) => !point || !Number.isFinite(point.x) || !Number.isFinite(point.y))) return null;
   const vx = (tr.x - tl.x + br.x - bl.x) / 2, vy = (tr.y - tl.y + br.y - bl.y) / 2;
   const length2 = vx * vx + vy * vy;
-  if (length2 < 1) return false;
+  if (length2 < 1) return null;
   // Readers sometimes report only two rows on a bar's top edge. Include a small
   // neighborhood so the tensor measures bar interiors, not just that boundary.
   const padding = Math.min(32, Math.max(2, Math.ceil(Math.sqrt(length2) * 0.06)));
@@ -198,7 +200,7 @@ function sourceGeometryAgrees(position, gray, width, height) {
   const y0 = Math.max(1, Math.floor(Math.min(...corners.map((point) => point.y))) - padding);
   const x1 = Math.min(width - 2, Math.ceil(Math.max(...corners.map((point) => point.x))) + padding);
   const y1 = Math.min(height - 2, Math.ceil(Math.max(...corners.map((point) => point.y))) + padding);
-  if (x1 < x0 || y1 < y0) return false;
+  if (x1 < x0 || y1 < y0) return null;
   const stride = Math.max(1, Math.ceil(Math.sqrt((x1 - x0 + 1) * (y1 - y0 + 1) / 4096)));
   let xx = 0, xy = 0, yy = 0, samples = 0;
   for (let y = y0; y <= y1 && samples < 4096; y += stride) {
@@ -211,7 +213,13 @@ function sourceGeometryAgrees(position, gray, width, height) {
       xx += dx * dx; xy += dx * dy; yy += dy * dy; samples++;
     }
   }
-  const anisotropy = Math.hypot(xx - yy, 2 * xy), energy = xx + yy;
+  return { xx, xy, yy, vx, vy, length2, anisotropy: Math.hypot(xx - yy, 2 * xy), energy: xx + yy };
+}
+
+function sourceGeometryAgrees(position, gray, width, height) {
+  const tensor = sourceTensor(position, gray, width, height);
+  if (!tensor) return false;
+  const { xx, xy, yy, vx, vy, length2, anisotropy, energy } = tensor;
   if (!energy || anisotropy / energy < 0.5) return false;
   // A doubled-angle dot product compares unoriented bar gradients with the
   // mapped scanline. It catches plausible checksums created by oblique retries.
@@ -231,6 +239,54 @@ function validResults(results, inverse, width, height, recovery = false, gray) {
   }).filter(Boolean);
 }
 
+function sameSymbolSegment(position, footprint) {
+  const corners = (value) => value && [value.topLeft, value.topRight, value.bottomRight, value.bottomLeft];
+  const segment = corners(position), quad = corners(footprint);
+  if (!segment || !quad || [...segment, ...quad].some(point => !point || !Number.isFinite(point.x) || !Number.isFinite(point.y))) return false;
+  const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const left = midpoint(segment[0], segment[3]), right = midpoint(segment[1], segment[2]);
+  if (Math.hypot(right.x - left.x, right.y - left.y) < 1) return false;
+  return [0.25, 0.5, 0.75].every(fraction => {
+    const x = left.x + fraction * (right.x - left.x), y = left.y + fraction * (right.y - left.y);
+    const cross = quad.map((a, index) => {
+      const b = quad[(index + 1) % 4];
+      return (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
+    });
+    // Strict interior only: degenerate/uncertain geometry retains the conflict.
+    return cross.every(value => value > 0) || cross.every(value => value < 0);
+  });
+}
+
+async function corroborateRetailOverlap(results, image, options, permitted, started, budgetMs) {
+  const original = { results, diagnostics: { passes: 1, strategy: 'original' } };
+  const upce = results.find(result => result.format === 'UPCE');
+  const ean = results.filter(result => ['EAN13', 'UPCA'].includes(result.format));
+  if (!upce || !ean.length || performance.now() - started >= budgetMs) return original;
+  const gray = luminance(image), tensor = sourceTensor(upce.position, gray, image.width, image.height);
+  if (!tensor || !tensor.energy || tensor.anisotropy / tensor.energy < 0.7) return original;
+  const angle = Math.atan2(2 * tensor.xy, tensor.xx - tensor.yy) * 90 / Math.PI;
+  if (Math.abs(angle) <= 3 || Math.abs(angle) >= 87 || performance.now() - started >= budgetMs) return original;
+  const { image: candidate, inverse } = rotated(gray, image.width, image.height, -angle);
+  if (performance.now() - started >= budgetMs) return original;
+  const diagnostics = { passes: 2, strategy: 'retail-corroboration' };
+  try {
+    // Native scanline boxes may cut obliquely through another retail symbol.
+    // One source-aligned reread must reproduce the exact EAN identity and its
+    // oriented footprint before an unreproduced UPC-E inside it can be removed.
+    // Use the original allowlist and never add new identities from this check.
+    const checked = permitted(validResults(await ZXingWASM.readBarcodes(candidate, options), inverse, image.width, image.height));
+    const identity = result => JSON.stringify([result.format, result.text, result.bytes]);
+    const eanKeys = new Set(ean.map(identity)), checkedKeys = new Set(checked.map(identity));
+    const footprints = checked.filter(result => eanKeys.has(identity(result)));
+    return { results: results.filter(result => result.format !== 'UPCE' || checkedKeys.has(identity(result)) ||
+      !footprints.some(footprint => sameSymbolSegment(result.position, footprint.position))), diagnostics };
+  } catch {
+    // An optional corroboration failure cannot turn a known conflict into an
+    // accepted single value. Preserve the complete original evidence.
+    return { results, diagnostics };
+  }
+}
+
 async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   const started = performance.now();
   const budgetMs = mode === 'live' ? 350 : 2500;
@@ -244,7 +300,7 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   // Always inspect the full supplied image first. A crop must not hide a
   // conflicting value that the whole-image reader already found.
   let results = permitted(validResults(await ZXingWASM.readBarcodes(image, firstOptions)));
-  if (results.length) return { results, ...details, diagnostics: { passes: 1, strategy: 'original' } };
+  if (results.length) return { ...await corroborateRetailOverlap(results, image, firstOptions, permitted, started, budgetMs), ...details };
   // An empty native format list means all formats in some ZXing versions.
   if (!recoveryOptions.formats.length) return { results, ...details, diagnostics: { passes: 1, strategy: 'original' } };
   const gray = luminance(image);
@@ -274,8 +330,8 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
     if (croppedResults.length) return { results: croppedResults, ...details, diagnostics: { passes, strategy } };
   }
   // Live mode spreads expensive retries over different camera frames. Imported
-  // images have no next frame, so they may use all six bounded fallback passes.
-  const retries = mode === 'live' ? [retryIndex % 6] : [0, 1, 2, 3, 4, 5];
+  // images have no next frame, so they may use all seven bounded fallback passes.
+  const retries = mode === 'live' ? [retryIndex % 7] : [0, 1, 2, 3, 4, 5, 6];
   for (const retry of retries) {
     // A single WASM call cannot be interrupted here. The app also has a hard
     // worker timeout; this deadline prevents starting further expensive work.
@@ -303,13 +359,22 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
       if (orientation.coherence >= 0.55 && Math.abs(orientation.angle) > 3 && Math.abs(orientation.angle) < 87) {
         ({ image: candidate, inverse } = rotated(corrected, image.width, image.height, -orientation.angle));
       } else candidate = rgba(corrected, image.width, image.height);
-    } else {
+    } else if (retry === 5) {
       const enlarged = upscaled(gray, image.width, image.height);
       if (!enlarged) continue;
       strategy = 'upscale';
       ({ image: candidate, inverse } = enlarged);
+    } else {
+      // Native 2D denoising closes small scratch gaps before QR detection/grid
+      // sampling. Restrict this extra path to requested QR families; never let
+      // an empty native allowlist enable every format or assume a pure image.
+      const formats = recoveryOptions.formats.filter(format => QR_RECOVERY_FORMATS.includes(format));
+      if (!formats.length) continue;
+      strategy = 'qr-denoise'; candidate = image;
+      options = { ...recoveryOptions, formats, tryDenoise: true };
     }
     results = permitted(validResults(await ZXingWASM.readBarcodes(candidate, options), inverse, image.width, image.height, true, gray));
+    if (retry === 6) results = results.filter(result => QR_RECOVERY_RESULTS.has(result.format));
     passes++;
     if (results.length) break;
   }

@@ -215,6 +215,94 @@ def _bar_direction(image: Image.Image) -> float | None:
     return angle if 3 < abs(angle) < 87 else None
 
 
+def _angle_near(record: DecodedBarcode, source: Image.Image, original_size) -> float | None:
+    """Find coherent local bars, without treating an axis scanline as their angle."""
+    if min(source.size) < 3:
+        return None
+    sx, sy = source.width / original_size[0], source.height / original_size[1]
+    points = [((x + 0.5) * sx - 0.5, (y + 0.5) * sy - 0.5) for x, y in record.points]
+    vx = (points[1][0] - points[0][0] + points[2][0] - points[3][0]) / 2
+    vy = (points[1][1] - points[0][1] + points[2][1] - points[3][1]) / 2
+    padding = min(32, max(2, math.ceil(math.hypot(vx, vy) * 0.06)))
+    left = max(1, math.floor(min(x for x, _ in points)) - padding)
+    right = min(source.width - 2, math.ceil(max(x for x, _ in points)) + padding)
+    top = max(1, math.floor(min(y for _, y in points)) - padding)
+    bottom = min(source.height - 2, math.ceil(max(y for _, y in points)) + padding)
+    if right < left or bottom < top:
+        return None
+    stride = max(1, math.ceil(math.sqrt((right - left + 1) * (bottom - top + 1) / 4096)))
+    pixels = source.load()
+    xx = xy = yy = samples = 0
+    for y in range(top, bottom + 1, stride):
+        if samples >= 4096:
+            break
+        for x in range(left, right + 1, stride):
+            if samples >= 4096:
+                break
+            jitter = ((x * 73856093) ^ (y * 19349663)) & 0xffffffff
+            px = min(right, x + jitter % stride)
+            py = min(bottom, y + (jitter // stride) % stride)
+            dx, dy = pixels[px + 1, py] - pixels[px - 1, py], pixels[px, py + 1] - pixels[px, py - 1]
+            xx += dx * dx; xy += dx * dy; yy += dy * dy; samples += 1
+    energy = xx + yy
+    if not energy or math.hypot(xx - yy, 2 * xy) / energy < 0.7:
+        return None
+    angle = math.degrees(math.atan2(2 * xy, xx - yy)) / 2
+    return angle if 3 < abs(angle) < 87 else None
+
+
+def _inside_quad(point, corners) -> bool:
+    """Strict interior test: uncertain or degenerate footprints do not suppress."""
+    cross = [(b[0] - a[0]) * (point[1] - a[1]) - (b[1] - a[1]) * (point[0] - a[0])
+             for a, b in zip(corners, corners[1:] + corners[:1])]
+    return all(value > 0 for value in cross) or all(value < 0 for value in cross)
+
+
+def _same_symbol_segment(record: DecodedBarcode, footprint: DecodedBarcode) -> bool:
+    left = tuple((record.points[0][i] + record.points[3][i]) / 2 for i in (0, 1))
+    right = tuple((record.points[1][i] + record.points[2][i]) / 2 for i in (0, 1))
+    if math.dist(left, right) < 1:
+        return False
+    return all(_inside_quad(tuple(left[i] + fraction * (right[i] - left[i]) for i in (0, 1)), footprint.points)
+               for fraction in (0.25, 0.5, 0.75))
+
+
+def _corroborate_retail_overlap(records, image, first_options, requested, started):
+    """Resolve a narrow UPC-E/EAN alias only with a second source-aligned read.
+
+    The decoder can read an oblique interior segment of EAN bars as UPC-E.
+    Axis-aligned native scanline boxes are not reliable orientation evidence.
+    Keep all candidates unless a bounded deskew re-observes the exact EAN and
+    places the UPC-E's central scan segment inside its oriented footprint, while
+    failing to reproduce that UPC-E identity. Separate labels remain separate.
+    """
+    upce = [record for record in records if record.format.name == 'UPCE']
+    ean = [record for record in records if record.format.name in {'EAN13', 'UPCA'}]
+    if not upce or not ean or monotonic() - started >= RETRY_SECONDS:
+        return records
+    identity = lambda record: (record.format.name, record.text, record.bytes)
+    ean_keys = {identity(record) for record in ean}
+    working, to_original = _working_image(image)
+    with working:
+        # One view only, irrespective of the number of original detections.
+        angle = _angle_near(upce[0], working, image.size)
+        if angle is None or monotonic() - started >= RETRY_SECONDS:
+            return records
+        transformed, to_working = _rotated(working, angle)
+        with transformed:
+            if monotonic() - started >= RETRY_SECONDS:
+                return records
+            try:
+                check = _records(zxingcpp.read_barcodes(transformed, **first_options), image.size,
+                                 lambda x, y: to_original(*to_working(x, y)), allowed_names=requested)
+            except (ValueError, RuntimeError):
+                return records
+    checked = {identity(record) for record in check}
+    footprints = [record for record in check if identity(record) in ean_keys]
+    return [record for record in records if record.format.name != 'UPCE' or identity(record) in checked or
+            not any(_same_symbol_segment(record, footprint) for footprint in footprints)]
+
+
 def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None = None) -> list[DecodedBarcode]:
     """Read the requested families on every pass, or retain legacy behavior for None."""
     requested = _requested_formats(allowed_formats)
@@ -222,8 +310,10 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
     first_options = {} if requested is None else {
         "formats": zxingcpp.BarcodeFormats([POS_FORMATS[name] for name in requested])}
     records = _records(zxingcpp.read_barcodes(image, **first_options), image.size, allowed_names=requested)
-    if records or monotonic() - started >= RETRY_SECONDS:
-        return records
+    if records:
+        return _corroborate_retail_overlap(records, image, first_options, requested, started)
+    if monotonic() - started >= RETRY_SECONDS:
+        return []
     recovery_formats = RECOVERY_FORMATS
     if requested is not None:
         recovery_values = [POS_FORMATS[name] for name in requested if POS_FORMATS[name].name in RECOVERY_NAMES]

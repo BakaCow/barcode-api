@@ -22,6 +22,7 @@ function harness(settings = {}, frameSupport = 'decoded') {
   function makeCanvas() {
   const context = { fillRect() {}, drawImage(...args) { this.draw = args; captures.push(args); }, getImageData(_x, _y, width, height) {
     state.readbacks = (state.readbacks || 0) + 1;
+    (state.readbackSizes ||= []).push({ width, height });
     if (state.fixture) {
       const pixels = inflateSync(Buffer.from(state.fixture.rgba_zlib_base64, 'base64'));
       const output = new Uint8ClampedArray(width * height * 4);
@@ -109,7 +110,7 @@ function harness(settings = {}, frameSupport = 'decoded') {
 }
 
 test('constructor validates format allowlist, options and same-origin assets', () => {
-  for (const settings of [{ formats: [] }, { confirmationFrames: 0 }, { cropBarcodes: 'yes' }, { unexpected: true },
+  for (const settings of [{ formats: [] }, { confirmationFrames: 0 }, { cropBarcodes: 'yes' }, { automaticRecovery: 'yes' }, { unexpected: true },
     { assetBaseUrl: 'https://other.test/scanner/' }]) assert.throws(() => harness(settings));
 });
 
@@ -121,8 +122,22 @@ test('concurrent starts acquire one camera and initialize same-origin assets onc
   assert.equal(h.workers[0].url, 'https://scanner.test/assets/scanner-worker.js');
   assert.equal(h.video.muted, true); assert.equal(h.video.playsInline, true);
   assert.deepEqual(h.constraints[0].advanced, [{ focusMode: 'continuous' }]);
-  assert.deepEqual(h.constraints[0].width, { ideal: 1920 });
+  assert.deepEqual(h.constraints[0].width, { ideal: 3840 });
   h.scanner.destroy();
+});
+
+test('automatic recovery requests source detail and only advertised continuous exposure', async () => {
+  for (const [automaticRecovery, exposureModes] of [[true, ['continuous']], [true, ['manual']], [false, ['continuous']]]) {
+    const h = harness({ automaticRecovery });
+    h.state.capabilities = { exposureMode: exposureModes };
+    await h.scanner.start();
+    assert.deepEqual(h.cameraRequests[0].video.width, { ideal: automaticRecovery ? 3840 : 1920 });
+    assert.deepEqual(h.cameraRequests[0].video.height, { ideal: automaticRecovery ? 2160 : 1080 });
+    assert.deepEqual(h.constraints[0].advanced, [{ focusMode: 'continuous',
+      ...(automaticRecovery && exposureModes.includes('continuous') ? { exposureMode: 'continuous' } : {}) }]);
+    assert.equal(h.state.calls, 1);
+    h.scanner.destroy();
+  }
 });
 
 test('stop cancels pending permission and releases a late-acquired stream', async () => {
@@ -404,7 +419,7 @@ test('torch and zoom changes serialize, suspend capture and clear confirmation b
   h.state.constraintRequest.resolve(); await torch; const caps = await zoom;
   assert.deepEqual(h.constraints.at(-1).advanced.at(-1),{zoom:1.5});
   assert.ok(h.constraints.at(-1).advanced.some(value=>value.torch===true));
-  assert.deepEqual(h.constraints.at(-1).width,{ideal:1920});
+  assert.deepEqual(h.constraints.at(-1).width,{ideal:3840});
   assert.equal(caps.torch.enabled,true); assert.equal(caps.zoom.value,1.5);
   await h.tick(); await h.reply(); assert.equal(h.results.length,0);
   await h.tick(); await h.reply(); assert.equal(h.results.length,1); h.scanner.destroy();
@@ -564,9 +579,69 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     assert.equal(h.results[0]?.text,label.expected[0].text);
     assert.ok(decoded.length>=2); assert.equal(decoded[0].width,1920);
     assert.ok(decoded.every(call=>call.retryIndex===0),'full view and source crops share one recovery method for this frame');
-    assert.equal(h.captures.filter(draw=>draw[0]===h.video).length,1,'video snapshot is taken once for all recovery passes');
+    assert.equal(h.captures.filter(draw=>draw[0]===h.video&&draw[7]>320).length,1,'one source snapshot serves all recovery passes, alongside the tiny evidence thumbnail');
     assert.ok(h.results[0].position.topLeft.x>=left-10); assert.ok(h.results[0].position.topLeft.y>=top-10);
     h.scanner.destroy();
+  });
+  await t.test('automatic detail crops recover a real distant EAN after unique misses and still require separate agreeing frames', async () => {
+    // An independently encoded one-pixel EAN loses bars when the simulated
+    // camera downsamples 2560 to 1920. Nothing intercepts decoder results:
+    // only the real source crop can recover its known value.
+    const fixture = JSON.parse(readFileSync(new URL('fixtures/automatic-capture-recovery.json', import.meta.url)));
+    for (const automaticRecovery of [false, true]) {
+      const pixels = inflateSync(Buffer.from(fixture.rgba_zlib_base64, 'base64'));
+      const decodes = [], proposals = [];
+      const h = harness({ automaticRecovery, onCandidates: proposal => proposals.push(proposal) });
+      h.video.videoWidth = fixture.width; h.video.videoHeight = fixture.height;
+      h.env.Worker = class extends NativeWorker {
+        postMessage(data) {
+          if (data.type === 'decode') decodes.push({ frame: h.state.frame, width: data.image.width,
+            retryIndex: data.retryIndex, enhanceLive: data.enhanceLive });
+          super.postMessage(data);
+        }
+      };
+      try {
+        await h.scanner.start();
+        for (let frame = 0; frame < 5; frame++) {
+          // A faint changing background patch models fresh physical frames
+          // at both decoder and stable evidence-thumbnail resolutions. The
+          // barcode pixels remain untouched throughout the sequence.
+          for (let y = 0; y < 192; y++) for (let x = 0; x < 256; x++) {
+            const offset = (y * fixture.width + x) * 4;
+            pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = 250 + frame;
+          }
+          h.state.fixture = { ...fixture, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+          await h.tick({ advance: 240 });
+          for (let wait = 0; wait < 200 && !h.results.length && !h.errors.length &&
+            ![...h.timers.values()].some(timer => timer.ms <= 180); wait++) await flush();
+          assert.equal(h.errors.length, 0);
+          assert.equal(proposals.at(-1)?.regions.length, 1, 'the actual analyzer finds one small label region');
+          if (frame < 3 || !automaticRecovery) {
+            assert.equal(decodes.length, frame + 1);
+            assert.equal(decodes.at(-1).width, 1920);
+            assert.equal(h.results.length, 0, 'balanced pixels cannot read this fixture');
+          }
+          if (automaticRecovery && frame === 2) assert.equal(h.statuses.at(-1).reason, 'detail_recovery');
+          if (automaticRecovery && frame === 3) {
+            assert.equal(h.results.length, 0, 'the first actual source-crop read cannot confirm alone');
+            assert.equal(h.statuses.at(-1).reason, 'insufficient_confirmation');
+          }
+        }
+        assert.equal(h.state.calls, 1, 'recovery keeps the existing camera stream');
+        if (automaticRecovery) {
+          assert.equal(h.results.length, 1);
+          assert.equal(h.results[0].text, fixture.expected[0].text);
+          assert.equal(h.results[0].format, 'ean13');
+          const crops = decodes.filter(call => !call.enhanceLive);
+          assert.equal(crops.length, 2, 'two distinct frames use native-resolution source crops');
+          assert.notEqual(crops[0].frame, crops[1].frame);
+          assert.equal(crops[0].retryIndex, crops[1].retryIndex, 'the actual successful method is retained');
+          assert.ok(crops.every(call => call.width < 600));
+          assert.ok(h.results[0].position.topLeft.x >= fixture.label.x);
+          assert.ok(h.results[0].position.topLeft.y >= fixture.label.y);
+        } else assert.equal(h.results.length, 0, 'opting out keeps the bounded balanced workflow');
+      } finally { h.scanner.destroy(); }
+    }
   });
   await t.test('a real clear padded barcode decodes immediately but still needs distinct agreeing frames',async()=>{
     const label=fixtures.find(f=>f.name==='Code 128'), pixels=inflateSync(Buffer.from(label.rgba_zlib_base64,'base64'));
@@ -579,7 +654,10 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     await h.scanner.start();await h.tick({advance:80});assert.equal(decodes,1,'clear first sample bypasses burst wait');
     await flush();assert.equal(h.results.length,0,'one frame is insufficient');
     await h.tick({advance:80});await flush();assert.equal(decodes,2);assert.equal(h.results.length,0,'identical pixels add no vote');
-    large[0]=254;h.state.fixture=fixture();await h.tick({advance:80});
+    for(let y=0;y<25;y++)for(let x=0;x<25;x++){
+      const offset=(y*width+x)*4;large[offset]=large[offset+1]=large[offset+2]=254;
+    }
+    h.state.fixture=fixture();await h.tick({advance:80});
     for(let attempt=0;attempt<50&&!h.results.length;attempt++)await flush();
     assert.equal(h.results[0]?.text,label.expected[0].text);h.scanner.destroy();
     const buffered=harness({preferClearFrames:true,adaptiveFrameSelection:false});
@@ -640,14 +718,15 @@ test('stopping during analysis settles the loop and ignores late pixel buffers',
 });
 
 
-test('offscreen capture submits one bounded bitmap without main-thread pixel readback', async () => {
+test('offscreen capture submits one bounded bitmap with only a tiny main-thread evidence readback', async () => {
   const h = harness({ confirmationFrames: 1, captureMode: 'detail' }); h.state.offscreen = true;
   h.video.videoWidth = 7680; h.video.videoHeight = 4320;
   await h.scanner.start(); await h.tick(); await h.tick();
-  assert.equal(h.waiting.length, 1); assert.equal(h.state.readbacks || 0, 0);
+  assert.equal(h.waiting.length, 1); assert.equal(h.state.readbacks, 1);
+  assert.deepEqual(h.state.readbackSizes, [{ width: 320, height: 180 }]);
   const pending = h.waiting.shift(); assert.equal(pending.message.type, 'prepare');
   assert.equal(pending.message.bitmap.width, 3840); assert.equal(pending.message.bitmap.height, 2160);
-  assert.equal(h.captures.filter(draw => draw[0] === h.video).length, 1);
+  assert.equal(h.captures.filter(draw => draw[0] === h.video && draw[7] > 320).length, 1);
   h.scanner.stop(); await flush();
   assert.ok(h.bitmaps[0].closed > 0); assert.equal(h.waiting.length, 0); assert.equal(h.errors.length, 0);
   h.scanner.destroy();
@@ -668,7 +747,7 @@ test('failed bitmap preparation falls back to bounded canvas capture and worker 
   const h = harness({ confirmationFrames: 1 }); h.state.offscreen = true;
   h.env.createImageBitmap = async () => { throw new Error('Canvas bitmaps unsupported'); };
   await h.scanner.start(); await h.tick();
-  assert.equal(h.waiting[0].message.type, 'decode'); assert.equal(h.state.readbacks, 1);
+  assert.equal(h.waiting[0].message.type, 'decode'); assert.equal(h.state.readbacks, 2);
   assert.ok(h.messages.some(message => message.type === 'analyze'));
   await h.reply(); assert.equal(h.results.length, 1); assert.equal(h.errors.length, 0); h.scanner.destroy();
 });

@@ -1,0 +1,364 @@
+{
+  "description": "Fixed synthetic images, one warmed decoder pass per case. Latency is host-specific and excludes camera capture, WASM startup, image import, and UI confirmation. This is not a Scanbot or real-device comparison.",
+  "worker": "C:\\Users\\1jyer\\Documents\\Codex\\2026-11-12\\what\\work\\barcode-api-github\\web\\scanner-worker.js",
+  "corpusVersion": 1,
+  "corpusSha256": "3a0d4fe7d67cdff9d3ac5d0dd2d23b3aa00f32d2976802f4329acdc05ac853d3",
+  "workerSha256": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c",
+  "mode": "image",
+  "retryIndex": 0,
+  "summary": {
+    "total": 28,
+    "positives": 28,
+    "exactPositiveReads": 25,
+    "negatives": 0,
+    "negativesCorrectlyRejected": 0,
+    "unexpectedResults": 0,
+    "errors": 0,
+    "medianMs": 3.4,
+    "p95Ms": 246.99
+  },
+  "cases": [
+    {
+      "name": "upce/04252614/angle-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 18.26,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/04252614/angle-15",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.15,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/04252614/angle-30",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.81,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/04252614/angle-45",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.7,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/04252614/angle-60",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.05,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/04252614/angle-75",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.4,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/04252614/angle-90",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.8,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01234565/angle-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.7,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01234565/angle-15",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.2,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01234565/angle-30",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.71,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01234565/angle-45",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.85,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01234565/angle-60",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.16,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01234565/angle-75",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.84,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01234565/angle-90",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.57,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01200003/angle-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.46,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01200003/angle-15",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.14,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01200003/angle-30",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.93,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01200003/angle-45",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.32,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01200003/angle-60",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.78,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01200003/angle-75",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.25,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "upce/01200003/angle-90",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.52,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "pair/ean-0/upce-0",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 46.65,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "pair/ean-0/upce-30",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 246.99,
+      "diagnostics": {
+        "passes": 2,
+        "strategy": "retail-corroboration"
+      }
+    },
+    {
+      "name": "pair/ean-0/upce-60",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 250.61,
+      "diagnostics": {
+        "passes": 2,
+        "strategy": "retail-corroboration"
+      }
+    },
+    {
+      "name": "pair/ean-30/upce-30",
+      "expectedCount": 2,
+      "exact": false,
+      "missing": [
+        "4006381333931"
+      ],
+      "unexpected": [],
+      "durationMs": 12.85,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "pair/ean--30/upce-30",
+      "expectedCount": 2,
+      "exact": false,
+      "missing": [
+        "4006381333931"
+      ],
+      "unexpected": [],
+      "durationMs": 10.23,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "pair/ean-60/upce-0",
+      "expectedCount": 2,
+      "exact": false,
+      "missing": [
+        "4006381333931"
+      ],
+      "unexpected": [],
+      "durationMs": 11.55,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    },
+    {
+      "name": "pair/two-upce",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 8.51,
+      "diagnostics": {
+        "passes": 1,
+        "strategy": "original"
+      }
+    }
+  ]
+}

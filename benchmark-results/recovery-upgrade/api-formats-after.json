@@ -1,0 +1,383 @@
+{
+  "description": "Actual API reader on identical labelled pixels. Host decode times exclude HTTP, image import and camera work. Synthetic damage examples do not establish real phone accuracy.",
+  "split": "recovery-format-safety",
+  "reader": "barcode_reader.py",
+  "readerSha256": "c15171c457eaf59306da7aa84b22787dd1aeda52a5aa954eaa70182a2df1aaa6",
+  "corpusSha256": "927833a400527228540142cc70b2ea7ed1532bd16ad4182c06366f33c3f15e95",
+  "versions": {
+    "zxing-cpp": "3.1.1",
+    "Pillow": "12.3.0"
+  },
+  "summary": {
+    "total": 42,
+    "positives": 42,
+    "exactPositiveReads": 41,
+    "negatives": 0,
+    "negativesCorrectlyRejected": 0,
+    "unexpectedResults": 1,
+    "errors": 0,
+    "medianMs": 1.418,
+    "p95Ms": 17.983
+  },
+  "cases": [
+    {
+      "name": "upce/recovery-format-0-0/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.046
+    },
+    {
+      "name": "upce/recovery-format-0-0/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.924
+    },
+    {
+      "name": "multiple/recovery-format-0-0/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 17.409
+    },
+    {
+      "name": "upce/recovery-format-0-1/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.144
+    },
+    {
+      "name": "upce/recovery-format-0-1/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.217
+    },
+    {
+      "name": "multiple/recovery-format-0-1/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.351
+    },
+    {
+      "name": "upce/recovery-format-0-2/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.072
+    },
+    {
+      "name": "upce/recovery-format-0-2/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.34
+    },
+    {
+      "name": "multiple/recovery-format-0-2/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 18.548
+    },
+    {
+      "name": "upce/recovery-format-0-3/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.067
+    },
+    {
+      "name": "upce/recovery-format-0-3/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.456
+    },
+    {
+      "name": "multiple/recovery-format-0-3/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 16.222
+    },
+    {
+      "name": "upce/recovery-format-0-4/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.068
+    },
+    {
+      "name": "upce/recovery-format-0-4/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.512
+    },
+    {
+      "name": "multiple/recovery-format-0-4/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 17.895
+    },
+    {
+      "name": "upce/recovery-format-0-5/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.02
+    },
+    {
+      "name": "upce/recovery-format-0-5/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.599
+    },
+    {
+      "name": "multiple/recovery-format-0-5/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 16.24
+    },
+    {
+      "name": "upce/recovery-format-0-9/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.076
+    },
+    {
+      "name": "upce/recovery-format-0-9/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.185
+    },
+    {
+      "name": "multiple/recovery-format-0-9/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.547
+    },
+    {
+      "name": "upce/recovery-format-1-0/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.027
+    },
+    {
+      "name": "upce/recovery-format-1-0/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.335
+    },
+    {
+      "name": "multiple/recovery-format-1-0/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 17.983
+    },
+    {
+      "name": "upce/recovery-format-1-1/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.132
+    },
+    {
+      "name": "upce/recovery-format-1-1/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.251
+    },
+    {
+      "name": "multiple/recovery-format-1-1/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 16.989
+    },
+    {
+      "name": "upce/recovery-format-1-2/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.06
+    },
+    {
+      "name": "upce/recovery-format-1-2/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.313
+    },
+    {
+      "name": "multiple/recovery-format-1-2/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 18.468
+    },
+    {
+      "name": "upce/recovery-format-1-3/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.067
+    },
+    {
+      "name": "upce/recovery-format-1-3/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.218
+    },
+    {
+      "name": "multiple/recovery-format-1-3/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.664
+    },
+    {
+      "name": "upce/recovery-format-1-4/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.449
+    },
+    {
+      "name": "upce/recovery-format-1-4/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.418
+    },
+    {
+      "name": "multiple/recovery-format-1-4/upce-ean13",
+      "expectedCount": 2,
+      "exact": false,
+      "missing": [],
+      "unexpected": [
+        {
+          "text": "0117100000677",
+          "format": "UPCE",
+          "points": [
+            [
+              93,
+              108
+            ],
+            [
+              252,
+              108
+            ],
+            [
+              249,
+              117
+            ],
+            [
+              90,
+              117
+            ]
+          ]
+        }
+      ],
+      "durationMs": 16.556
+    },
+    {
+      "name": "upce/recovery-format-1-5/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.068
+    },
+    {
+      "name": "upce/recovery-format-1-5/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.228
+    },
+    {
+      "name": "multiple/recovery-format-1-5/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.564
+    },
+    {
+      "name": "upce/recovery-format-1-9/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.096
+    },
+    {
+      "name": "upce/recovery-format-1-9/angled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.252
+    },
+    {
+      "name": "multiple/recovery-format-1-9/upce-ean13",
+      "expectedCount": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.746
+    }
+  ]
+}

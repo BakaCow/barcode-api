@@ -138,14 +138,18 @@
     const step = max(1, ceil(sqrt(max(1, region.width * region.height) / 20000)));
     let count = 0, sum = 0, squares = 0, edge = 0, detail = 0, dark = 0, centerCount = 0, centerWhite = 0, outerDark = 0, outerCount = 0;
     for (let y = top; y <= bottom; y += step) for (let x = left; x <= right; x += step) {
-      const p = (y * width + x) * 4, value = luminance(data, p);
+      // A regular sampling grid can land repeatedly in bar centres and label a
+      // sharp barcode blurry. Jitter deterministically inside each sample cell.
+      const jitter = (imul(x, 73856093) ^ imul(y, 19349663)) >>> 0;
+      const sx = min(right, x + jitter % step), sy = min(bottom, y + floor(jitter / step) % step);
+      const p = (sy * width + sx) * 4, value = luminance(data, p);
       const l = luminance(data, p - 4), r = luminance(data, p + 4);
       const u = luminance(data, p - width * 4), d = luminance(data, p + width * 4);
       count++; sum += value; squares += value * value;
       edge += abs(r - l) + abs(d - u);
       detail += abs(4 * value - l - r - u - d);
       if (value < 80) dark++;
-      const cx = (x - region.x) / region.width, cy = (y - region.y) / region.height;
+      const cx = (sx - region.x) / region.width, cy = (sy - region.y) / region.height;
       if (cx > 0.375 && cx < 0.625 && cy > 0.375 && cy < 0.625) {
         centerCount++; if (value >= 252) centerWhite++;
       } else { outerCount++; if (value < 80) outerDark++; }
@@ -153,7 +157,7 @@
     const mean = sum / max(1, count), contrast = sqrt(max(0, squares / max(1, count) - mean * mean));
     const edgeMean = edge / max(1, count), detailMean = detail / max(1, count);
     const score = 40 * clamp(contrast / 100, 0, 1) + 20 * clamp(edgeMean / 100, 0, 1) + 40 * clamp(detailMean / 90, 0, 1);
-    return { score, mean, contrast, detailMean, darkFraction: dark / max(1, count),
+    return { score, mean, contrast, detailMean, edgeMean, sharpness: detailMean / max(1, edgeMean), darkFraction: dark / max(1, count),
       centralHighlight: centerCount >= 20 && centerWhite / centerCount > 0.985 && outerDark / max(1, outerCount) > 0.20 };
   }
 
@@ -167,6 +171,7 @@
     if (stats.mean < 45 && stats.darkFraction > 0.85) hint = 'dark';
     else if (region?.clipped) hint = 'clipped';
     else if (region && stats.centralHighlight) hint = 'glare';
+    else if (stats.contrast >= 7 && stats.edgeMean >= 2 && stats.sharpness < 0.55) hint = 'blurred';
     else if (region && (region.kind === 'linear' ? max(region.content.width, region.content.height) < 160 : min(region.content.width, region.content.height) < 85)) hint = 'small';
     else if (stats.contrast < 7 || stats.detailMean < 2) hint = 'low-detail';
     return {

@@ -57,14 +57,30 @@ test('enhanced POS worker benchmark applies formats and records exact source has
   }
 });
 
-test('enabling UPC-E preserves the known native ambiguity as a failing exact-read benchmark', () => {
+test('enabling UPC-E permits source corroboration of the known EAN alias without a false extra read', () => {
   const result = run([ambiguous], ['--enhance-live', '--pos-formats', 'ean13,upce']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.report.summary.exactPositiveReads, 1);
+  assert.equal(result.report.summary.unexpectedResults, 0);
+  assert.deepEqual(result.report.cases[0].missing, []);
+  assert.deepEqual(result.report.cases[0].unexpected, []);
+  assert.equal(result.report.cases[0].diagnostics.strategy, 'retail-corroboration');
+  assert.deepEqual(result.report.settings.posOptions.allowedFormats, ['ean13', 'upce']);
+  assert.equal(result.report.settings.posConfirmation, false, 'the separate policy is not run by this worker-only benchmark');
+});
+
+test('incorrect payloads and unexpected results on negative cases still fail the exact-read benchmark', () => {
+  // Deliberately inconsistent temporary expectations test the reporting path;
+  // the checked-in fixture's truth is never changed.
+  const incorrect = { ...qr, name: 'deliberately-wrong-positive', expected: [{ text: 'WRONG', formats: ['QRCode'] }] };
+  const negative = { ...qr, name: 'deliberately-wrong-negative', expected: [] };
+  const result = run([incorrect, negative]);
   assert.equal(result.status, 1, result.stderr);
   assert.equal(result.report.summary.exactPositiveReads, 0);
-  assert.equal(result.report.summary.unexpectedResults, 1);
-  assert.deepEqual(result.report.cases[0].missing, []);
-  assert.deepEqual(result.report.cases[0].unexpected, [{ text: '0169100005107', format: 'UPCE' }]);
-  assert.equal(result.report.settings.posConfirmation, false, 'the separate policy is not run by this worker-only benchmark');
+  assert.equal(result.report.summary.negativesCorrectlyRejected, 0);
+  assert.equal(result.report.summary.unexpectedResults, 2);
+  assert.deepEqual(result.report.cases[0].missing, ['WRONG']);
+  assert.ok(result.report.cases.every(item => !item.exact && item.unexpected[0].text === qr.expected[0].text));
 });
 
 test('enhancement alone keeps the unrestricted format behavior and hashes only its dependency', () => {

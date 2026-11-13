@@ -12,10 +12,11 @@ const item = { text: 'POS-ITEM-A', format: 'Code128', bytes: [80, 79, 83, 45, 73
     bottomRight: { x: 256, y: 126 }, bottomLeft: { x: 64, y: 126 } } };
 const other = { ...item, text: 'POS-ITEM-B', bytes: [80, 79, 83, 45, 73, 84, 69, 77, 45, 66] };
 
-function cameraHarness({ frames = 'decoded', pos = true, better = false, crops = false, frozen = false } = {}) {
+function cameraHarness({ frames = 'decoded', pos = true, better = false, crops = false, frozen = false,
+  width = 320, height = 180, exposureModes = [] } = {}) {
   const html = readFileSync(new URL('../web/index.html', import.meta.url), 'utf8');
   const nodes = new Map(), timers = new Map(), frameCallbacks = new Map(), windowEvents = new Map();
-  const messages = [], awaiting = [], streams = [], constraints = [], pixels = [];
+  const messages = [], awaiting = [], streams = [], constraints = [], pixels = [], cameraRequests = [];
   const objectUrls = new Map(), revokedUrls = [];
   const state = { now: 1000, frame: 1, scene: 'sharp', frozen, drawCalls: 0 };
   let nextId = 0;
@@ -90,7 +91,7 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
   }
 
   const video = get('video');
-  Object.assign(video, { readyState: 4, videoWidth: 320, videoHeight: 180, currentTime: 0,
+  Object.assign(video, { readyState: 4, videoWidth: width, videoHeight: height, currentTime: 0,
     srcObject: null, play: async () => {} });
   if (frames === 'presented') {
     video.requestVideoFrameCallback = fn => { const id = ++nextId; frameCallbacks.set(id, fn); return id; };
@@ -136,10 +137,12 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
     console, URL: LocalURL, Blob, Image, ArrayBuffer, Uint8Array, Uint8ClampedArray, Uint32Array, Float64Array, Uint16Array,
     Map, Set, Worker, document, performance: { now: () => state.now },
     navigator: { onLine: true, mediaDevices: {
-      async getUserMedia() {
+      async getUserMedia(request) {
+        if (request) cameraRequests.push(plain(request));
         const track = { stopped: 0, stop() { this.stopped++; }, addEventListener() {},
-          getCapabilities: () => ({ focusMode: ['continuous'], torch: true, zoom: { min: 1, max: 4, step: 0.1 } }),
-          getSettings: () => ({ deviceId: 'simulated-camera', width: 320, height: 180, zoom: 1 }),
+          getCapabilities: () => ({ focusMode: ['continuous'], exposureMode: exposureModes,
+            torch: true, zoom: { min: 1, max: 4, step: 0.1 } }),
+          getSettings: () => ({ deviceId: 'simulated-camera', width, height, zoom: 1 }),
           async applyConstraints(value) { constraints.push(plain(value)); },
         };
         const stream = { track, getTracks: () => [track], getVideoTracks: () => [track] };
@@ -162,7 +165,7 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
   let importing = null;
 
   return {
-    context, state, nodes, get, messages, awaiting, streams, constraints, pixels, timers, objectUrls, revokedUrls,
+    context, state, nodes, get, messages, awaiting, streams, constraints, pixels, timers, objectUrls, revokedUrls, cameraRequests,
     evaluate,
     get history() { return plain(evaluate('history')); },
     get hint() { return get('scan-hint').textContent; },
@@ -192,6 +195,7 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
       assert.equal(message.type, 'decode');
       assert.equal(message.image.data.byteLength, message.image.width * message.image.height * 4);
       const analysis = context.FrameAnalysis.analyze(message.image);
+      if (typeof overrides === 'function') overrides = overrides(analysis);
       worker.onmessage({ data: { id: message.id, type: 'result', results: plain(results), analysis, ...overrides } });
       await flush(); return message;
     },
@@ -593,4 +597,134 @@ for (const input of ['camera', 'image']) test(`${input} history keeps distinct a
   }
   assert.equal(app.history.length, 2, 'identical bytes do not erase a different text interpretation');
   assert.deepEqual(new Set(app.history.map(result => result.text)), new Set([latin1.text, utf8.text]));
+});
+
+// These tests control the worker's quality hint while retaining its actual pixel
+// fingerprint. They exercise camera orchestration, not the accuracy of a hint.
+const usefulMiss = analysis => ({ analysis: { ...analysis, hint: 'small',
+  regions: [{ x: 20, y: 20, width: 80, height: 40, kind: 'linear' }] } });
+const imagePixels = request => request.image.width * request.image.height;
+async function startDetailAttempt(app) {
+  await app.open(); await app.reply([], usefulMiss);
+  await app.tick({ now: 1200 }); await app.reply([], usefulMiss);
+  await app.tick({ now: 1400 }); await app.reply([], usefulMiss);
+}
+
+for (const crops of [false, true]) test(`targeted crops ${crops ? 'on requests UHD and continuous exposure' : 'off keeps HD and leaves exposure alone'}`, async t => {
+  const app = cameraHarness({ crops, width: 3840, height: 2160, exposureModes: ['manual', 'continuous'] });
+  t.after(() => app.close());
+  await app.open();
+  const request = app.cameraRequests[0];
+  assert.deepEqual(request, { audio: false, video: { width: { ideal: crops ? 3840 : 1920 },
+    height: { ideal: crops ? 2160 : 1080 }, facingMode: { ideal: 'environment' } } });
+  const controls = app.constraints[0];
+  assert.deepEqual(controls.width, request.video.width, 'optional controls retain capture dimensions');
+  assert.deepEqual(controls.facingMode, request.video.facingMode, 'optional controls retain the rear-camera preference');
+  assert.deepEqual(controls.advanced, [{ focusMode: 'continuous', ...(crops ? { exposureMode: 'continuous' } : {}) }]);
+  assert.equal(app.awaiting[0].message.image.width, 1920, 'the first decode remains at normal detail');
+  assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000);
+});
+
+test('unsupported exposure is not requested and rejected optional controls cannot disable scanning', async t => {
+  const app = cameraHarness({ crops: true, exposureModes: ['manual'] }); t.after(() => app.close());
+  const original = app.context.navigator.mediaDevices.getUserMedia;
+  app.context.navigator.mediaDevices.getUserMedia = async request => {
+    const stream = await original(request);
+    stream.track.applyConstraints = async value => { app.constraints.push(plain(value)); throw new Error('Optional control unavailable'); };
+    return stream;
+  };
+  await app.open();
+  assert.deepEqual(app.constraints[0].advanced, [{ focusMode: 'continuous' }]);
+  assert.equal(app.evaluate('active'), true);
+  assert.equal(app.get('error').hidden, true);
+  await app.reply(); await app.tick(); await app.reply();
+  assert.equal(app.history.length, 1, 'a camera control failure does not prevent independent-frame confirmation');
+});
+
+test('automatic detail waits for useful misses across time, caps pixels, then expires and cools down', async t => {
+  const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+  await app.open(); await app.reply([], usefulMiss);
+  for (const now of [1100, 1200]) {
+    await app.tick({ now });
+    assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000);
+    await app.reply([], usefulMiss);
+    assert.doesNotMatch(app.hint, /Trying more image detail/, 'three rapid misses are insufficient');
+  }
+  await app.tick({ now: 1400 });
+  assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000, 'escalation affects the next capture');
+  await app.reply([], usefulMiss);
+  assert.match(app.hint, /Trying more image detail/);
+  await app.tick({ now: 1600 });
+  const detailed = app.awaiting[0].message;
+  assert.ok(imagePixels(detailed) > 2_100_000);
+  assert.ok(imagePixels(detailed) <= 4_000_000);
+  assert.ok(detailed.image.width <= 3840 && detailed.image.height <= 3840);
+  assert.ok(Math.abs(detailed.image.width / detailed.image.height - 16 / 9) < 0.005,
+    'extra detail still covers the full camera frame before worker crops');
+  assert.equal(detailed.enhanceLive, true);
+  await app.reply([], usefulMiss);
+  for (const now of [4400, 4600, 4800, 5000]) {
+    await app.tick({ now });
+    assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000, 'the three-second detail window is bounded and cannot immediately restart');
+    await app.reply([], usefulMiss);
+  }
+  assert.equal(app.history.length, 0);
+});
+
+test('turning targeted crops off prevents automatic detail even after useful misses', async t => {
+  const app = cameraHarness({ crops: false, width: 3840, height: 2160 }); t.after(() => app.close());
+  await app.open();
+  for (let i = 0; i < 6; i++) {
+    if (i) await app.tick({ now: 1000 + i * 250 });
+    assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000);
+    assert.equal(app.awaiting[0].message.enhanceLive, false);
+    await app.reply([], usefulMiss);
+    assert.doesNotMatch(app.hint, /Trying more image detail/);
+  }
+});
+
+test('an automatic detail transition retains conflicts across later normal-resolution frames', async t => {
+  const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+  await startDetailAttempt(app);
+  await app.tick({ now: 3900 }); await app.reply([], usefulMiss);
+  await app.tick({ now: 4200 });
+  assert.ok(imagePixels(app.awaiting[0].message) > 2_100_000);
+  await app.reply([item, other]);
+  assert.equal(app.get('pos-status').getAttribute('data-state'), 'ambiguous');
+  for (const now of [4500, 4700, 4900]) {
+    await app.tick({ now });
+    assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000);
+    await app.reply([item]);
+    assert.equal(app.history.length, 0);
+    assert.equal(app.get('pos-status').getAttribute('data-state'), 'ambiguous', 'changing image detail must not erase competing identities');
+  }
+});
+
+test('a late detailed response is discarded and ends the automatic detail window', async t => {
+  const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+  app.get('pos-confirmation').value = '1';
+  await startDetailAttempt(app);
+  await app.tick({ now: 1600 });
+  assert.ok(imagePixels(app.awaiting[0].message) > 2_100_000);
+  app.state.now = 2901;
+  await app.reply([item]);
+  assert.equal(app.history.length, 0);
+  assert.match(app.get('pos-status').textContent, /too old/);
+  await app.tick({ now: 3100 });
+  assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000);
+});
+
+test('detail expiration cannot turn a frozen image into a second POS observation', async t => {
+  const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+  await startDetailAttempt(app);
+  await app.tick({ now: 3900 }); await app.reply([], usefulMiss);
+  app.state.frozen = true;
+  await app.tick({ now: 4200 });
+  assert.ok(imagePixels(app.awaiting[0].message) > 2_100_000);
+  await app.reply([item]);
+  assert.equal(app.history.length, 0);
+  await app.tick({ now: 4500 });
+  assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000);
+  await app.reply([item]);
+  assert.equal(app.history.length, 0, 'resampling a frozen scene cannot supply the missing independent observation');
 });

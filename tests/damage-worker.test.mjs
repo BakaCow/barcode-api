@@ -6,12 +6,13 @@ import test from 'node:test';
 
 // Pixel fixtures and expected payloads were generated independently of decoding.
 // Discovered wrong reads are explicitly promoted to regressions; the fresh
-// verification split is never loaded or used to select these expectations.
+// verification split for the current update is never loaded here. Earlier
+// accuracy-next verification is now explicitly promoted to development data.
 const project = new URL('../', import.meta.url);
 const source = readFileSync(new URL('web/scanner-worker.js', project), 'utf8');
 const reader = readFileSync(new URL('web/vendor/zxing-reader.js', project), 'utf8');
 const wasm = readFileSync(new URL('web/vendor/zxing_reader.wasm', project));
-const development = ['accuracy-pixels.json', 'damage-stress-dev.json', 'damage-regressions.json'].flatMap((name) =>
+const development = ['accuracy-pixels.json', 'damage-stress-dev.json', 'damage-regressions.json', 'damage-stress-accuracy-next.json'].flatMap((name) =>
   JSON.parse(readFileSync(new URL(`fixtures/${name}`, import.meta.url), 'utf8')).cases);
 const fixtures = new Map(development.map((entry) => [entry.name, entry]));
 const messages = new Map();
@@ -57,6 +58,7 @@ for (const name of [
   'qr/dev-qr-label-2/blur-2', 'qr/dev-qr-label-3/motion-blur-1', 'qr/dev-qr-label-3/blur-2',
   'ean13/dev-ean13-label-1/motion-blur-1', 'ean13/dev-ean13-label-1/blur-2',
   'ean13/dev-ean13-label-3/motion-blur-1',
+  'qr/dev-qr-label-1/scratches-1', 'qr/next-qr-label-3/scratches-1',
 ]) {
   test(`real WASM recovers the exact payload without extra reads: ${name}`, async () => {
     const { fixture, response } = await decode(name);
@@ -71,7 +73,7 @@ for (const name of [
         assert.ok(point.y >= 0 && point.y <= fixture.height);
       }
     }
-    assert.ok(response.diagnostics.passes <= 7);
+    assert.ok(response.diagnostics.passes <= 8);
   });
 }
 

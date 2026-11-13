@@ -1,5 +1,5 @@
 /* Everything needed to scan is cached here; camera frames never pass through it. */
-const VERSION = "1.8.0";
+const VERSION = "1.9.0";
 const FEATURES = ["code128-lab", "live-pos", "integration-examples", "camera-controls", "comparison-benchmark"];
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `barcode-camera:${SCOPE.href}:`;

@@ -1,5 +1,7 @@
 # Recognition update — 13 November 2026
 
+This is the earlier recognition update. The subsequent [camera recovery and retail safeguard update](RECOVERY-UPDATE.md) has newer results and treats this report's verification images as development data.
+
 This update improves the browser scanner used by the standalone app, camera SDK and hosted embed, plus the server-side image reader. It also fixes how the SDK schedules difficult reads for multi-frame confirmation. No Scanbot comparison or physical Android/iPhone accuracy measurement was performed.
 
 ## Changes

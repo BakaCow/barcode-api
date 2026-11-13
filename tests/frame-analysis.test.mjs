@@ -86,6 +86,30 @@ test('ranks a sharp fresh label ahead of an independently blurred capture', () =
   assert.ok(a.score > b.score + 15, JSON.stringify({ sharp: a, blurred: b }));
 });
 
+test('quality sampling recognizes sharp bars even when a regular grid aliases with their spacing', () => {
+  const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-dev.json', import.meta.url), 'utf8')).cases;
+  const item = cases.find(entry => entry.name === 'code128/dev-code128-label-1/clean-0');
+  const image = { width: item.width, height: item.height,
+    data: new Uint8ClampedArray(inflateSync(Buffer.from(item.rgba_zlib_base64, 'base64'))) };
+  const result = analysis.analyze(image);
+  assert.notEqual(result.hint, 'low-detail');
+  assert.notEqual(result.hint, 'blurred');
+  assert.ok(result.score > 45, JSON.stringify(result));
+  assert.deepEqual(analysis.analyze(image), result, 'sampling remains deterministic');
+});
+
+test('strongly blurred QR and linear labels request steadier capture without claiming a read', () => {
+  const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-dev.json', import.meta.url), 'utf8')).cases;
+  for (const name of ['qr/dev-qr-label-1/blur-2', 'code128/dev-code128-label-1/motion-blur-2', 'ean13/dev-ean13-label-1/blur-2']) {
+    const item = cases.find(entry => entry.name === name);
+    const image = { width: item.width, height: item.height,
+      data: new Uint8ClampedArray(inflateSync(Buffer.from(item.rgba_zlib_base64, 'base64'))) };
+    const result = analysis.analyze(image);
+    assert.equal(result.hint, 'blurred', name);
+    assert.equal(result.results, undefined);
+  }
+});
+
 test('white backgrounds do not cause a glare warning, while a central erased highlight can', () => {
   const white = analysis.analyze(blank(320, 240));
   assert.equal(white.hint, 'low-detail');

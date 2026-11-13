@@ -320,15 +320,25 @@ def test_restricted_formats_reach_the_native_decoder_and_remove_the_known_extra_
         assert configured == zxingcpp.BarcodeFormats(zxingcpp.BarcodeFormat.EAN13)
 
 
-def test_explicit_upce_opt_in_exposes_ambiguity_in_the_known_angled_sample(client):
+def test_explicit_upce_opt_in_rejects_the_corroborated_same_symbol_alias(client):
     content, expected = fixture_png("damage-stress-verify.json", "ean13/verify-ean13-label-2/angled-2")
     payload = result(upload(client, [content], {"allowed_formats": ["ean13", "upce"], "confirmation_frames": 1}))
-    assert payload["status"] == "ambiguous"
-    assert payload["reason"] == "conflicting_values"
-    assert payload["barcode"] is None
+    assert payload["status"] == "confirmed"
     assert {(candidate["format"], candidate["text"]) for candidate in payload["candidates"]} == {
-        ("ean13", expected[0]["text"]), ("upce", "0169100005107"),
+        ("ean13", expected[0]["text"]),
     }
+
+
+def test_real_separate_ean_and_upce_remain_ambiguous_when_both_requested(client):
+    with label('04252614', zxingcpp.BarcodeFormat.UPCE) as upce, \
+         label('4006381333931', zxingcpp.BarcodeFormat.EAN13) as ean, \
+         Image.new('RGB', (upce.width + ean.width + 80, max(upce.height, ean.height) + 40), 'white') as scene:
+        scene.paste(upce, (10, 10)); scene.paste(ean, (upce.width + 60, 10))
+        content = encode(scene)
+    payload = result(upload(client, [content], {"allowed_formats": ["ean13", "upce"], "confirmation_frames": 1}))
+    assert payload['status'] == 'ambiguous' and payload['barcode'] is None
+    assert {(candidate['format'], candidate['text']) for candidate in payload['candidates']} == {
+        ('ean13', '4006381333931'), ('upce', '0042100005264')}
 
 
 def test_known_invalid_checksum_negative_has_no_pos_candidate(client):

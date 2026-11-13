@@ -33,6 +33,8 @@ export interface ScannerOptions {
   cropBarcodes?: boolean;
   captureMode?: 'balanced' | 'detail';
   adaptiveFrameSelection?: boolean;
+  /** Request extra source detail and briefly retry useful missed regions. Defaults to true. */
+  automaticRecovery?: boolean;
   /** Normalized original-source rectangle; null scans the full view. */
   targetRegion?: TargetRegion | null;
 }

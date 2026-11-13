@@ -1,0 +1,150 @@
+[
+  {
+    "corpus": "accuracy-pixels",
+    "before": {
+      "total": 72,
+      "positives": 64,
+      "exactPositiveReads": 59,
+      "negatives": 8,
+      "negativesCorrectlyRejected": 8,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 4.51,
+      "p95Ms": 630.14
+    },
+    "after": {
+      "total": 72,
+      "positives": 64,
+      "exactPositiveReads": 59,
+      "negatives": 8,
+      "negativesCorrectlyRejected": 8,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 4.78,
+      "p95Ms": 556.17
+    },
+    "gains": [],
+    "losses": [],
+    "workerSha256": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c"
+  },
+  {
+    "corpus": "damage-stress-dev",
+    "before": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 136,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 10.14,
+      "p95Ms": 479.64
+    },
+    "after": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 137,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 10.37,
+      "p95Ms": 478.95
+    },
+    "gains": [
+      "qr/dev-qr-label-1/scratches-1"
+    ],
+    "losses": [],
+    "workerSha256": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c"
+  },
+  {
+    "corpus": "damage-stress-eval",
+    "before": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 138,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 8.67,
+      "p95Ms": 472.46
+    },
+    "after": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 138,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 8.7,
+      "p95Ms": 488.48
+    },
+    "gains": [],
+    "losses": [],
+    "workerSha256": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c"
+  },
+  {
+    "corpus": "damage-stress-verify",
+    "before": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 134,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 1,
+      "errors": 0,
+      "medianMs": 11.23,
+      "p95Ms": 509.77
+    },
+    "after": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 136,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 12.88,
+      "p95Ms": 483.11
+    },
+    "gains": [
+      "qr/verify-qr-label-1/scratches-1",
+      "ean13/verify-ean13-label-2/angled-2"
+    ],
+    "losses": [],
+    "workerSha256": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c"
+  },
+  {
+    "corpus": "damage-stress-accuracy-next",
+    "before": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 136,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 1,
+      "errors": 0,
+      "medianMs": 10.62,
+      "p95Ms": 476.88
+    },
+    "after": {
+      "total": 219,
+      "positives": 171,
+      "exactPositiveReads": 138,
+      "negatives": 48,
+      "negativesCorrectlyRejected": 48,
+      "unexpectedResults": 0,
+      "errors": 0,
+      "medianMs": 10.17,
+      "p95Ms": 483.55
+    },
+    "gains": [
+      "qr/next-qr-label-3/scratches-1",
+      "ean13/next-ean13-label-2/angled-2"
+    ],
+    "losses": [],
+    "workerSha256": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c"
+  }
+]

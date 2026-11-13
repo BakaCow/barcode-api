@@ -63,7 +63,17 @@ test('an invalid/error result cannot short-circuit retries or reach the app', as
 test('empty still images use a finite retry budget', async () => {
   const worker = harness(() => []);
   await worker.send({ image: image(), mode: 'image' });
-  assert.ok(worker.calls.length <= 7, 'at most one primary and six recovery attempts');
+  assert.ok(worker.calls.length <= 8, 'at most one primary and seven recovery attempts');
+});
+
+test('QR denoising is one bounded live retry and rejects non-QR output', async () => {
+  const worker = harness((_image, _options, call) => call === 1 ? [] : [valid]);
+  const result = await worker.send({ image: image(), mode: 'live', retryIndex: 6 });
+  assert.equal(worker.calls.length, 2);
+  assert.equal(worker.calls[1].options.tryDenoise, true);
+  assert.equal(worker.calls[1].options.isPure, false);
+  assert.deepEqual(Array.from(worker.calls[1].options.formats), ['QRCode', 'MicroQRCode', 'RMQRCode']);
+  assert.deepEqual(result.results, [], 'a native response outside the QR recovery family must not escape');
 });
 
 test('sharpening tiny flat frames preserves dimensions and introduces no edge contrast', async () => {
@@ -130,7 +140,7 @@ test('unchecked formats remain available on the original pass only', async () =>
     const result = await recovery.send({ image: image(), mode: 'image' });
     assert.deepEqual(result.results, [], 'result filtering must work even if the decoder ignores its format option');
     for (const { options } of recovery.calls.slice(1)) {
-      assert.ok(options.formats.includes('Code128'));
+      assert.ok(options.tryDenoise ? options.formats.every(format => ['QRCode', 'MicroQRCode', 'RMQRCode'].includes(format)) : options.formats.includes('Code128'));
       assert.ok(!options.formats.includes(format));
     }
   }
@@ -207,4 +217,67 @@ test('linear recovery requires coherent source bars aligned with its scanline', 
   assert.equal((await matrix.send({ image: image(), mode: 'live' })).results[0].format, 'QRCode');
   const original = harness(() => [{ ...valid, position: diagonal }]);
   assert.equal((await original.send({ image: verticalBars(), mode: 'live' })).results[0].format, 'Code128');
+});
+
+function retailOverlap() {
+  const input = image(), pixels = new Uint8ClampedArray(input.data);
+  for (let y = 0; y < input.height; y++) for (let x = 0; x < input.width; x++) {
+    const offset = (y * input.width + x) * 4;
+    pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = Math.floor((x + y) / 6) % 2 ? 0 : 255;
+  }
+  const box = (left, top, right, bottom) => ({ topLeft: { x: left, y: top }, topRight: { x: right, y: top },
+    bottomRight: { x: right, y: bottom }, bottomLeft: { x: left, y: bottom } });
+  const upce = { ...valid, format: 'UPCE', text: 'upce', bytes: new Uint8Array([1]), position: box(30, 29, 90, 31) };
+  const ean = { ...valid, format: 'EAN13', text: 'ean', bytes: new Uint8Array([2]), position: box(20, 10, 100, 50) };
+  const transformed = (record, candidate) => ({ ...record, position: Object.fromEntries(Object.entries(record.position).map(([key, point]) => {
+    const x = point.x - (input.width - 1) / 2, y = point.y - (input.height - 1) / 2, c = Math.SQRT1_2;
+    return [key, { x: c * (x + y) + (candidate.width - 1) / 2, y: c * (-x + y) + (candidate.height - 1) / 2 }];
+  })) });
+  return { input, box, upce, ean, transformed };
+}
+
+test('retail corroboration only removes an unreproduced UPC-E inside an exactly reproduced EAN footprint', async () => {
+  const { input, upce, ean, transformed } = retailOverlap();
+  const worker = harness((candidate, options, call) => call === 1 ? [upce, ean] : [
+    transformed(ean, candidate), { ...valid, format: 'QRCode', text: 'new candidate' },
+  ]);
+  const response = await worker.send({ image: input, mode: 'live' });
+  assert.deepEqual(response.results.map(value => value.text), ['ean']);
+  assert.equal(worker.calls.length, 2);
+  assert.deepEqual(worker.calls[1].options, worker.calls[0].options, 'never broaden or narrow the original native request');
+  assert.equal(response.diagnostics.strategy, 'retail-corroboration');
+  assert.ok(worker.calls[1].image.width * worker.calls[1].image.height <= 4_000_000);
+  assert.deepEqual(response.results[0].position, ean.position, 'retain original coordinates for surviving results');
+});
+
+test('uncertain retail corroboration preserves original evidence and genuine separate labels', async () => {
+  for (const scenario of ['no-check', 'repeat-upce', 'different-bytes', 'separate-label', 'degenerate', 'exception']) {
+    const { input, box, upce, ean, transformed } = retailOverlap();
+    const worker = harness((candidate, options, call) => {
+      if (call === 1) return [upce, ean];
+      if (scenario === 'exception') throw new Error('optional reread failed');
+      if (scenario === 'no-check') return [];
+      if (scenario === 'repeat-upce') return [transformed(ean, candidate), transformed(upce, candidate)];
+      const check = scenario === 'different-bytes' ? { ...ean, bytes: new Uint8Array([3]) } :
+        scenario === 'separate-label' ? { ...ean, position: box(0, 0, 15, 15) } :
+          { ...ean, position: box(20, 30, 100, 30) };
+      return [transformed(check, candidate)];
+    });
+    const response = await worker.send({ image: input, mode: 'live' });
+    assert.equal(response.type, 'result', scenario);
+    assert.deepEqual(response.results.map(value => value.text), ['upce', 'ean'], scenario);
+    assert.equal(worker.calls.length, 2, scenario);
+  }
+});
+
+test('retail corroboration skips lone UPC-E, featureless or invalid geometry, and exhausted deadlines', async () => {
+  for (const scenario of ['upce-alone', 'flat', 'missing-position', 'deadline']) {
+    const { input, upce, ean } = retailOverlap();
+    let now = 0;
+    const original = scenario === 'upce-alone' ? [upce] : scenario === 'missing-position' ? [{ ...upce, position: undefined }, ean] : [upce, ean];
+    const worker = harness(() => { if (scenario === 'deadline') now = 350; return original; }, { now: () => now });
+    const response = await worker.send({ image: scenario === 'flat' ? image() : input, mode: 'live' });
+    assert.deepEqual(response.results.map(value => value.text), original.map(value => value.text), scenario);
+    assert.equal(worker.calls.length, 1, scenario);
+  }
 });

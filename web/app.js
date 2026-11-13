@@ -18,6 +18,7 @@ let scanRevision = 0, lastVideoFrame = null, misses = 0, retryIndex = 0, candida
 let videoFrameCallbackId = null, presentedFrame = null, trackingPresentedFrames = false;
 const POS_NAMES = ['ean13', 'upca', 'code128', 'qr', 'ean8', 'upce', 'datamatrix', 'aztec', 'pdf417', 'code93'];
 let posConfirmation = null, frameSelection = null;
+const cameraRecovery = CaptureSelection.createRecovery();
 
 function posOptions() {
   if (!$('pos-mode').checked) return undefined;
@@ -55,6 +56,7 @@ function qualityHint(analysis) {
   return {
     dark: 'Add light or try the flashlight.',
     'low-detail': 'Hold still and let the camera focus on the code.',
+    blurred: 'Hold still and add light so the barcode edges become clearer.',
     glare: 'Try a slight tilt to reduce possible glare.',
     small: 'Move closer while keeping the whole code and its border visible.',
     clipped: 'Move back slightly to include the entire code and its border.',
@@ -64,6 +66,7 @@ function qualityHint(analysis) {
 function resetScanEvidence() {
   scanRevision += 1; confirmation.reset(); lastVideoFrame = null;
   posConfirmation?.reset(); frameSelection?.reset();
+  cameraRecovery.reset();
   misses = 0; retryIndex = 0; candidateCrop = null; lastAcceptedAt = performance.now();
 }
 
@@ -191,7 +194,8 @@ async function startCamera(deviceId) {
     posConfirmation = options ? PosPolicy.createConfirmation(options) : null;
     await initializeScanner();
     if (token !== generation) return;
-    const constraints = { audio: false, video: { width: { ideal: 1920 }, height: { ideal: 1080 },
+    const highResolution = $('target-crops').checked;
+    const constraints = { audio: false, video: { width: { ideal: highResolution ? 3840 : 1920 }, height: { ideal: highResolution ? 2160 : 1080 },
       ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'environment' } }) } };
     acquired = await navigator.mediaDevices.getUserMedia(constraints);
     if (token !== generation || document.hidden) { acquired.getTracks().forEach((track) => track.stop()); return; }
@@ -204,8 +208,11 @@ async function startCamera(deviceId) {
     track.addEventListener('ended', () => { if (stream?.getVideoTracks()[0] === track) stopCamera('Camera disconnected. Tap Start camera to reconnect.'); });
     cameraControls = CameraConstraints.create(track, constraints.video, () => token === generation && stream?.getVideoTracks()[0] === track);
     const controls = cameraControls, capabilities = controls.capabilities();
-    if (capabilities.focusMode?.includes('continuous')) {
-      try { await controls.change({ focusMode: 'continuous' }); }
+    const automaticModes = {};
+    if (capabilities.focusMode?.includes('continuous')) automaticModes.focusMode = 'continuous';
+    if (highResolution && capabilities.exposureMode?.includes('continuous')) automaticModes.exposureMode = 'continuous';
+    if (Object.keys(automaticModes).length) {
+      try { await controls.change(automaticModes); }
       catch { /* Some browsers expose focus controls that the active camera cannot apply. */ }
       if (token !== generation) return;
     }
@@ -259,13 +266,16 @@ async function scanFrame(token) {
       const capturedAt = performance.now();
       const width = video.videoWidth, height = video.videoHeight;
       lastVideoFrame = frameId;
+      const cameraFingerprint = options ? CaptureSelection.cameraIdentity(video, width, height, frame, context) : undefined;
       // POS and region retries always see the full image before any crop.
       const fraction = options || better || crops ? 1 : candidateCrop ?? ScanPolicy.cropFraction(misses);
-      const { image, plan } = capture(video, width, height, { fraction, maxPixels: 2_100_000 });
+      const detail = crops && cameraRecovery.detailed(capturedAt);
+      const { image, plan } = capture(video, width, height, { fraction,
+        maxPixels: detail ? 4_000_000 : 2_100_000, maxSide: detail ? 3840 : 1920 });
       // Analysis bounds its internal thumbnail but measures source-image detail
       // and fingerprints all captured pixels. Never analyze a later video frame.
-      const analysis = better || options ? FrameAnalysis.analyze(image) : null;
-      const candidate = { image, plan, width, height, frameId, capturedAt, analysis, revision };
+      const analysis = better || options || crops ? FrameAnalysis.analyze(image) : null;
+      const candidate = { image, plan, width, height, frameId, capturedAt, analysis, revision, cameraFingerprint };
       if (better) {
         frameSelection ||= CaptureSelection.create();
         selected = frameSelection.push(candidate);
@@ -281,14 +291,17 @@ async function scanFrame(token) {
       // Discard captures from before settings changes, including buffered frames.
       if (revision === scanRevision && selected.revision === scanRevision) {
         const mapped = ScanPolicy.remapResults(results, plan);
+        const stale = performance.now() - capturedAt > 1200;
+        const moreDetail = crops && cameraRecovery.observe({ now: performance.now(), frameId,
+          analysis: reply.analysis || analysis, hasResults: results.length > 0, stale });
         let accepted, conflictHint = null;
         if (options) {
-          if (performance.now() - capturedAt > 1200) {
+          if (stale) {
             posConfirmation.reset();
             accepted = [];
             setPosStatus('rescan', 'That frame is too old. Hold still for a fresh scan.');
           } else {
-            const decision = posConfirmation.observe(mapped, frameId, capturedAt, reply.analysis?.fingerprint || analysis?.fingerprint);
+            const decision = posConfirmation.observe(mapped, frameId, capturedAt, reply.analysis?.fingerprint || analysis?.fingerprint, selected.cameraFingerprint);
             accepted = decision.results;
             const messages = {
               conflicting_values: 'Conflicting codes. Isolate one label, then start a new scan.',
@@ -306,6 +319,7 @@ async function scanFrame(token) {
         if (accepted.length) {
           handleResults(accepted); lastAcceptedAt = performance.now();
           posConfirmation?.reset();
+          cameraRecovery.reset();
           misses = 0; retryIndex = 0; candidateCrop = null;
           $('scan-hint').textContent = `${accepted.length > 1 ? accepted.length + ' codes' : 'Code'} confirmed. Ready for the next.`;
         } else if (results.length) {
@@ -319,6 +333,7 @@ async function scanFrame(token) {
           else if (elapsed > 8000) $('scan-hint').textContent = 'Try another angle or more light. Keep the whole code visible.';
           else if (elapsed > 3500) $('scan-hint').textContent = 'Move closer and hold steady, keeping the code’s border visible.';
           else $('scan-hint').textContent = 'Hold the code steady in view';
+          if (moreDetail) $('scan-hint').textContent = 'Trying more image detail. Keep the full label steady.';
         }
         if (conflictHint) $('scan-hint').textContent = conflictHint;
       }

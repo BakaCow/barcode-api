@@ -278,3 +278,67 @@ test('returned candidates, payloads and positions cannot mutate confirmation sta
   assert.equal(second.results[0].position.topLeft.x, 1);
   assert.deepEqual(second.candidates[0].frameIds, [1, 2]);
 });
+
+test('camera evidence requires both decoder pixels and stable camera pixels to be new', () => {
+  const policy = createConfirmation();
+  const sample = (frame, decoder, camera) => policy.observe([qr], frame, frame * 100, decoder, camera);
+  assert.equal(sample(1, 'decoder-a', 'camera-a').matchedFrames, 1);
+  assert.equal(sample(2, 'decoder-b', 'camera-a').matchedFrames, 1, 'resizing frozen camera pixels adds no vote');
+  assert.equal(sample(3, 'decoder-b', 'camera-b').matchedFrames, 1, 'a new camera fingerprint cannot excuse repeated decoder pixels');
+  assert.equal(sample(4, 'decoder-c', 'camera-b').matchedFrames, 1, 'nonvoting frames still reserve their pixel identities');
+  const accepted = sample(5, 'decoder-d', 'camera-d');
+  assert.equal(accepted.status, 'confirmed');
+  assert.deepEqual(accepted.candidates[0].frameIds, [1, 5]);
+});
+
+test('a supplied malformed camera fingerprint cannot confirm even in single-frame mode', () => {
+  for (const identity of [null, '', 42, false, {}, [], 'x'.repeat(257)]) {
+    const policy = createConfirmation({ confirmationFrames: 1 });
+    const result = policy.observe([qr], 1, 100, 'valid-decoder-pixels', identity);
+    assert.equal(result.status, 'rescan');
+    assert.equal(result.reason, 'unreliable_frames');
+    assert.equal(result.matchedFrames, 0);
+    assert.deepEqual(result.results, []);
+  }
+});
+
+test('duplicate or malformed camera evidence still records a conflicting barcode identity', () => {
+  for (const secondCamera of ['camera-a', null, '']) {
+    const policy = createConfirmation();
+    policy.observe([qr], 1, 100, 'decoder-a', 'camera-a');
+    const conflict = policy.observe([other], 2, 200, 'decoder-b', secondCamera);
+    assert.equal(conflict.status, 'ambiguous');
+    assert.deepEqual(conflict.candidates.map(value => value.frameIds), [[1], []]);
+    const repeated = policy.observe([qr], 3, 300, 'decoder-c', 'camera-c');
+    assert.equal(repeated.status, 'ambiguous', 'new camera pixels cannot silently erase a previous conflict');
+    assert.deepEqual(repeated.results, []);
+  }
+});
+
+test('reset clears camera fingerprints together with votes and conflicts', () => {
+  const policy = createConfirmation();
+  policy.observe([qr, other], 1, 100, 'decoder-a', 'camera-a');
+  policy.reset();
+  const first = policy.observe([qr], 1, 0, 'decoder-a', 'camera-a');
+  assert.equal(first.status, 'rescan');
+  assert.equal(first.matchedFrames, 1);
+  assert.equal(first.candidates.length, 1);
+  assert.equal(policy.observe([qr], 2, 100, 'decoder-b', 'camera-a').matchedFrames, 1);
+  assert.equal(policy.observe([qr], 3, 200, 'decoder-c', 'camera-c').status, 'confirmed');
+});
+
+test('attempt expiry clears camera fingerprints without retaining an old vote', () => {
+  const policy = createConfirmation();
+  policy.observe([qr, other], 1, 0, 'decoder-a', 'camera-a');
+  const expired = policy.observe([qr], 2, 2500, 'decoder-a', 'camera-a');
+  assert.equal(expired.status, 'rescan');
+  assert.equal(expired.matchedFrames, 1);
+  assert.equal(expired.candidates.length, 1);
+  assert.equal(policy.observe([qr], 3, 2600, 'decoder-b', 'camera-b').status, 'confirmed');
+});
+
+test('noncamera callers may omit the additional camera fingerprint', () => {
+  const policy = createConfirmation();
+  assert.equal(policy.observe([qr], 1, 100, 'decoder-a').matchedFrames, 1);
+  assert.equal(policy.observe([qr], 2, 200, 'decoder-b', undefined).status, 'confirmed');
+});

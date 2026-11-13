@@ -172,6 +172,7 @@ for (const useCallbacks of [false, true]) test(`actual camera loop uses ${useCal
     clearTimeout(id) { timers.delete(id); },
   });
   vm.runInContext(readFileSync(new URL('../web/scan-policy.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../web/capture-selection.js', import.meta.url), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('../web/camera-constraints.js', import.meta.url), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('../web/app.js', import.meta.url), 'utf8'), context);
   const tick = () => new Promise((resolve) => setImmediate(resolve));

@@ -1,0 +1,347 @@
+{
+  "corpusSha256": {
+    "damage": "d18d2ad1a359a8e333d9ea4a5bff7dc78656ef1c72c99a28b15b2bc64c9f9d46",
+    "formats": "927833a400527228540142cc70b2ea7ed1532bd16ad4182c06366f33c3f15e95"
+  },
+  "baseline": {
+    "commit": "aeef1929790bbc3febcd65147388fbde1f78d288",
+    "method": "git archive HEAD; working-tree edits excluded",
+    "files": 267,
+    "sourceSha256": {
+      "barcode_reader.py": "0f0cddfd68ee222ef77f58045bcc3fa007cd2216df996712eb117a0e9449b132",
+      "web/scanner-worker.js": "2567722c09ac80ed436ec8cd6e997813721f23b395e261f1fe1f2f2de648f402",
+      "web/sdk/scanner.js": "ff00063884e25a6d6964bbe9db7b9ed5e99b68bb94434cb3445579683c084c64",
+      "web/frame-analysis.js": "6e33cc3f6e123c52e5c5f0a649fef96227bd9a752cca07a59d43afc1fdc570d2",
+      "web/capture-geometry.js": "27b1b517f7d036319d43affa4850e79f5684cc8965b74b63c5ba0f5ab8d065b9",
+      "web/pos-policy.js": "b6b472b50b80ddb1871389feb0f738f3f1d1b1b708a35a9203f227cc07fe6a9f",
+      "web/vendor/zxing-reader.js": "ffd72d59d54082194f7c086b384dcd930bdeb0c5b39fbb13779694e69bb0d344",
+      "web/vendor/zxing_reader.wasm": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e"
+    }
+  },
+  "frozenProductionSha256": {
+    "web/scanner-worker.js": "a6b52fd7d08798ba883fa18064c9077f23543b128f14fb9b0bc1f5ad482dc39c",
+    "barcode_reader.py": "c15171c457eaf59306da7aa84b22787dd1aeda52a5aa954eaa70182a2df1aaa6",
+    "web/sdk/scanner.js": "f3639b796045098d5c07ca4420ab10d7ba642b4f065bd199a2faa52596b7e8ff",
+    "web/sdk/scanner.d.ts": "272256774479b7943746f87e576ea8fcbccfadfd18ca63b7c6a98b9617f0a339",
+    "web/sdk/capture-tools.js": "1de552766fc9b3e445deded3da5791dcaf9fd287a63b3d6761bb02d84cdbf44b",
+    "web/camera-constraints.js": "0a7886e7d43815fca8a7c7719dfa444acb4136ee88378a879b8850663100701d",
+    "web/frame-analysis.js": "ac2c995c89601f0975b081a996f7b2d1ff22e67bbea2f7f9829ed7d605742a5d",
+    "web/capture-geometry.js": "5287af70f22a589e242bea5614e3ab070d47a2f7f5bd8b81fa0473d77b2f2a4f",
+    "web/capture-selection.js": "da750227945cbdf2561b864c8222452cf62deac5a97586000cdb9305941e4147",
+    "web/pos-policy.js": "f7a8bff17423ade661de4ff6df42c888f2e968ecc78d6319a23f0c675a84c470",
+    "web/app.js": "0ae81f61b4710d4e9df03a846cbae21abba59457c75094def9f44e602589d48e",
+    "web/sw.js": "9ce4781ed305a730f259aec0992d1d464c1d4b63f01ff878937de13ecf152c96",
+    "web/vendor/zxing-reader.js": "ffd72d59d54082194f7c086b384dcd930bdeb0c5b39fbb13779694e69bb0d344",
+    "web/vendor/zxing_reader.wasm": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e"
+  },
+  "comparisons": {
+    "browser": {
+      "corpus": "damage",
+      "before": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 133,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 11.17,
+        "p95Ms": 473.49
+      },
+      "after": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 134,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 10.61,
+        "p95Ms": 477.58
+      },
+      "improvedCases": [
+        "qr/recovery-qr-label-3/scratches-1"
+      ],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "code128/recovery-code128-label-3/small-in-frame-1"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "qr": {
+          "total": 57,
+          "before": 39,
+          "after": 40
+        },
+        "code128": {
+          "total": 57,
+          "before": 47,
+          "after": 47
+        },
+        "ean13": {
+          "total": 57,
+          "before": 47,
+          "after": 47
+        }
+      }
+    },
+    "api": {
+      "corpus": "damage",
+      "before": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 132,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 6.937,
+        "p95Ms": 66.044
+      },
+      "after": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 132,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 6.922,
+        "p95Ms": 66.648
+      },
+      "improvedCases": [],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "code128/recovery-code128-label-3/small-in-frame-1"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "qr": {
+          "total": 57,
+          "before": 39,
+          "after": 39
+        },
+        "code128": {
+          "total": 57,
+          "before": 47,
+          "after": 47
+        },
+        "ean13": {
+          "total": 57,
+          "before": 46,
+          "after": 46
+        }
+      }
+    },
+    "browser-pos-image": {
+      "corpus": "damage",
+      "before": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 133,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 16.42,
+        "p95Ms": 458.24
+      },
+      "after": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 134,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 16.32,
+        "p95Ms": 453.22
+      },
+      "improvedCases": [
+        "qr/recovery-qr-label-3/scratches-1"
+      ],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "code128/recovery-code128-label-3/small-in-frame-1"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "qr": {
+          "total": 57,
+          "before": 39,
+          "after": 40
+        },
+        "code128": {
+          "total": 57,
+          "before": 47,
+          "after": 47
+        },
+        "ean13": {
+          "total": 57,
+          "before": 47,
+          "after": 47
+        }
+      }
+    },
+    "browser-pos-live": {
+      "corpus": "damage",
+      "before": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 113,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 4.53,
+        "p95Ms": 48.01
+      },
+      "after": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 113,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 5.98,
+        "p95Ms": 50.19
+      },
+      "improvedCases": [],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "code128/recovery-code128-label-3/small-in-frame-1"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "qr": {
+          "total": 57,
+          "before": 34,
+          "after": 34
+        },
+        "code128": {
+          "total": 57,
+          "before": 36,
+          "after": 36
+        },
+        "ean13": {
+          "total": 57,
+          "before": 43,
+          "after": 43
+        }
+      }
+    },
+    "browser-formats": {
+      "corpus": "formats",
+      "before": {
+        "total": 42,
+        "positives": 42,
+        "exactPositiveReads": 41,
+        "negatives": 0,
+        "negativesCorrectlyRejected": 0,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 1.74,
+        "p95Ms": 6.22
+      },
+      "after": {
+        "total": 42,
+        "positives": 42,
+        "exactPositiveReads": 41,
+        "negatives": 0,
+        "negativesCorrectlyRejected": 0,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 1.76,
+        "p95Ms": 144.65
+      },
+      "improvedCases": [],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "multiple/recovery-format-1-4/upce-ean13"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "upce": {
+          "total": 28,
+          "before": 28,
+          "after": 28
+        },
+        "multiple": {
+          "total": 14,
+          "before": 13,
+          "after": 13
+        }
+      }
+    },
+    "api-formats": {
+      "corpus": "formats",
+      "before": {
+        "total": 42,
+        "positives": 42,
+        "exactPositiveReads": 41,
+        "negatives": 0,
+        "negativesCorrectlyRejected": 0,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 1.445,
+        "p95Ms": 5.179
+      },
+      "after": {
+        "total": 42,
+        "positives": 42,
+        "exactPositiveReads": 41,
+        "negatives": 0,
+        "negativesCorrectlyRejected": 0,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 1.418,
+        "p95Ms": 17.983
+      },
+      "improvedCases": [],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "multiple/recovery-format-1-4/upce-ean13"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "upce": {
+          "total": 28,
+          "before": 28,
+          "after": 28
+        },
+        "multiple": {
+          "total": 14,
+          "before": 13,
+          "after": 13
+        }
+      }
+    }
+  },
+  "evaluationPolicy": "Updated algorithms frozen before fresh outputs inspected; no tuning on these reports. All earlier fixtures are development/debug evidence.",
+  "limits": [
+    "Synthetic images, not real camera photographs or Scanbot comparisons.",
+    "POS profiles are fixed-image worker calls; live profile is only retry index 0. Neither exercises camera acquisition, selection, adaptive capture or confirmation.",
+    "Format compatibility suite has 14 positive UPC-E payload groups, 42 related images and no negative images; both number systems and all compression branches, including separate EAN13 beside UPC-E.",
+    "Sequential single-run host latency excludes startup, camera, HTTP and UI; not phone speed.",
+    "Any unexpected value fails a command; correct plus wrong extra is unsuccessful."
+  ]
+}

@@ -15,7 +15,7 @@ api.decodePos([new Blob(['image'])], { confirmation_frames: 4 });
 const video = document.createElement('video');
 const scanner = createScanner({ video, formats: ['qr'], onScan(scan: ScanResult) { scan.scanId.toUpperCase(); } });
 scanner.setOptions({ confirmationFrames: 3 });
-scanner.setOptions({ targetRegion: { x: 0.1, y: 0.2, width: 0.7, height: 0.4 }, adaptiveFrameSelection: true });
+scanner.setOptions({ targetRegion: { x: 0.1, y: 0.2, width: 0.7, height: 0.4 }, adaptiveFrameSelection: true, automaticRecovery: true });
 scanner.getOptions().formats.includes('qr');
 scanner.listCameras().then(cameras => cameras[0]?.label.toUpperCase());
 scanner.setTorch(true);

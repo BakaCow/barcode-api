@@ -160,6 +160,9 @@ function harness(page, profile, overrides = {}) {
   if (options.recorderTypes !== null) globals.MediaRecorder = MediaRecorder;
   context = vm.createContext(globals); context.window = context;
   vm.runInContext(readFileSync(new URL(page === 'lab' ? '../web/lab/lab-policy.js' : '../web/scan-policy.js', import.meta.url), 'utf8'), context);
+  if (page === 'scanner') for (const file of ['pos-policy.js', 'frame-analysis.js', 'capture-selection.js']) {
+    vm.runInContext(readFileSync(new URL(`../web/${file}`, import.meta.url), 'utf8'), context, { filename: file });
+  }
   vm.runInContext(readFileSync(new URL('../web/camera-constraints.js', import.meta.url), 'utf8'), context);
   vm.runInContext(readFileSync(new URL(page === 'lab' ? '../web/lab/lab.js' : '../web/app.js', import.meta.url), 'utf8'), context);
   const evaluate = (expression) => vm.runInContext(expression, context);
@@ -302,6 +305,25 @@ for (const page of pages) for (const behavior of ['ignore', 'reject']) {
     await app.cleanup();
   });
 }
+
+for (const profile of profiles) test(`${profile.name} scanner: detail support tolerates ignored UHD ideals and only applies supported exposure`, async () => {
+  const app = harness('scanner', profile);
+  app.get('target-crops').checked = true;
+  try {
+    await app.open();
+    assert.equal(app.active, true);
+    assert.deepEqual([app.requestedConstraints[0].video.width.ideal, app.requestedConstraints[0].video.height.ideal], [3840, 2160]);
+    assert.equal(app.get('video').videoWidth, 320, 'actual video size may be lower than the requested ideal');
+    assert.equal(app.optionalConstraints.some(value => value.advanced.some(entry => entry.exposureMode === 'continuous')), profile === android);
+    if (profile.frames === 'presented') { app.present(1); await app.runTimer(180); }
+    assert.equal(app.unresolvedDecodes.length, 1);
+    const request = app.unresolvedDecodes[0].message;
+    assert.deepEqual([request.image.width, request.image.height], [320, 180], 'capture uses the returned camera dimensions');
+    assert.equal(request.enhanceLive, true);
+    await app.reply([]);
+    assert.equal(app.get('error').hidden, true);
+  } finally { await app.cleanup(); }
+});
 
 for (const profile of profiles) {
   test(`${profile.name} lab: saves photo and negotiated recording with labels, then releases object URLs`, async () => {

@@ -85,11 +85,11 @@
 
   function createConfirmation(options = {}) {
     const config = validateOptions(options), allowed = new Set(config.allowedFormats);
-    const candidates = new Map(), seenFrames = new Set(), seenPixels = new Set();
+    const candidates = new Map(), seenFrames = new Set(), seenPixels = new Set(), seenCameraPixels = new Set();
     let startedAt = null, lastNow = null, conflict = false, blocked = false;
 
     function clearAttempt() {
-      candidates.clear(); seenFrames.clear(); seenPixels.clear();
+      candidates.clear(); seenFrames.clear(); seenPixels.clear(); seenCameraPixels.clear();
       startedAt = null; conflict = false; blocked = false;
     }
 
@@ -116,7 +116,7 @@
 
     return {
       reset() { clearAttempt(); lastNow = null; },
-      observe(results, frameId, now, pixelIdentity) {
+      observe(results, frameId, now, pixelIdentity, cameraIdentity) {
         // Late or repeated timestamps cannot be re-labelled as fresh camera work.
         if (!Number.isFinite(now) || now < 0 || (lastNow !== null && now <= lastNow)) {
           return snapshot({ unreliable: true });
@@ -126,15 +126,18 @@
         if (startedAt === null) startedAt = now;
 
         const reliable = usableFrameId(frameId, config.confirmationFrames) &&
-          typeof pixelIdentity === 'string' && pixelIdentity.length > 0 && pixelIdentity.length <= 256;
+          typeof pixelIdentity === 'string' && pixelIdentity.length > 0 && pixelIdentity.length <= 256 &&
+          (cameraIdentity === undefined || (typeof cameraIdentity === 'string' && cameraIdentity.length > 0 && cameraIdentity.length <= 256));
         let fresh = false;
         if (reliable) {
           const id = String(frameId);
-          fresh = !seenFrames.has(id) && !seenPixels.has(pixelIdentity);
-          if (seenFrames.size >= MAX_OBSERVATIONS || seenPixels.size >= MAX_OBSERVATIONS) {
+          fresh = !seenFrames.has(id) && !seenPixels.has(pixelIdentity) &&
+            (cameraIdentity === undefined || !seenCameraPixels.has(cameraIdentity));
+          if (seenFrames.size >= MAX_OBSERVATIONS || seenPixels.size >= MAX_OBSERVATIONS || seenCameraPixels.size >= MAX_OBSERVATIONS) {
             blocked = true; fresh = false;
           } else {
             seenFrames.add(id); seenPixels.add(pixelIdentity);
+            if (cameraIdentity !== undefined) seenCameraPixels.add(cameraIdentity);
           }
         }
         if (!Array.isArray(results) || results.length > MAX_OBSERVATIONS) {

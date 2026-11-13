@@ -75,6 +75,20 @@ function proposedRegions(count = 3) {
   };
 }
 
+test('QR denoise phase honors the POS allowlist without enabling unrequested QR families', async () => {
+  const rejected = harness({ read: () => [] });
+  const noQr = await rejected.send({ image: blank(), mode: 'live', retryIndex: 6,
+    posOptions: { allowedFormats: ['code128'] } });
+  assert.equal(noQr.type, 'result'); assert.deepEqual(noQr.results, []);
+  assert.equal(rejected.calls.length, 1, 'no QR retry may run with an empty requested QR format set');
+  const accepted = harness({ read: (_image, _options, call) => call === 1 ? [] : [valid('scratch-qr')] });
+  const qr = await accepted.send({ image: blank(), mode: 'live', retryIndex: 6,
+    posOptions: { allowedFormats: ['qr'] } });
+  assert.equal(qr.results[0].text, 'scratch-qr');
+  assert.deepEqual(Array.from(accepted.calls[1].options.formats), ['QRCode']);
+  assert.equal(accepted.calls[1].options.tryDenoise, true);
+});
+
 test('quality analysis loads only local analysis code and never initializes or calls WASM', async () => {
   const worker = harness({ read: () => assert.fail('analysis must not decode') });
   const response = await worker.send({ type: 'analyze', image: blank() });
@@ -241,16 +255,38 @@ test('actual bundled decoder preserves a multi-code full image for POS ambiguity
 
 // This previously reported verification failure is deliberately a regression
 // now; it is not new held-out evidence for this update.
-test('the known angled EAN/UPC-E conflict is restricted before native decoding', async () => {
-  const fixture = caseFrom('damage-stress-verify.json', 'ean13/verify-ean13-label-2/angled-2');
-  const restricted = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['ean13'] } });
-  assert.equal(restricted.type, 'result', restricted.message);
-  assert.deepEqual(restricted.results.map(({ text, format }) => ({ text, format })), [{ text: fixture.expected[0].text, format: 'EAN13' }]);
-  const unrestricted = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['ean13', 'upce'] } });
-  assert.equal(unrestricted.type, 'result', unrestricted.message);
-  assert.deepEqual(unrestricted.results.map(({ text, format }) => ({ text, format })).sort((a, b) => a.format.localeCompare(b.format)),
-    [{ text: fixture.expected[0].text, format: 'EAN13' }, { text: '0169100005107', format: 'UPCE' }]);
+test('known angled EAN aliases are resolved by a source-aligned reread while UPC-E remains enabled', async () => {
+  for (const [file, name] of [['damage-stress-verify.json', 'ean13/verify-ean13-label-2/angled-2'],
+    ['damage-stress-accuracy-next.json', 'ean13/next-ean13-label-2/angled-2']]) {
+    const fixture = caseFrom(file, name);
+    const restricted = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['ean13'] } });
+    assert.equal(restricted.type, 'result', restricted.message);
+    assert.deepEqual(restricted.results.map(({ text, format }) => ({ text, format })), [{ text: fixture.expected[0].text, format: 'EAN13' }]);
+    const unrestricted = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['ean13', 'upce'] } });
+    assert.equal(unrestricted.type, 'result', unrestricted.message);
+    assert.deepEqual(unrestricted.results.map(({ text, format }) => ({ text, format })), [{ text: fixture.expected[0].text, format: 'EAN13' }]);
+    assert.equal(unrestricted.diagnostics.passes, 2);
+    assert.equal(unrestricted.diagnostics.strategy, 'retail-corroboration');
+  }
 });
+
+for (const fixture of JSON.parse(readFileSync(new URL('fixtures/upce-controls.json', import.meta.url))).cases) {
+  test(`native UPC-E preservation: ${fixture.name}`, async () => {
+    const response = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['ean13', 'upce'] } });
+    assert.equal(response.type, 'result', response.message);
+    const matches = (found, expected) => found.text === expected.text && expected.formats.includes(found.format);
+    for (const expected of fixture.expected.filter(value => value.formats.includes('UPCE'))) {
+      assert.ok(response.results.some(found => matches(found, expected)), `missing legitimate UPC-E ${expected.text}`);
+    }
+    assert.ok(response.results.every(found => fixture.expected.some(expected => matches(found, expected))), 'unexpected identity');
+    // Three difficult angled EAN pairs already miss the EAN on the original
+    // reader. Preserve every previously readable full conflict, without
+    // pretending the incomplete baseline cases were exact reads.
+    if (!['pair/ean-30/upce-30', 'pair/ean--30/upce-30', 'pair/ean-60/upce-0'].includes(fixture.name)) {
+      assert.ok(fixture.expected.every(expected => response.results.some(found => matches(found, expected))), 'missing previously readable identity');
+    }
+  });
+}
 
 test('enhanced real decoding keeps invalid-checksum damage as a miss', async () => {
   const fixture = caseFrom('damage-regressions.json', 'regression/invalid-ean13-oblique-upce');

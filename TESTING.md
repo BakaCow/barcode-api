@@ -2,7 +2,7 @@
 
 ## Recognition update (13 November 2026)
 
-The current [recognition update](ACCURACY-UPDATE.md) passes 471 JavaScript tests, 305 Python tests (one platform skip), TypeScript declarations, React production build and OpenAPI validation. Tests cover newly recovered real decoder fixtures, independently rotated source coordinates, recovery limits, format restrictions, fresh-frame confirmation scheduling and stale/cancelled results. Offline cache version is 1.8.0; no new physical-phone or offline-install test was performed for this decoder-only change. Synthetic evaluation results and known incorrect readings are reported separately from these passing software tests.
+The current [recovery update](RECOVERY-UPDATE.md) passes **532 JavaScript tests**, **337 Python tests** (one platform skip), TypeScript declarations, React production build and OpenAPI validation. New coverage includes a naturally unreadable downscaled barcode recovered from source pixels with the real WASM decoder, scratched QR images, independently encoded and rotated UPC-E labels beside EAN, bounded automatic recovery, guarded exposure, and duplicate-frame rejection across resolution changes. Android Chrome-like and iPhone Safari-like capability/lifecycle simulations pass; these do not run actual mobile browsers or physical cameras. Offline cache version is 1.9.0; its lifecycle is tested automatically, without a new physical-phone or offline-install test. Synthetic evaluation results and any incorrect readings are reported separately from these passing software tests.
 
 ## Embedded camera update (0.9.0)
 
