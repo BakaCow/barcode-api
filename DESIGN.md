@@ -120,6 +120,12 @@ The camera stage contains the preview, detected-code outlines, state labels, and
 
 The regular scanner places an optional POS-mode checkbox above the camera. A nearby new-scan action clears the current attempt, while an inline status beneath the toolbar explains confirmation or conflicts. A Scanning options disclosure holds frame-selection and region-retry toggles plus the POS format and confirmation controls. Existing paper/green colors, focus outlines and native inputs are preserved. Format checkboxes use two columns; the confirmation selector fills the phone width. The results panel keeps its natural height when the disclosure expands.
 
+## Integration examples
+
+The JavaScript, POS and React examples preserve the existing Public Sans typography, paper/green/ink roles, camera surface, button styles and focus treatment. Desktop pairs the camera with a naturally sized application-result or cart panel; phone layouts stack them in reading order. Examples expose explicit camera start/stop and next-scan controls, readable confirmation/error states, and no automatic URL opening.
+
+The POS example separates exact catalogue matching from scan confirmation, explains unknown-item rejection inline, and labels its catalogue, prices and session cart as demonstration data. Manual entry sits in a disclosure; removing and clearing items remain explicit controls. The static examples reuse the app's versioned offline cache and explain when a main-app update is needed without silently activating it. React demonstrates ownership of lifecycle cleanup and states that its host must supply offline caching.
+
 ## Experimental lab flow
 
 The Code 128 lab reuses the same self-hosted typography, paper and green palette, camera surface, buttons, field styling and focus treatment. An Experimental label identifies its scope and a persistent Back to scanner link returns to the regular app. The wider desktop layout pairs capture controls with label details, then places comparison results below; phone layouts stack these sections in the same reading order.

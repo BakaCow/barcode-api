@@ -37,6 +37,9 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
     ("path", "content_type"),
     [
         ("app.js", "application/javascript"),
+        ("sdk/scanner.js", "application/javascript"),
+        ("examples/plain/app.js", "application/javascript"),
+        ("examples/pos/cart.mjs", "application/javascript"),
         ("scanner-worker.js", "application/javascript"),
         ("pos-policy.js", "application/javascript"),
         ("frame-analysis.js", "application/javascript"),

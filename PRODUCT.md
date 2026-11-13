@@ -20,6 +20,8 @@ The regular browser scanner now offers an optional POS mode with native format r
 
 ## Operating Context
 
+Version 0.8.0 adds a headless browser SDK with explicit scan callbacks and lifecycle management, plain JavaScript/POS/React integration examples, typed JavaScript and standard-library Python backend clients, and an exported OpenAPI contract. The POS example is a demonstration catalogue/cart with event deduplication, not a payment or persistent stock system. Business hosting adds per-customer keys, bounded single-process admission and operational metrics. MIT applies to original project code while third-party notices are preserved. See [INTEGRATION.md](INTEGRATION.md).
+
 Existing Python/FastAPI backend. This addition uses plain browser HTML/CSS/JavaScript and a locally bundled WebAssembly reader. The interface targets phone and desktop browsers; the specific user's target device is not yet known. Scanner frames and imported images are processed on-device. Scan history is session-only unless the user opts into storage on that device.
 
 The lab lives at `/scan/lab/` under the API or `/lab/` under a static deployment. It adds local JavaScript detection/decoding and uses the existing offline bundle. Users enter verified truth and a physical-label group, capture media, save paired metadata, and import it with the dataset CLI. They keep evaluation groups separate and manually review extracted video frames. Prepared captures remain temporary until explicitly downloaded; they are not uploaded automatically. Optional OpenCV is only needed by the local video extraction tools.

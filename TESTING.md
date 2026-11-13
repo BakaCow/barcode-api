@@ -1,5 +1,31 @@
 # Verification
 
+## Business integration update (0.8.0)
+
+Verified on 13 November 2026:
+
+- **331 Node tests passed; 280 Python tests passed, 1 skipped** (the existing Windows symlink-creation restriction). Python retains the upstream Starlette HTTPX test-adapter warning.
+- The camera SDK has 27 tests covering cancellation during permission/image loading, camera/worker cleanup, option changes, callback reentrancy, stale replies, distinct frames/pixels, ambiguity, and explicit rescan. Tests also run the bundled WASM on actual synthetic Code 128 and QR images. Camera lifecycle tests simulate browser capabilities; they do not operate physical Android/iPhone cameras.
+- The examples add 18 Node checks for exact catalogue matches, duplicate scan-event IDs, legitimate quantity increments, integer-cent totals, and offline readiness/update handling. Three Python checks decode the included demo-label PNG files with the actual native reader.
+- The JavaScript client has 10 HTTP transport checks; the Python client has 11 checks including real loopback HTTP requests forwarded into the production FastAPI app. A separate JavaScript integration run against Uvicorn generated and read a label, confirmed one POS image with an explicit one-frame policy, and rejected conflicting images. Redirect refusal, cancellation/timeouts, raw multipart bytes, leading zeros and HTTP error metadata are covered.
+- Hosting checks exercise malformed configuration, customer isolation and key rotation, shared per-customer limits, rate-window reset/Retry-After, concurrency reservation and cleanup, admission before body reads, upload timeouts, private metrics and metadata-only logging. Public non-API POSTs bypass upload buffering. Deployment examples contain deliberately invalid placeholder keys and no live credentials.
+- TypeScript checked the SDK and API client declarations plus valid/invalid usage examples. The committed OpenAPI export is current. The pinned React/Vite production build passed without warnings. The JavaScript package dry run includes its entry point, declarations, README and license; the Python client wheel built successfully.
+- Browser verification checked desktop and phone-width layouts, imported-image rejection at two-frame confirmation, exact SDK callbacks at one frame, unknown POS catalogue rejection, and React mount/unmount/remount. With the local API/static preview server stopped and its port verified closed, the cached JavaScript example reloaded and decoded `DEMO-TEA-01`; the cached POS example also reloaded and accepted intentional manual catalogue entries. The screenshot is evidence of the demo UI, not a real financial transaction.
+- Offline cache **1.5.0** includes the SDK and static integration examples. Example readiness requires the `integration-examples` feature. SDK imports alone do not cache a host app; React and other host applications supply their own service worker and offline business-data behavior.
+- All four existing CI benchmark commands passed. Synthetic development results remain browser **128/171**, unrestricted API **126/171**, custom Code 128 **44/57** exact positive images; each rejects all **48/48** negatives with zero unexpected results/errors. The eight-image Code 128 demonstration also passes. No increased recognition rate is claimed for this integration release.
+
+Docker and nginx executables were unavailable here, so deployment templates were inspected and configuration-tested but not launched. Physical phones, production load, distributed quotas, durable billing and business-specific workflows remain outside this verification. Admission counters are documented as single-process and reset on restart. See [INTEGRATION.md](INTEGRATION.md), [SDK.md](SDK.md) and [HOSTING.md](HOSTING.md).
+
+From the project root, reproduce the integration checks with the existing full test commands, plus:
+
+```powershell
+python tools/export-openapi.py --check
+npm exec --yes --package=typescript@5.9.3 -- tsc --strict --noEmit --lib ES2022,DOM --module NodeNext --moduleResolution NodeNext tests/client-types.mts
+cd examples/react
+npm ci --no-audit --no-fund
+npm run build
+```
+
 ## Live scanner update (0.7.0)
 
 Verified on 13 November 2026:

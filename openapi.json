@@ -1,0 +1,676 @@
+{
+  "components": {
+    "schemas": {
+      "BarcodeResult": {
+        "properties": {
+          "bytes_base64": {
+            "title": "Bytes Base64",
+            "type": "string"
+          },
+          "format": {
+            "title": "Format",
+            "type": "string"
+          },
+          "position": {
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            },
+            "title": "Position",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "format",
+          "bytes_base64",
+          "position"
+        ],
+        "title": "BarcodeResult",
+        "type": "object"
+      },
+      "Body_pos_decode_v1_pos_decode_post": {
+        "properties": {
+          "frames": {
+            "description": "One to five images of one target product.",
+            "items": {
+              "contentMediaType": "application/octet-stream",
+              "type": "string"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "options": {
+            "default": "{}",
+            "description": "JSON object: allowed_formats and confirmation_frames (1–3).",
+            "title": "Options",
+            "type": "string"
+          }
+        },
+        "required": [
+          "frames"
+        ],
+        "title": "Body_pos_decode_v1_pos_decode_post",
+        "type": "object"
+      },
+      "Body_read_v1_barcodes_read_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_read_v1_barcodes_read_post",
+        "type": "object"
+      },
+      "GenerateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "format": {
+            "default": "qr",
+            "enum": [
+              "qr",
+              "code128",
+              "ean13",
+              "upca"
+            ],
+            "title": "Format",
+            "type": "string"
+          },
+          "output": {
+            "default": "png",
+            "enum": [
+              "png",
+              "svg"
+            ],
+            "title": "Output",
+            "type": "string"
+          },
+          "scale": {
+            "default": 4,
+            "maximum": 8.0,
+            "minimum": 1.0,
+            "title": "Scale",
+            "type": "integer"
+          },
+          "text": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "GenerateRequest",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ImageSize": {
+        "properties": {
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "width",
+          "height"
+        ],
+        "title": "ImageSize",
+        "type": "object"
+      },
+      "Point": {
+        "properties": {
+          "x": {
+            "title": "X",
+            "type": "integer"
+          },
+          "y": {
+            "title": "Y",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "title": "Point",
+        "type": "object"
+      },
+      "PosCandidate": {
+        "properties": {
+          "bytes_base64": {
+            "title": "Bytes Base64",
+            "type": "string"
+          },
+          "format": {
+            "enum": [
+              "qr",
+              "code128",
+              "ean13",
+              "ean8",
+              "upca",
+              "upce",
+              "datamatrix",
+              "aztec",
+              "pdf417",
+              "code93"
+            ],
+            "title": "Format",
+            "type": "string"
+          },
+          "frame_indices": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Frame Indices",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "format",
+          "bytes_base64",
+          "frame_indices"
+        ],
+        "title": "PosCandidate",
+        "type": "object"
+      },
+      "PosConfirmation": {
+        "properties": {
+          "distinct_frames": {
+            "title": "Distinct Frames",
+            "type": "integer"
+          },
+          "matched_frames": {
+            "title": "Matched Frames",
+            "type": "integer"
+          },
+          "required_frames": {
+            "title": "Required Frames",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "required_frames",
+          "distinct_frames",
+          "matched_frames"
+        ],
+        "title": "PosConfirmation",
+        "type": "object"
+      },
+      "PosFrame": {
+        "properties": {
+          "barcodes": {
+            "items": {
+              "$ref": "#/components/schemas/PosFrameBarcode"
+            },
+            "title": "Barcodes",
+            "type": "array"
+          },
+          "duplicate_of": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Of"
+          },
+          "image": {
+            "$ref": "#/components/schemas/PosImageSize"
+          },
+          "index": {
+            "minimum": 0.0,
+            "title": "Index",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "index",
+          "image",
+          "barcodes"
+        ],
+        "title": "PosFrame",
+        "type": "object"
+      },
+      "PosFrameBarcode": {
+        "properties": {
+          "bytes_base64": {
+            "title": "Bytes Base64",
+            "type": "string"
+          },
+          "format": {
+            "title": "Format",
+            "type": "string"
+          },
+          "position": {
+            "items": {
+              "$ref": "#/components/schemas/PosPoint"
+            },
+            "title": "Position",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "format",
+          "bytes_base64",
+          "position"
+        ],
+        "title": "PosFrameBarcode",
+        "type": "object"
+      },
+      "PosImageSize": {
+        "properties": {
+          "height": {
+            "exclusiveMinimum": 0.0,
+            "title": "Height",
+            "type": "integer"
+          },
+          "width": {
+            "exclusiveMinimum": 0.0,
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "width",
+          "height"
+        ],
+        "title": "PosImageSize",
+        "type": "object"
+      },
+      "PosPoint": {
+        "properties": {
+          "x": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Y"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "title": "PosPoint",
+        "type": "object"
+      },
+      "PosResponse": {
+        "properties": {
+          "allowed_formats": {
+            "items": {
+              "enum": [
+                "qr",
+                "code128",
+                "ean13",
+                "ean8",
+                "upca",
+                "upce",
+                "datamatrix",
+                "aztec",
+                "pdf417",
+                "code93"
+              ],
+              "type": "string"
+            },
+            "title": "Allowed Formats",
+            "type": "array"
+          },
+          "barcode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PosCandidate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/PosCandidate"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "confirmation": {
+            "$ref": "#/components/schemas/PosConfirmation"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/components/schemas/PosFrame"
+            },
+            "title": "Frames",
+            "type": "array"
+          },
+          "reason": {
+            "enum": [
+              "single_match",
+              "frame_agreement",
+              "no_code",
+              "insufficient_confirmation",
+              "conflicting_values"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "confirmed",
+              "ambiguous",
+              "rescan"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "barcode",
+          "candidates",
+          "confirmation",
+          "allowed_formats",
+          "frames"
+        ],
+        "title": "PosResponse",
+        "type": "object"
+      },
+      "ReadResponse": {
+        "properties": {
+          "barcodes": {
+            "items": {
+              "$ref": "#/components/schemas/BarcodeResult"
+            },
+            "title": "Barcodes",
+            "type": "array"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageSize"
+          }
+        },
+        "required": [
+          "barcodes",
+          "image"
+        ],
+        "title": "ReadResponse",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "in": "header",
+        "name": "X-API-Key",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "description": "Read codes from images and generate QR, Code 128, EAN-13, and UPC-A images.",
+    "title": "Barcode API",
+    "version": "0.8.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/v1/barcodes/generate": {
+      "post": {
+        "description": "Generate an image. EAN-13 and UPC-A require a valid, complete check digit.",
+        "operationId": "generate_v1_barcodes_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {},
+              "image/svg+xml": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Generate"
+      }
+    },
+    "/v1/barcodes/read": {
+      "post": {
+        "description": "Read PNG, JPEG, or WebP. Positions use EXIF-normalized image coordinates.",
+        "operationId": "read_v1_barcodes_read_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_read_v1_barcodes_read_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Read"
+      }
+    },
+    "/v1/formats": {
+      "get": {
+        "operationId": "formats_v1_formats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Formats"
+      }
+    },
+    "/v1/pos/decode": {
+      "post": {
+        "description": "Decide one POS result from a stateless burst; conflicting identities are ambiguous.\n\nConfirmation defaults to two distinct images. Set confirmation_frames to 1\nto accept a single match. Identical normalized pixels never add confirmation.\nNo agreement or camera state is retained between requests.",
+        "operationId": "pos_decode_v1_pos_decode_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_pos_decode_v1_pos_decode_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PosResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Pos Decode"
+      }
+    }
+  }
+}

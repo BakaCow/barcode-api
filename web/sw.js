@@ -1,12 +1,19 @@
 /* Everything needed to scan is cached here; camera frames never pass through it. */
-const VERSION = "1.4.2";
-const FEATURES = ["code128-lab", "live-pos"];
+const VERSION = "1.5.0";
+const FEATURES = ["code128-lab", "live-pos", "integration-examples"];
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `barcode-camera:${SCOPE.href}:`;
 const CACHE_NAME = `${CACHE_PREFIX}${VERSION}`;
 const CORE_PATHS = [
   "./", "./index.html", "./styles.css", "./scan-policy.js", "./app.js", "./scanner-worker.js",
   "./pos-policy.js", "./frame-analysis.js", "./capture-selection.js",
+  "./sdk/scanner.js", "./LICENSE.txt",
+  "./examples/", "./examples/index.html", "./examples/examples.css", "./examples/offline.js",
+  "./examples/plain/", "./examples/plain/index.html", "./examples/plain/app.js",
+  "./examples/pos/", "./examples/pos/index.html", "./examples/pos/app.js", "./examples/pos/cart.mjs",
+  "./examples/pos/labels/tea.svg", "./examples/pos/labels/tea.png",
+  "./examples/pos/labels/oats.svg", "./examples/pos/labels/oats.png",
+  "./examples/pos/labels/bag.svg", "./examples/pos/labels/bag.png",
   "./vendor/zxing-reader.js", "./vendor/zxing_reader.wasm",
   "./vendor/public-sans-latin.woff2", "./manifest.webmanifest",
   "./icon.svg", "./icon-192.png", "./icon-512.png",

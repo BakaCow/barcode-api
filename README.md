@@ -1,5 +1,7 @@
 # Barcode API
 
+Version **0.8.0** adds a reusable [camera SDK](SDK.md), [JavaScript/POS/React examples](INTEGRATION.md), [JavaScript/TypeScript](clients/javascript/README.md) and [Python](clients/python/README.md) API clients, [customer keys, request limits and monitoring](HOSTING.md), and an [MIT project license](LICENSE). Start with [INTEGRATION.md](INTEGRATION.md) to add scanning to your project. Run the server and open `/scan/examples/`, or serve `web/` statically and open `/examples/`.
+
 A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
 
 Version 0.7.0 adds [live POS safeguards, clearer-frame selection and barcode-region retries](LIVE-SCANNING.md) to the on-device scanner. Enable **POS mode** above the camera and configure it under **Scanning options**. Frame selection and region retries are on by default. See [TESTING.md](TESTING.md) for verification and its limits.
@@ -72,7 +74,7 @@ Then open <http://127.0.0.1:8000/>. Keep the server running during the first com
 
 Generation supports `qr`, `code128`, `ean13`, and `upca`. Reading uses ZXing-C++'s supported formats, including QR and common retail barcodes. Each `/v1` endpoint requires an `X-API-Key` header.
 
-The project does not include user accounts, billing, product lookup, or a hosting subscription. A barcode's value is usually an identifier; product names and prices require a separate data source.
+The project does not include user accounts, billing, a production product database, or a hosting subscription. The POS example includes a small demonstration catalogue and session cart. Real product names, prices and business actions require your own data source and authenticated backend. Backend API keys can now be configured per customer; usage counts are operational, in-memory metrics rather than billing records.
 
 ## Run locally on Windows
 
@@ -87,7 +89,7 @@ $env:BARCODE_API_KEY = (& .\.venv\Scripts\python.exe -c "import secrets; print(s
 
 Keep the terminal open. Visit <http://127.0.0.1:8000/scan/> for the camera app or <http://127.0.0.1:8000/docs> for the interactive API documentation. The API documentation has an **Authorize** button for the key generated above. To see the key, stop the server with Ctrl+C, run `$env:BARCODE_API_KEY`, copy it, and restart the same server command. Keep that key private.
 
-The service refuses to start unless `BARCODE_API_KEY` has at least 24 characters. The environment variable lasts for that terminal session. The app does not automatically load `.env` files.
+The service requires `BARCODE_API_KEY` or the customer-key configuration described in [HOSTING.md](HOSTING.md). Keys must contain 24–256 printable ASCII characters without spaces. The environment variable lasts for that terminal session. The app does not automatically load `.env` files.
 
 For macOS or Linux:
 
@@ -174,7 +176,7 @@ docker run --rm -p 8000:8000 -e BARCODE_API_KEY barcode-api
 
 Set and export `BARCODE_API_KEY` in the host shell first. The container runs as a non-root user and includes the camera app at `/scan/`. Docker packaging is included but has not been tested locally.
 
-For a public service, deploy behind HTTPS and add rate limits, per-customer keys, usage accounting, concurrency limits, and resource/time limits appropriate to your hosting platform. Test recognition quality against your own real photos; the included tests do not establish Scanbot-equivalent performance.
+For a public service, use the customer keys, admission limits, private metrics and deployment templates in [HOSTING.md](HOSTING.md). Deploy behind HTTPS and validate resource limits on your host. The in-memory limits and usage counters apply to one process and reset on restart; use shared admission/accounting before scaling to multiple workers or replicas. Test recognition quality against your own real photos; the included tests do not establish Scanbot-equivalent performance.
 
 ## Upload to GitHub manually
 
@@ -182,7 +184,7 @@ For a public service, deploy behind HTTPS and add rate limits, per-customer keys
 2. Go to <https://github.com/new>, choose a repository name such as `barcode-api`, and choose **Private** or **Public**.
 3. Leave the README, `.gitignore`, and license initialization options off, then create the repository.
 4. On the empty repository page, choose **uploading an existing file**. In an existing repository, use **Add file → Upload files**.
-5. Open the extracted project folder and drag its contents into GitHub. Include `.github`, `.gitignore`, `.dockerignore`, `app.py`, `barcode_reader.py`, `pos_decoding.py`, documentation, requirements files, `Dockerfile`, `examples`, `tests`, `tools`, the shipped `data/synthetic` examples, `data/README.md`, `data/manifest.example.json`, `benchmark-results`, and the entire `web` folder. Upload the contents, not the ZIP or an enclosing folder. The workflow path must remain `.github/workflows/tests.yml`.
+5. Open the extracted project folder and drag its contents into GitHub, including hidden configuration files, `LICENSE`, `hosting.py`, `clients`, `deploy`, `openapi.json`, and all existing application, test, example, documentation and `web` files. Exclude installed dependencies, generated builds, caches, private runtime configuration and local photo data. Upload the contents, not the ZIP or an enclosing folder. The workflow path must remain `.github/workflows/tests.yml`.
 6. Enter `Initial barcode API` as the commit message and choose **Commit changes**.
 7. Check that `app.py` and `README.md` appear at the repository root. The **Actions** tab shows the test workflow.
 

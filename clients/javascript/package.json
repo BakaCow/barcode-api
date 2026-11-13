@@ -1,0 +1,11 @@
+{
+  "name": "barcode-api-client",
+  "version": "0.8.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Server-side JavaScript client for this Barcode API deployment",
+  "exports": {".": {"types": "./index.d.ts", "import": "./index.js"}},
+  "engines": {"node": ">=22"},
+  "files": ["index.js", "index.d.ts", "README.md", "LICENSE"]
+}

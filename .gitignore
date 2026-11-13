@@ -9,3 +9,9 @@ __pycache__/
 barcode.png
 barcode.svg
 data/local/
+node_modules/
+dist/
+build/
+*.egg-info/
+examples/react/public/scanner-assets/
+deploy/runtime.env

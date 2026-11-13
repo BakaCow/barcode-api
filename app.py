@@ -1,12 +1,12 @@
 """Small HTTP API for barcode generation and image decoding."""
 
 import base64
+import asyncio
 from contextlib import asynccontextmanager
 import hashlib
 from io import BytesIO
-import os
 from pathlib import Path
-import secrets
+import time
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
@@ -19,12 +19,15 @@ from starlette.responses import JSONResponse, RedirectResponse
 import zxingcpp
 from barcode_reader import canonical_format_name, read_barcodes
 from pos_decoding import POS_FORMATS, PosOptions, PosResponse, decide_pos
+from hosting import BusinessControls, HostingConfig, HostingState
 
 MAX_FILE_BYTES = 10 * 1024 * 1024
 MAX_PIXELS = 20_000_000
 MAX_REQUEST_BYTES = MAX_FILE_BYTES + 64 * 1024
 MAX_POS_FRAMES = 5
 MAX_POS_OPTIONS_BYTES = 8192
+MAX_BODY_SECONDS = 30
+BODY_IDLE_SECONDS = 15
 FORMATS = {
     "qr": zxingcpp.BarcodeFormat.QRCode,
     "code128": zxingcpp.BarcodeFormat.Code128,
@@ -40,12 +43,22 @@ class RequestSizeLimit:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] != "http" or scope["method"] != "POST":
+        path = scope.get("path", "")
+        if (scope["type"] != "http" or scope["method"] != "POST"
+                or not (path == "/v1" or path.startswith("/v1/"))):
             return await self.app(scope, receive, send)
         limit = 16 * 1024 if scope["path"].endswith("/generate") else MAX_REQUEST_BYTES
         body = bytearray()
+        deadline = time.monotonic() + MAX_BODY_SECONDS
         while True:
-            message = await receive()
+            try:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError
+                message = await asyncio.wait_for(receive(), min(BODY_IDLE_SECONDS, remaining))
+            except TimeoutError:
+                response = JSONResponse({"detail": "Request body timed out."}, status_code=408)
+                return await response(scope, receive, send)
             if message["type"] == "http.disconnect":
                 return
             body.extend(message.get("body", b""))
@@ -69,25 +82,28 @@ class RequestSizeLimit:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    key = os.environ.get("BARCODE_API_KEY", "")
-    if len(key) < 24:
-        raise RuntimeError("Set BARCODE_API_KEY to a secret of at least 24 characters.")
-    app.state.api_key = key.encode("utf-8")
-    yield
+    app.state.hosting = HostingState(HostingConfig.from_env())
+    try:
+        yield
+    finally:
+        app.state.hosting = None
 
 
 app = FastAPI(
     title="Barcode API",
-    version="0.7.0",
+    version="0.8.0",
     description="Read codes from images and generate QR, Code 128, EAN-13, and UPC-A images.",
     lifespan=lifespan,
 )
 app.add_middleware(RequestSizeLimit)
+# Starlette wraps later middleware around earlier middleware. Authentication
+# and admission therefore run before RequestSizeLimit reads an upload body.
+app.add_middleware(BusinessControls)
 key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
 def require_key(request: Request, key: Annotated[str | None, Depends(key_header)]):
-    if key is None or not secrets.compare_digest(key.encode("utf-8"), request.app.state.api_key):
+    if not getattr(request.state, "barcode_customer_id", None):
         raise HTTPException(status_code=401, detail="Invalid or missing API key.")
 
 
@@ -143,6 +159,14 @@ class ReadResponse(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/ops/metrics", include_in_schema=False)
+def operational_metrics(request: Request):
+    """Operator-only, in-memory usage; enabled by BARCODE_ADMIN_KEY."""
+    if not getattr(request.state, "barcode_operator", False):
+        raise HTTPException(status_code=401, detail="Invalid or missing operator key.")
+    return request.app.state.hosting.snapshot()
 
 
 @app.get("/", include_in_schema=False)
@@ -337,7 +361,7 @@ class ScannerFiles(StaticFiles):
         # Explicit MIME types are consistent across Windows and Linux hosts.
         if path.endswith(".wasm"):
             response.headers["Content-Type"] = "application/wasm"
-        elif path.endswith(".js"):
+        elif path.endswith((".js", ".mjs")):
             response.headers["Content-Type"] = "application/javascript"
         elif path.endswith(".webmanifest"):
             response.headers["Content-Type"] = "application/manifest+json"
