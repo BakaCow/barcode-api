@@ -73,12 +73,32 @@ function rgba(gray, width, height) {
 }
 
 function sharpen(gray, width, height) {
-  const output = new Uint8Array(gray);
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      const i = y * width + x;
-      const neighbors = (gray[i - 1] + gray[i + 1] + gray[i - width] + gray[i + width]) / 4;
-      output[i] = Math.max(0, Math.min(255, Math.round(gray[i] + 1.2 * (gray[i] - neighbors))));
+  // A wider unsharp mask restores some blurred module boundaries that a
+  // four-neighbor edge boost misses. Sliding sums keep work linear and add only
+  // one column array, rather than another full-size integral image.
+  const radius = 2, amount = 4, output = new Uint8Array(gray.length);
+  const columns = new Uint32Array(width);
+  for (let y = 0; y < Math.min(height, radius + 1); y++) {
+    for (let x = 0; x < width; x++) columns[x] += gray[y * width + x];
+  }
+  for (let y = 0; y < height; y++) {
+    if (y > 0) {
+      for (let x = 0; x < width; x++) {
+        if (y > radius) columns[x] -= gray[(y - radius - 1) * width + x];
+        if (y + radius < height) columns[x] += gray[(y + radius) * width + x];
+      }
+    }
+    const rows = Math.min(height, y + radius + 1) - Math.max(0, y - radius);
+    let sum = 0;
+    for (let x = 0; x < Math.min(width, radius + 1); x++) sum += columns[x];
+    for (let x = 0; x < width; x++) {
+      if (x > 0) {
+        if (x > radius) sum -= columns[x - radius - 1];
+        if (x + radius < width) sum += columns[x + radius];
+      }
+      const count = rows * (Math.min(width, x + radius + 1) - Math.max(0, x - radius));
+      const i = y * width + x, value = gray[i];
+      output[i] = Math.max(0, Math.min(255, Math.round(value + amount * (value - sum / count))));
     }
   }
   return rgba(output, width, height);
@@ -263,7 +283,10 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
     let candidate, inverse, options = recoveryOptions;
     if (retry === 0) {
       strategy = 'contrast'; candidate = rgba(gray, image.width, image.height);
-      options = { ...recoveryOptions, binarizer: 'GlobalHistogram' };
+      // The normalized midpoint can separate blurred bars/modules that the
+      // decoder's histogram/local thresholds merge. Keep checksum and source
+      // geometry validation identical to the other transformed retries.
+      options = { ...recoveryOptions, binarizer: 'FixedThreshold' };
     } else if (retry === 1) {
       strategy = 'sharpen'; candidate = sharpen(gray, image.width, image.height);
     } else if (retry === 2) {

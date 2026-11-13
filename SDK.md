@@ -134,6 +134,8 @@ Targets are normalized against the original video/image, before CSS scaling, let
 
 Only a unique allowed identity can confirm. Conflicting codes remain ambiguous within the bounded attempt, even if one appears more often. Distinct frame IDs and full-capture pixel fingerprints are required; duplicate pixels add no evidence. A browser exposing only a playback clock cannot satisfy two- or three-frame confirmation. Single-frame mode is an explicit reduction of that protection.
 
+Live recovery chooses one enhancement method per captured frame, including its detail crops. When a method reads a code, the SDK reuses it on the next fresh frame to collect confirmation promptly. A miss advances the search; a new scan or settings change resets it. Each frame still starts with a full-view decode, all planned crops retain ambiguity checks, and repeated pixels never count as another matching frame. Reusing a method is not another vote for its previous result.
+
 Each image import is a separate attempt. A single image cannot meet a multi-frame requirement, and repeated imports do not accumulate votes. Select `confirmationFrames: 1` when an imported-image decision is appropriate. Import limits are 10 MiB and 20 million decoded source pixels; source dimension checking occurs after the browser decodes the file. Animated media is not a camera sequence and cannot add confirmation evidence.
 
 The SDK buffers at most three camera samples. Weak frames use a 240 ms selection window, buffered samples older than 600 ms are dropped, and camera results older than 1.2 seconds are rejected. Balanced mode requests ideal 1920×1080 video, bounds live captures to 2.1 million pixels and a 1920-pixel side, and bounds imported captures to four million pixels with the same side limit.

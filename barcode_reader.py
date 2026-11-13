@@ -166,11 +166,11 @@ def _working_image(image: Image.Image):
     return working, to_original
 
 
-def _rotated(image: Image.Image):
-    """Rotate 45 degrees with one shared sampling/coordinate affine transform."""
-    c = s = math.sqrt(0.5)
-    natural_width = math.ceil(image.width * c + image.height * s)
-    natural_height = math.ceil(image.width * s + image.height * c)
+def _rotated(image: Image.Image, angle: float = 45):
+    """Rotate with one shared sampling/coordinate affine transform."""
+    c, s = math.cos(math.radians(angle)), math.sin(math.radians(angle))
+    natural_width = math.ceil(abs(image.width * c) + abs(image.height * s))
+    natural_height = math.ceil(abs(image.width * s) + abs(image.height * c))
     scale = min(1.0, math.sqrt(MAX_RETRY_PIXELS / (natural_width * natural_height)))
     width, height = max(1, math.floor(natural_width * scale)), max(1, math.floor(natural_height * scale))
     a, b, d, e = c / scale, -s / scale, s / scale, c / scale
@@ -186,6 +186,33 @@ def _rotated(image: Image.Image):
                 d * (x + 0.5) + e * (y + 0.5) + ty - 0.5)
 
     return candidate, to_working
+
+
+def _bar_direction(image: Image.Image) -> float | None:
+    """Estimate a coherent bar gradient from at most 16384 source samples."""
+    width, height = image.size
+    if width < 3 or height < 3:
+        return None
+    stride = max(1, math.ceil(math.sqrt(width * height / 16384)))
+    while math.ceil((width - 2) / stride) * math.ceil((height - 2) / stride) > 16384:
+        stride += 1
+    pixels = image.load()
+    xx = xy = yy = 0
+    for y in range(1, height - 1, stride):
+        for x in range(1, width - 1, stride):
+            # Avoid a regular grid repeatedly measuring the centres of bars.
+            jitter = ((x * 73856093) ^ (y * 19349663)) & 0xffffffff
+            sx = min(width - 2, x + jitter % stride)
+            sy = min(height - 2, y + (jitter // stride) % stride)
+            dx, dy = pixels[sx + 1, sy] - pixels[sx - 1, sy], pixels[sx, sy + 1] - pixels[sx, sy - 1]
+            xx += dx * dx
+            xy += dx * dy
+            yy += dy * dy
+    energy = xx + yy
+    if not energy or math.hypot(xx - yy, 2 * xy) / energy < 0.5:
+        return None
+    angle = math.degrees(math.atan2(2 * xy, xx - yy)) / 2
+    return angle if 3 < abs(angle) < 87 else None
 
 
 def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None = None) -> list[DecodedBarcode]:
@@ -208,7 +235,7 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
     working, to_original = _working_image(image)
     with working:
         with ImageOps.autocontrast(working, cutoff=0.5) as contrast:
-            for attempt in range(6):
+            for attempt in range(9):
                 if monotonic() - started >= RETRY_SECONDS:
                     break
                 mapping = to_original
@@ -217,7 +244,7 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
                     candidate = contrast.copy()
                     options["binarizer"] = zxingcpp.Binarizer.GlobalHistogram
                 elif attempt == 1:
-                    candidate = contrast.filter(ImageFilter.UnsharpMask(radius=1, percent=120, threshold=2))
+                    candidate = contrast.filter(ImageFilter.UnsharpMask(radius=2, percent=200, threshold=2))
                 elif attempt == 2:
                     candidate, to_working = _rotated(contrast)
 
@@ -234,7 +261,7 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
                     with working.filter(ImageFilter.BoxBlur(15)) as background:
                         with ImageChops.subtract(working, background, offset=128) as local:
                             candidate = ImageOps.autocontrast(local, cutoff=0.5)
-                else:
+                elif attempt == 5:
                     factor = min(2.0, math.sqrt(MAX_RETRY_PIXELS / (contrast.width * contrast.height)))
                     width = max(1, math.floor(contrast.width * factor))
                     height = max(1, min(MAX_RETRY_PIXELS // width, math.floor(contrast.height * factor)))
@@ -247,6 +274,23 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
 
                     def mapping(x, y):
                         return to_original((x + 0.5) * sx - 0.5, (y + 0.5) * sy - 0.5)
+                elif attempt == 6:
+                    # A fixed midtone threshold gives blurred but still
+                    # separable bars another sampling path after local and
+                    # histogram binarizers have failed.
+                    candidate = contrast.point(lambda value: 255 if value > 128 else 0)
+                elif attempt == 7:
+                    angle = _bar_direction(contrast)
+                    if angle is None:
+                        continue
+                    candidate, to_working = _rotated(contrast, angle)
+
+                    def mapping(x, y):
+                        return to_original(*to_working(x, y))
+                else:
+                    # Remove isolated speckles and thin scratches while
+                    # retaining decoder checksum/error-correction validation.
+                    candidate = contrast.filter(ImageFilter.MedianFilter(3))
                 with candidate:
                     if monotonic() - started >= RETRY_SECONDS:
                         break

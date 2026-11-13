@@ -11,6 +11,7 @@ const Capture = globalThis.ScanPolicy || captureModule.default;
 const DEFAULTS = { formats: ['ean13', 'upca', 'code128', 'qr'], confirmationFrames: 2,
   preferClearFrames: true, cropBarcodes: true, captureMode: 'balanced', adaptiveFrameSelection: true, targetRegion: null };
 const OPTION_KEYS = Object.keys(DEFAULTS);
+const MAX_FRAME_AGE = 1200;
 const QUALITY = { dark: 'Add light to the label.', 'low-detail': 'Hold still and let the camera focus.',
   glare: 'Tilt the label slightly to reduce possible glare.', small: 'Move closer while keeping the full label visible.',
   clipped: 'Move back to include the barcode and its border.' };
@@ -248,17 +249,28 @@ export function createScanner(configuration = {}) {
   async function decodeSample(sample, mode) {
     const { image, plan } = sample, started = now(), token = generation, currentRevision = revision;
     const valid = () => token === generation && currentRevision === revision && !destroyed && !controlsPending.size;
-    const first = await call('decode', { image, mode, retryIndex: retry++, enhanceLive: options.cropBarcodes,
+    // Choose a recovery method per camera frame, including its detail crops.
+    // A successful method should see the next independent frame promptly rather
+    // than waiting for a full retry cycle to complete matching-frame evidence.
+    const retryIndex = retry++;
+    const retainMethod = () => {
+      // A result too old to confirm must not pin the camera to a slow method.
+      if (mode === 'live' && now() - sample.capturedAt <= MAX_FRAME_AGE) retry = retryIndex;
+    };
+    const first = await call('decode', { image, mode, retryIndex, enhanceLive: options.cropBarcodes,
       posOptions: policyOptions() }, [image.data]);
     if (!valid()) throw aborted();
     const results = Capture.remapResults(first.results, plan);
-    if (results.length) return results; // Observed full-view conflicts are never hidden by a crop.
+    if (results.length) {
+      retainMethod();
+      return results; // Observed full-view conflicts are never hidden by a crop.
+    }
     const identities = new Set();
     for (const crop of sample.recovery) {
       // A timed-out remaining region may contain a conflicting label. Do not
       // accept the first crop merely because it was decoded before the budget.
       if (now() - started > (mode === 'live' ? 350 : 2500)) return identities.size > 1 ? results : [];
-      const response = await call('decode', { image: crop.image, mode, retryIndex: retry++, enhanceLive: false,
+      const response = await call('decode', { image: crop.image, mode, retryIndex, enhanceLive: false,
         posOptions: policyOptions() }, [crop.image.data]);
       if (!valid()) throw aborted();
       for (const result of Capture.remapResults(response.results, crop.plan)) {
@@ -266,6 +278,7 @@ export function createScanner(configuration = {}) {
         if (!identities.has(key)) { identities.add(key); results.push(result); }
       }
     }
+    if (results.length) retainMethod();
     return results;
   }
   function publish(decision) {
@@ -320,7 +333,7 @@ export function createScanner(configuration = {}) {
         const { analysis, capturedAt } = selected;
         const results = await decodeSample(selected, 'live');
         if (!active || accepted || token !== generation || revision !== currentRevision || selected.revision !== revision) return;
-        if (now() - capturedAt > 1200) {
+        if (now() - capturedAt > MAX_FRAME_AGE) {
           policy.reset(); status('rescan', 'That image is too old. Hold still for a fresh scan.', 'stale_frame');
         } else {
           publish(policy.observe(results, selected.frameId, capturedAt, analysis.fingerprint));

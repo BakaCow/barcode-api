@@ -158,5 +158,5 @@ def test_every_fallback_allocation_stays_within_four_megapixels(reader, monkeypa
     with Image.new("L", size, 255) as image:
         assert reader.read_barcodes(image) == []
     assert calls[0] == size, "original full-resolution pass is preserved"
-    assert 1 < len(calls) <= 7
+    assert 1 < len(calls) <= 10
     assert all(width * height <= 4_000_000 for width, height in calls[1:])

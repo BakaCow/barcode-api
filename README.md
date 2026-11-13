@@ -1,5 +1,7 @@
 # Barcode API
 
+The latest [recognition update](ACCURACY-UPDATE.md) improves difficult-image recovery in the browser and API and makes the embedded camera reuse successful recovery methods for fresh-frame confirmation. It includes a separate frozen synthetic evaluation and preserves POS ambiguity and duplicate-frame safeguards.
+
 Version **0.9.0** adds optional camera controls, detailed source-pixel capture, an aiming area and tap targeting, and adaptive frame selection to the reusable [camera SDK](SDK.md) and [JavaScript/POS/React examples](INTEGRATION.md). The [comparison benchmark](COMPARISON.md) records controlled trials with the bundled reader or an optional, separately licensed Scanbot SDK. Start the server and open `/scan/examples/` (or `/examples/` when serving `web/` statically).
 
 The project also includes [JavaScript/TypeScript](clients/javascript/README.md) and [Python](clients/python/README.md) API clients, [customer keys, request limits and monitoring](HOSTING.md), and an [MIT project license](LICENSE). Camera-only integration runs locally without a decoding server. No Scanbot accuracy or real-phone performance equivalence has been established; see [TESTING.md](TESTING.md).

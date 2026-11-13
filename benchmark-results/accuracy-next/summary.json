@@ -1,0 +1,217 @@
+{
+  "corpusSha256": "15a21812d2db867f96b4fb53a82c415c2dcf45ded558e5528176aa35dce1f840",
+  "baseline": {
+    "commit": "e6aa266f70fd25cc8e300d8a61703a79b16af6e4",
+    "method": "git archive HEAD; working-tree edits excluded",
+    "files": 243,
+    "sourceSha256": {
+      "barcode_reader.py": "e7d359f04befb09d723c84ce92b453e1d05d02599e5b70402ce77a58667b1ab0",
+      "web/frame-analysis.js": "6e33cc3f6e123c52e5c5f0a649fef96227bd9a752cca07a59d43afc1fdc570d2",
+      "web/pos-policy.js": "b6b472b50b80ddb1871389feb0f738f3f1d1b1b708a35a9203f227cc07fe6a9f",
+      "web/scanner-worker.js": "ad4c43307a0dd8f3bcb366690f61d14be19e9c2f9258a5d3b021c4c7fe5eca5d",
+      "web/vendor/zxing-reader.js": "ffd72d59d54082194f7c086b384dcd930bdeb0c5b39fbb13779694e69bb0d344",
+      "web/vendor/zxing_reader.wasm": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e"
+    }
+  },
+  "frozenProductionSha256": {
+    "web\\scanner-worker.js": "2567722c09ac80ed436ec8cd6e997813721f23b395e261f1fe1f2f2de648f402",
+    "barcode_reader.py": "0f0cddfd68ee222ef77f58045bcc3fa007cd2216df996712eb117a0e9449b132",
+    "web\\frame-analysis.js": "6e33cc3f6e123c52e5c5f0a649fef96227bd9a752cca07a59d43afc1fdc570d2",
+    "web\\pos-policy.js": "b6b472b50b80ddb1871389feb0f738f3f1d1b1b708a35a9203f227cc07fe6a9f",
+    "web\\vendor\\zxing-reader.js": "ffd72d59d54082194f7c086b384dcd930bdeb0c5b39fbb13779694e69bb0d344",
+    "web\\vendor\\zxing_reader.wasm": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e"
+  },
+  "comparisons": {
+    "browser": {
+      "before": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 130,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 22.34,
+        "p95Ms": 451.87
+      },
+      "after": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 136,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 10.38,
+        "p95Ms": 478.25
+      },
+      "improvedCases": [
+        "qr/next-qr-label-1/blur-2",
+        "qr/next-qr-label-2/blur-2",
+        "qr/next-qr-label-3/blur-2",
+        "ean13/next-ean13-label-1/motion-blur-1",
+        "ean13/next-ean13-label-3/motion-blur-1",
+        "ean13/next-ean13-label-3/blur-2"
+      ],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "ean13/next-ean13-label-2/angled-2"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "qr": {
+          "total": 57,
+          "before": 38,
+          "after": 41
+        },
+        "code128": {
+          "total": 57,
+          "before": 48,
+          "after": 48
+        },
+        "ean13": {
+          "total": 57,
+          "before": 44,
+          "after": 47
+        }
+      }
+    },
+    "api": {
+      "before": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 125,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 4.327,
+        "p95Ms": 55.658
+      },
+      "after": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 134,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 7.287,
+        "p95Ms": 71.555
+      },
+      "improvedCases": [
+        "qr/next-qr-label-3/scratches-1",
+        "code128/next-code128-label-1/angled-1",
+        "code128/next-code128-label-2/angled-1",
+        "code128/next-code128-label-3/angled-1",
+        "ean13/next-ean13-label-1/motion-blur-1",
+        "ean13/next-ean13-label-1/blur-2",
+        "ean13/next-ean13-label-2/blur-2",
+        "ean13/next-ean13-label-3/motion-blur-1",
+        "ean13/next-ean13-label-3/blur-2"
+      ],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [
+        "ean13/next-ean13-label-2/angled-2"
+      ],
+      "exitCodes": [
+        1,
+        1
+      ],
+      "byFormat": {
+        "qr": {
+          "total": 57,
+          "before": 38,
+          "after": 39
+        },
+        "code128": {
+          "total": 57,
+          "before": 45,
+          "after": 48
+        },
+        "ean13": {
+          "total": 57,
+          "before": 42,
+          "after": 47
+        }
+      }
+    },
+    "browser-pos-live": {
+      "before": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 109,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 0,
+        "errors": 0,
+        "medianMs": 5.13,
+        "p95Ms": 44.46
+      },
+      "after": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 116,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 0,
+        "errors": 0,
+        "medianMs": 4.57,
+        "p95Ms": 41.24
+      },
+      "improvedCases": [
+        "code128/next-code128-label-2/shading-lowcontrast-1",
+        "code128/next-code128-label-2/blur-2",
+        "ean13/next-ean13-label-1/motion-blur-1",
+        "ean13/next-ean13-label-1/blur-2",
+        "ean13/next-ean13-label-2/blur-2",
+        "ean13/next-ean13-label-3/motion-blur-1",
+        "ean13/next-ean13-label-3/blur-2"
+      ],
+      "regressedCases": [],
+      "unexpectedCasesAfter": [],
+      "exitCodes": [
+        0,
+        0
+      ],
+      "byFormat": {
+        "qr": {
+          "total": 57,
+          "before": 35,
+          "after": 35
+        },
+        "code128": {
+          "total": 57,
+          "before": 37,
+          "after": 39
+        },
+        "ean13": {
+          "total": 57,
+          "before": 37,
+          "after": 42
+        }
+      }
+    }
+  },
+  "sourceNormalization": {
+    "file": "web/scanner-worker.js",
+    "method": "CRLF converted to LF before final evaluation; normalized bytes identical.",
+    "testedRawSha256": "e53d9d14d068073ca75abad59cfd481c52f63314ad31545feffdaf3cbd693c16",
+    "finalRawSha256": "2567722c09ac80ed436ec8cd6e997813721f23b395e261f1fe1f2f2de648f402"
+  },
+  "evaluationPolicy": "Algorithms frozen before updated results were inspected. Earlier dev/eval/verify sets are development evidence.",
+  "limits": [
+    "Synthetic images with 9 positive payload groups, not real camera photographs.",
+    "POS live profile is one fixed image worker call at retry index0; no live capture, frame selection or multi-frame confirmation.",
+    "Sequential one-run host latency includes worker decoder work only; no claim of phone speed.",
+    "Unexpected values fail commands; extra wrong values beside correct values count as unsuccessful cases."
+  ],
+  "developmentBaselineNormalization": {
+    "method": "Original working-copy line endings normalized to LF equal the frozen baseline snapshot exactly.",
+    "rawSha256": "38651796cd8e81f255186034f2617ff41796ad1cbc2c0938844eb98442740029",
+    "normalizedSha256": "ad4c43307a0dd8f3bcb366690f61d14be19e9c2f9258a5d3b021c4c7fe5eca5d"
+  }
+}

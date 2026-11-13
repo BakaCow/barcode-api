@@ -66,6 +66,21 @@ test('empty still images use a finite retry budget', async () => {
   assert.ok(worker.calls.length <= 7, 'at most one primary and six recovery attempts');
 });
 
+test('sharpening tiny flat frames preserves dimensions and introduces no edge contrast', async () => {
+  for (const [width, height] of [[1, 1], [2, 1], [1, 2], [3, 3]]) {
+    const input = image(width, height), pixels = new Uint8ClampedArray(input.data);
+    for (let i = 0; i < pixels.length; i += 4) pixels[i] = pixels[i + 1] = pixels[i + 2] = 127;
+    const worker = harness((candidate, options, call) => {
+      assert.equal(candidate.width, width); assert.equal(candidate.height, height);
+      if (call === 2) assert.deepEqual(Array.from(candidate.data), Array.from(pixels));
+      return [];
+    });
+    const result = await worker.send({ image: input, mode: 'live', retryIndex: 1 });
+    assert.equal(worker.calls.length, 2);
+    assert.deepEqual(result.results, []);
+  }
+});
+
 test('elapsed live and image deadlines prevent starting additional recovery passes', async () => {
   for (const [mode, budget] of [['live', 350], ['image', 2500]]) {
     let now = 0;

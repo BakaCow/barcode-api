@@ -180,6 +180,48 @@ test('two distinct frames emit one canonical result and pause until explicit res
   assert.equal(h.results.length, 2); assert.notEqual(h.results[1].scanId, id); h.scanner.destroy();
 });
 
+test('difficult live reads reuse the successful recovery method within the confirmation window', async () => {
+  const h = harness(); await h.scanner.start();
+  const retries = [];
+  for (let frame = 0; frame < 3; frame++) {
+    await h.tick({ advance: 900 });
+    const index = h.waiting[0].message.retryIndex; retries.push(index);
+    await h.reply(index === 1 ? [item] : []);
+    if (frame < 2) assert.equal(h.results.length, 0, 'a first read never counts as two frames');
+  }
+  assert.deepEqual(retries, [0, 1, 1]);
+  assert.equal(h.results.length, 1); assert.equal(h.results[0].text, item.text);
+  h.scanner.rescan(); await h.tick();
+  assert.equal(h.waiting[0].message.retryIndex, 0, 'a new scan starts a new recovery search');
+  h.scanner.destroy();
+});
+
+test('reusing a recovery method does not count frozen pixels or hide later conflicting values', async () => {
+  const h = harness(); await h.scanner.start();
+  await h.tick(); await h.reply([]);
+  h.state.frozen = true;
+  await h.tick(); await h.reply([item]);
+  for (let frame = 0; frame < 2; frame++) {
+    await h.tick(); assert.equal(h.waiting[0].message.retryIndex, 1); await h.reply([item]);
+  }
+  assert.equal(h.results.length, 0, 'repeated pixels cannot confirm a recovered result');
+  h.state.frozen = false;
+  await h.tick(); await h.reply([item, other]);
+  assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).state, 'ambiguous');
+  h.scanner.destroy();
+});
+
+test('a lost recovery match resumes searching and late results cannot restore an old method', async () => {
+  const h = harness(); await h.scanner.start();
+  await h.tick(); await h.reply([]);
+  await h.tick(); await h.reply([item]);
+  await h.tick(); assert.equal(h.waiting[0].message.retryIndex, 1); await h.reply([]);
+  await h.tick(); assert.equal(h.waiting[0].message.retryIndex, 2);
+  h.scanner.rescan(); await h.reply([item]);
+  await h.tick(); assert.equal(h.waiting[0].message.retryIndex, 0);
+  assert.equal(h.results.length, 0); h.scanner.destroy();
+});
+
 test('confirmed scans stay paused through controls, target changes and camera/profile restarts until rescan', async () => {
   const h = harness(); h.state.capabilities = { torch: true, zoom: { min: 1, max: 4, step: 0.5 } };
   await h.scanner.start(); await h.tick(); await h.reply(); await h.tick(); await h.reply();
@@ -272,7 +314,8 @@ test('page hiding stops the camera; the SDK does not silently restart it', async
 
 test('stale camera decodes are rejected', async () => {
   const h = harness({ confirmationFrames: 1 }); await h.scanner.start(); await h.tick(); h.state.now += 1201;
-  await h.reply(); assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).reason, 'stale_frame'); h.scanner.destroy();
+  await h.reply(); assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).reason, 'stale_frame');
+  await h.tick(); assert.equal(h.waiting[0].message.retryIndex, 1, 'an expired read must not pin the previous slow method'); h.scanner.destroy();
 });
 
 test('best-frame option buffers a bounded burst, then decodes with crop and format controls', async () => {
@@ -459,6 +502,39 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     }
     h.scanner.destroy();
   }
+  await t.test('a shaded QR confirms on the next fresh frame using the real successful recovery method', async () => {
+    const label = JSON.parse(readFileSync(new URL('fixtures/damage-stress-dev.json', import.meta.url))).cases
+      .find(fixture => fixture.name === 'qr/dev-qr-label-2/shading-lowcontrast-2');
+    const pixels = inflateSync(Buffer.from(label.rgba_zlib_base64, 'base64'));
+    const h = harness({ cropBarcodes: false });
+    h.video.videoWidth = label.width; h.video.videoHeight = label.height;
+    const methods = []; let completed = 0, successfulMethod = null;
+    h.env.Worker = class extends NativeWorker {
+      postMessage(data) {
+        if (data.type !== 'decode') return super.postMessage(data);
+        methods.push(data.retryIndex);
+        void this.context.onmessage({ data }).finally(() => { completed++; });
+      }
+    };
+    await h.scanner.start();
+    for (let frame = 0; frame < 16 && !h.results.length; frame++) {
+      // A one-level change outside the code models distinct captured pixels;
+      // the production decoder still sees and must read the whole shaded label.
+      pixels[0] = frame;
+      h.state.fixture = { ...label, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+      await h.tick({ advance: 180 });
+      for (let attempt = 0; attempt < 100 && completed <= frame; attempt++) await flush();
+      assert.equal(completed, frame + 1);
+      if (successfulMethod !== null) assert.equal(methods.at(-1), successfulMethod, 'next frame reuses the method that actually decoded this fixture');
+      if (h.statuses.at(-1)?.reason === 'insufficient_confirmation') {
+        successfulMethod = methods.at(-1);
+        assert.equal(h.results.length, 0, 'a real first read still needs another frame');
+      }
+    }
+    assert.notEqual(successfulMethod, null, 'the production reader found a candidate before confirmation');
+    assert.equal(h.results[0]?.text, label.expected[0].text);
+    assert.equal(h.results[0]?.format, 'qr'); h.scanner.destroy();
+  });
   await t.test('explicit target isolates one actual label from a two-label image',async()=>{
     const fixture = fixtures.find(f=>f.name==='Multiple QR codes');
     const h = harness({confirmationFrames:1,targetRegion:{x:0,y:0,width:0.5,height:1}}); h.state.fixture=fixture; h.env.Worker=NativeWorker;
@@ -477,7 +553,7 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     h.env.Worker=class extends NativeWorker {
       postMessage(data){
         if(data.type==='decode'){
-          decoded.push({width:data.image.width,height:data.image.height});
+          decoded.push({width:data.image.width,height:data.image.height,retryIndex:data.retryIndex});
           if(decoded.length===1){queueMicrotask(()=>this.onmessage({data:{id:data.id,type:'result',results:[]}}));return;}
         }
         super.postMessage(data);
@@ -487,6 +563,7 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     for(let attempt=0;attempt<100&&!h.results.length;attempt++) await flush();
     assert.equal(h.results[0]?.text,label.expected[0].text);
     assert.ok(decoded.length>=2); assert.equal(decoded[0].width,1920);
+    assert.ok(decoded.every(call=>call.retryIndex===0),'full view and source crops share one recovery method for this frame');
     assert.equal(h.captures.filter(draw=>draw[0]===h.video).length,1,'video snapshot is taken once for all recovery passes');
     assert.ok(h.results[0].position.topLeft.x>=left-10); assert.ok(h.results[0].position.topLeft.y>=top-10);
     h.scanner.destroy();

@@ -1,5 +1,7 @@
 # Damaged barcode and QR test results
 
+These are historical 0.5.0 results. See [the 13 November recognition update](ACCURACY-UPDATE.md) for the current changes and fresh evaluation. All three sets described here, including the earlier verification set, are now development/debugging evidence.
+
 Version 0.5.0 was tested on 12 November 2026 using the actual browser WebAssembly worker, API reader and custom Code 128 engine. The tests found missed reads, false readings and a camera-recording cleanup defect. Several were fixed; one first-pass decoding ambiguity remains documented below.
 
 ## What was tested

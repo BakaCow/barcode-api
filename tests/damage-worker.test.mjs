@@ -53,6 +53,10 @@ for (const name of [
   'code128/downsampled', 'ean13/downsampled', 'datamatrix/downsampled',
   'code128/dev-code128-label-3/angled-2', 'code128/dev-code128-label-1/shading-lowcontrast-2',
   'ean13/dev-ean13-label-2/blur-2', 'qr/dev-qr-label-2/clean-0',
+  'qr/dev-qr-label-1/motion-blur-1', 'qr/dev-qr-label-1/blur-2',
+  'qr/dev-qr-label-2/blur-2', 'qr/dev-qr-label-3/motion-blur-1', 'qr/dev-qr-label-3/blur-2',
+  'ean13/dev-ean13-label-1/motion-blur-1', 'ean13/dev-ean13-label-1/blur-2',
+  'ean13/dev-ean13-label-3/motion-blur-1',
 ]) {
   test(`real WASM recovers the exact payload without extra reads: ${name}`, async () => {
     const { fixture, response } = await decode(name);

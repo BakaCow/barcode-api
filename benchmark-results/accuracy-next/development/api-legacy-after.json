@@ -1,0 +1,610 @@
+{
+  "description": "Actual API reader on identical labelled pixels. Host decode times exclude HTTP, image import and camera work. Synthetic damage examples do not establish real phone accuracy.",
+  "split": null,
+  "reader": "barcode_reader.py",
+  "readerSha256": "0f0cddfd68ee222ef77f58045bcc3fa007cd2216df996712eb117a0e9449b132",
+  "corpusSha256": "4049896bcc20099c2810b331306ca96acc0f4d7885ee99f9154daf7db93e5d29",
+  "versions": {
+    "zxing-cpp": "3.1.1",
+    "Pillow": "12.3.0"
+  },
+  "summary": {
+    "total": 72,
+    "positives": 64,
+    "exactPositiveReads": 59,
+    "negatives": 8,
+    "negativesCorrectlyRejected": 8,
+    "unexpectedResults": 0,
+    "errors": 0,
+    "medianMs": 3.419,
+    "p95Ms": 45.612
+  },
+  "cases": [
+    {
+      "name": "qr/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.644
+    },
+    {
+      "name": "qr/rotate-17",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.672
+    },
+    {
+      "name": "qr/rotate-37",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.375
+    },
+    {
+      "name": "qr/rotate-73",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.691
+    },
+    {
+      "name": "qr/inverted",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.483
+    },
+    {
+      "name": "qr/weak-contrast",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.707
+    },
+    {
+      "name": "qr/weak-shaded",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.405
+    },
+    {
+      "name": "qr/blur-0.8",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.524
+    },
+    {
+      "name": "qr/blur-1.4",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.921
+    },
+    {
+      "name": "qr/blur-2.2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "accuracy-test://qr/421913?payload=offline"
+      ],
+      "unexpected": [],
+      "durationMs": 7.051
+    },
+    {
+      "name": "qr/downsampled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.324
+    },
+    {
+      "name": "qr/bright-gradient",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.456
+    },
+    {
+      "name": "qr/scratch",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.432
+    },
+    {
+      "name": "qr/missing-patch",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.413
+    },
+    {
+      "name": "qr/small-in-frame",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 14.891
+    },
+    {
+      "name": "qr/skew",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.645
+    },
+    {
+      "name": "code128/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.419
+    },
+    {
+      "name": "code128/rotate-17",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 90.008
+    },
+    {
+      "name": "code128/rotate-37",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 45.134
+    },
+    {
+      "name": "code128/rotate-73",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 90.912
+    },
+    {
+      "name": "code128/inverted",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 22.525
+    },
+    {
+      "name": "code128/weak-contrast",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.683
+    },
+    {
+      "name": "code128/weak-shaded",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 25.593
+    },
+    {
+      "name": "code128/blur-0.8",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.814
+    },
+    {
+      "name": "code128/blur-1.4",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.101
+    },
+    {
+      "name": "code128/blur-2.2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 9.661
+    },
+    {
+      "name": "code128/downsampled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 10.961
+    },
+    {
+      "name": "code128/bright-gradient",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.182
+    },
+    {
+      "name": "code128/scratch",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.655
+    },
+    {
+      "name": "code128/missing-patch",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.609
+    },
+    {
+      "name": "code128/small-in-frame",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.666
+    },
+    {
+      "name": "code128/skew",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.678
+    },
+    {
+      "name": "ean13/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.15
+    },
+    {
+      "name": "ean13/rotate-17",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.433
+    },
+    {
+      "name": "ean13/rotate-37",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 16.538
+    },
+    {
+      "name": "ean13/rotate-73",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.628
+    },
+    {
+      "name": "ean13/inverted",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 9.623
+    },
+    {
+      "name": "ean13/weak-contrast",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.564
+    },
+    {
+      "name": "ean13/weak-shaded",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 10.438
+    },
+    {
+      "name": "ean13/blur-0.8",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.558
+    },
+    {
+      "name": "ean13/blur-1.4",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.378
+    },
+    {
+      "name": "ean13/blur-2.2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "5901234123457"
+      ],
+      "unexpected": [],
+      "durationMs": 18.59
+    },
+    {
+      "name": "ean13/downsampled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.58
+    },
+    {
+      "name": "ean13/bright-gradient",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.878
+    },
+    {
+      "name": "ean13/scratch",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.592
+    },
+    {
+      "name": "ean13/missing-patch",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.601
+    },
+    {
+      "name": "ean13/small-in-frame",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.935
+    },
+    {
+      "name": "ean13/skew",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.152
+    },
+    {
+      "name": "datamatrix/clean",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.328
+    },
+    {
+      "name": "datamatrix/rotate-17",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.344
+    },
+    {
+      "name": "datamatrix/rotate-37",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.358
+    },
+    {
+      "name": "datamatrix/rotate-73",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.308
+    },
+    {
+      "name": "datamatrix/inverted",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.175
+    },
+    {
+      "name": "datamatrix/weak-contrast",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.578
+    },
+    {
+      "name": "datamatrix/weak-shaded",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.707
+    },
+    {
+      "name": "datamatrix/blur-0.8",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.209
+    },
+    {
+      "name": "datamatrix/blur-1.4",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.739
+    },
+    {
+      "name": "datamatrix/blur-2.2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "ACCURACY-421913-DM"
+      ],
+      "unexpected": [],
+      "durationMs": 4.642
+    },
+    {
+      "name": "datamatrix/downsampled",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.905
+    },
+    {
+      "name": "datamatrix/bright-gradient",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.206
+    },
+    {
+      "name": "datamatrix/scratch",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "ACCURACY-421913-DM"
+      ],
+      "unexpected": [],
+      "durationMs": 5.477
+    },
+    {
+      "name": "datamatrix/missing-patch",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "ACCURACY-421913-DM"
+      ],
+      "unexpected": [],
+      "durationMs": 5.095
+    },
+    {
+      "name": "datamatrix/small-in-frame",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 14.272
+    },
+    {
+      "name": "datamatrix/skew",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.343
+    },
+    {
+      "name": "negative/white",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 44.432
+    },
+    {
+      "name": "negative/black",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 45.102
+    },
+    {
+      "name": "negative/gray",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 45.612
+    },
+    {
+      "name": "negative/noise",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 24.484
+    },
+    {
+      "name": "negative/blurred-noise",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.159
+    },
+    {
+      "name": "negative/stripes",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 43.342
+    },
+    {
+      "name": "negative/dense-stripes",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 66.8
+    },
+    {
+      "name": "negative/checkerboard",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 23.14
+    }
+  ]
+}

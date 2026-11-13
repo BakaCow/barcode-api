@@ -1,5 +1,9 @@
 # Verification
 
+## Recognition update (13 November 2026)
+
+The current [recognition update](ACCURACY-UPDATE.md) passes 471 JavaScript tests, 305 Python tests (one platform skip), TypeScript declarations, React production build and OpenAPI validation. Tests cover newly recovered real decoder fixtures, independently rotated source coordinates, recovery limits, format restrictions, fresh-frame confirmation scheduling and stale/cancelled results. Offline cache version is 1.8.0; no new physical-phone or offline-install test was performed for this decoder-only change. Synthetic evaluation results and known incorrect readings are reported separately from these passing software tests.
+
 ## Embedded camera update (0.9.0)
 
 Verified on 13 November 2026:
