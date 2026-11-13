@@ -16,6 +16,10 @@ An [experimental Code 128 lab](CODE128-LAB.md) adds a custom decoder, local phot
 
 For a POS integration, [the burst decoding endpoint](POS-DECODING.md) accepts up to five images and returns `confirmed`, `ambiguous`, or `rescan`. It supports a format allowlist and configurable agreement across frames. Your POS handles catalogue lookup and cart updates.
 
+## Add the hosted scanner with one script
+
+Publish the complete `web/` tree, then let another HTTPS website load `/scan/embed.js` with the `data-barcode-scanner` attribute (or `/embed.js` for root static hosting). The compact camera panel sends confirmed `barcode:scan` events to the host. Try `/scan/examples/embed/` and follow [EMBEDDING.md](EMBEDDING.md) for script attributes, POS callbacks and site permissions. No browser API key or SDK asset copying is required for this hosted embed. Offline startup remains a separate host integration.
+
 ## Scan live through the camera
 
 Open the deployed site's `/scan/` address, or its main address, which redirects to the scanner. Choose **Start camera** and allow the browser to use the camera. Point at a barcode or QR code. The app reads the camera frames locally; it does not send camera images to the Python API or any other server.

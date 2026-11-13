@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One-script scanner · Barcode Camera</title>
+  <link rel="icon" href="../../icon.svg">
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../examples.css">
+  <link rel="stylesheet" href="./demo.css">
+  <script type="module" src="./demo.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#scanner">Skip to scanner</a>
+  <header class="topbar"><a class="brand" href="../../"><img src="../../icon.svg" width="34" height="34" alt=""><span>Barcode Camera</span></a><nav class="example-nav" aria-label="Examples"><a href="../">All examples</a><a href="./" aria-current="page">One-script embed</a></nav></header>
+  <main>
+    <h1>Your checkout. Our camera.</h1>
+    <p class="example-intro">Add the scanner with one script. Your website receives a confirmed barcode and decides what happens next.</p>
+    <div class="embed-demo-layout">
+      <section id="scanner" aria-labelledby="camera-heading"><div class="embed-section-heading"><h2 id="camera-heading">Embedded scanner</h2><span>Loaded from the scanner server</span></div>
+        <div id="embed-host"></div>
+        <script src="../../embed.js" data-barcode-scanner data-target="#embed-host" defer></script>
+        <p id="embed-error" class="example-error" role="alert" hidden></p>
+        <p class="example-help">Camera images stay on this device. Only confirmed values are passed to the surrounding website.</p>
+      </section>
+      <section class="example-panel embed-cart" aria-labelledby="cart-heading">
+        <div class="section-heading"><h2 id="cart-heading">Your POS cart</h2><button id="clear-cart" class="text-button" disabled>Clear cart</button></div>
+        <p class="example-meta">Demo catalogue · AUD · No payment is taken</p>
+        <p id="cart-feedback" class="example-status" role="status">Scan a demo label to add its product.</p>
+        <p id="cart-empty" class="example-result-empty">Your products appear here after a confirmed scan.</p>
+        <ul id="cart-lines" class="cart-lines" aria-label="Demo cart items"></ul>
+        <p class="cart-total"><span>Total</span><span id="cart-total">$0.00</span></p>
+        <p class="example-help">Product names and prices come from this page’s demo catalogue. Your application supplies its own catalogue and saves transactions.</p>
+      </section>
+    </div>
+    <section class="embed-install" aria-labelledby="install-heading">
+      <div class="section-heading"><h2 id="install-heading">One script to add the camera</h2><button id="copy-embed" class="button secondary small">Copy script</button></div>
+      <p>Place this where the scanner should appear on an HTTPS page. Keep the script URL pointed at your deployed scanner server.</p>
+      <pre class="example-code"><code id="embed-snippet" tabindex="0"></code></pre>
+      <p id="copy-status" class="example-help" role="status">No build step or API key is needed.</p>
+      <details class="example-help"><summary>Connect a confirmed scan to your app</summary><p>The script installs the camera panel. Listen for its event to connect it to your own product lookup:</p><pre class="example-code"><code>document.addEventListener('barcode:scan', (event) =&gt; {
+  const { scanId, format, text } = event.detail;
+  // Look up the exact format + text in your catalogue.
+  // Deduplicate scanId on your backend before changing stock.
+});</code></pre><p>A confirmed scan pauses until the user chooses Scan another. Confirmation does not verify a product’s price, stock or validity.</p></details>
+      <p class="example-help">The page and scanner server must use HTTPS. Your website must allow the scanner frame and delegate camera permission. The hosted embed needs its assets to load online; use the self-hosted SDK when your application needs managed offline startup.</p>
+    </section>
+    <section class="demo-catalogue" aria-labelledby="labels-heading"><h2 id="labels-heading">Try these demo labels</h2><p class="example-help">Open a label on another screen or print it, then point your camera at it.</p><ul class="catalogue-list">
+      <li><strong>Breakfast tea · $6.50</strong><a href="../pos/labels/tea.png"><img src="../pos/labels/tea.png" width="500" height="180" alt="Open the Code 128 demo label for breakfast tea"></a><p class="catalogue-value">DEMO-TEA-01</p></li>
+      <li><strong>Rolled oats · $4.20</strong><a href="../pos/labels/oats.png"><img src="../pos/labels/oats.png" width="500" height="180" alt="Open the Code 128 demo label for rolled oats"></a><p class="catalogue-value">DEMO-OATS-02</p></li>
+      <li><strong>Reusable bag · $2.50</strong><a href="../pos/labels/bag.png"><img src="../pos/labels/bag.png" width="180" height="180" alt="Open the QR demo label for the reusable bag"></a><p class="catalogue-value">DEMO:BAG:03</p></li>
+    </ul></section>
+  </main>
+  <footer class="example-footer"><p>Use the camera panel inside an existing site, or use the <a href="../plain/">local SDK example</a> for full control over hosting and offline caching.</p></footer>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /* Everything needed to scan is cached here; camera frames never pass through it. */
-const VERSION = "1.6.1";
+const VERSION = "1.7.0";
 const FEATURES = ["code128-lab", "live-pos", "integration-examples", "camera-controls", "comparison-benchmark"];
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `barcode-camera:${SCOPE.href}:`;
@@ -8,10 +8,12 @@ const CORE_PATHS = [
   "./", "./index.html", "./styles.css", "./scan-policy.js", "./app.js", "./scanner-worker.js",
   "./pos-policy.js", "./frame-analysis.js", "./capture-selection.js", "./camera-constraints.js", "./capture-geometry.js",
   "./sdk/scanner.js", "./sdk/capture-tools.js", "./sdk/controls.js", "./sdk/controls.css", "./LICENSE.txt",
+  "./embed.js", "./embed/", "./embed/index.html", "./embed/widget.js", "./embed/widget.css",
   "./benchmark/", "./benchmark/index.html", "./benchmark/benchmark.css", "./benchmark/benchmark.js",
   "./benchmark/adapters.mjs", "./benchmark/metrics.mjs", "./benchmark/recorder.mjs",
   "./examples/", "./examples/index.html", "./examples/examples.css", "./examples/offline.js",
   "./examples/plain/", "./examples/plain/index.html", "./examples/plain/app.js",
+  "./examples/embed/", "./examples/embed/index.html", "./examples/embed/demo.js", "./examples/embed/demo.css",
   "./examples/pos/", "./examples/pos/index.html", "./examples/pos/app.js", "./examples/pos/cart.mjs",
   "./examples/pos/labels/tea.svg", "./examples/pos/labels/tea.png",
   "./examples/pos/labels/oats.svg", "./examples/pos/labels/oats.png",

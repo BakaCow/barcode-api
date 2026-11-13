@@ -4,10 +4,13 @@ Version 0.9.0 provides a browser camera SDK with optional camera/target controls
 
 For camera-only POS integration, use `createScanner` and its confirmed `onScan` callback. The optional `attachScannerControls` UI adds supported flashlight/zoom controls, camera switching, balanced/detail capture, an aiming area and tap targeting. All three examples include it. Keep the complete `web/` asset tree together; copying only `scanner.js` is insufficient. See [SDK.md](SDK.md) for imports and options, and [COMPARISON.md](COMPARISON.md) for repeatable device trials.
 
+For a camera panel loaded from your server with one classic script, use the [hosted embed](EMBEDDING.md). It works across website origins by hosting the scanner in its own iframe and passing confirmed events to the surrounding app. See `/scan/examples/embed/` for a working checkout demonstration.
+
 ## Pick the integration
 
 | Need | Use | Runs offline? |
 | --- | --- | --- |
+| One script from your scanner server | [Hosted embed](EMBEDDING.md) | Local decoding after load; offline reload is not guaranteed |
 | Live camera scanning inside a website | [Browser SDK](SDK.md) | Yes, after your app caches its page and all decoder assets |
 | Plain HTML/JavaScript starting point | `/scan/examples/plain/` on the API host | Yes after its offline status reports ready |
 | A POS catalogue/cart example | `/scan/examples/pos/` on the API host | Demo catalogue and cart run locally; production data/sync are your responsibility |

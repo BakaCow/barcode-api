@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Barcode Camera scanner</title>
+  <link rel="icon" href="../icon.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../sdk/controls.css">
+  <link rel="stylesheet" href="./widget.css">
+  <script type="module" src="./widget.js"></script>
+</head>
+<body>
+  <main id="widget" class="widget-shell" aria-labelledby="widget-title">
+    <div class="widget-heading"><h1 id="widget-title"><img src="../icon.svg" width="28" height="28" alt="">Barcode Camera</h1><span id="camera-state">Camera off</span></div>
+    <div class="widget-stage" id="stage">
+      <video id="video" muted playsinline aria-label="Live barcode camera preview"></video>
+      <div class="widget-placeholder" id="placeholder">
+        <svg aria-hidden="true" viewBox="0 0 120 80"><path d="M2 22V2h20m76 0h20v20M2 58v20h20m76 0h20V58M30 22v36m9-36v36m11-36v36m6-36v36m13-36v36m8-36v36m13-36v36"/></svg>
+        <p>Keep one complete barcode in view.</p>
+        <span>Start the camera when you’re ready.</span>
+      </div>
+    </div>
+    <div class="widget-actions"><button id="start" class="button primary" type="button" disabled>Start camera</button><button id="stop" class="button secondary" type="button" disabled>Stop</button><button id="next" class="button secondary" type="button" disabled>Scan another</button></div>
+    <p id="status" class="widget-status" role="status">Connecting the scanner…</p>
+    <p id="error" class="widget-error" role="alert" hidden></p>
+    <section class="widget-result" aria-labelledby="result-title"><div class="widget-result-heading"><h2 id="result-title">Confirmed barcode</h2><span id="format" hidden></span></div><p id="value">Your next scan appears here.</p></section>
+    <div id="camera-controls" hidden></div>
+    <div class="widget-footnote"><p>Images stay on this device.</p><a href="../" target="_blank" rel="noopener noreferrer">Open scanner separately</a></div>
+  </main>
+</body>
+</html>

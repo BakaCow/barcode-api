@@ -2,6 +2,8 @@
 
 `web/sdk/scanner.js` is a browser ES module. It supplies camera lifecycle and controls, confirmed scan events, selected formats, adaptive frame selection and source-region retries without requiring the standalone scanner's HTML or history. It uses the same bundled ZXing worker and POS policy. It does not call the Python API, upload camera frames, or need a secret key.
 
+Need a camera panel from your server without copying assets into the customer site? Use the [one-script hosted embed](EMBEDDING.md). The headless SDK documented below still requires its assets on the same origin as its own page.
+
 ## Install the assets
 
 Copy the `web/` directory to a same-origin static directory such as `/scanner-assets/`. Preserve its filenames and `vendor/` license notices. Serve `.js` as JavaScript and `.wasm` as `application/wasm`. No npm install or external CDN is required for the SDK itself.
