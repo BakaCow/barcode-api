@@ -1,0 +1,4 @@
+{
+  "allowed_formats": ["ean13", "upca", "code128", "qr"],
+  "confirmation_frames": 1
+}

@@ -2,24 +2,29 @@
 
 import base64
 from contextlib import asynccontextmanager
+import hashlib
 from io import BytesIO
 import os
 from pathlib import Path
 import secrets
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps, UnidentifiedImageError
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from starlette.concurrency import run_in_threadpool
 from starlette.responses import JSONResponse, RedirectResponse
 import zxingcpp
-from barcode_reader import read_barcodes
+from barcode_reader import canonical_format_name, read_barcodes
+from pos_decoding import POS_FORMATS, PosOptions, PosResponse, decide_pos
 
 MAX_FILE_BYTES = 10 * 1024 * 1024
 MAX_PIXELS = 20_000_000
 MAX_REQUEST_BYTES = MAX_FILE_BYTES + 64 * 1024
+MAX_POS_FRAMES = 5
+MAX_POS_OPTIONS_BYTES = 8192
 FORMATS = {
     "qr": zxingcpp.BarcodeFormat.QRCode,
     "code128": zxingcpp.BarcodeFormat.Code128,
@@ -73,7 +78,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Barcode API",
-    version="0.5.0",
+    version="0.6.0",
     description="Read codes from images and generate QR, Code 128, EAN-13, and UPC-A images.",
     lifespan=lifespan,
 )
@@ -147,7 +152,14 @@ def scanner_home():
 
 @router.get("/formats")
 def formats():
-    return {"generate": list(FORMATS), "read": "All formats supported by ZXing-C++"}
+    return {
+        "generate": list(FORMATS), "read": "All formats supported by ZXing-C++",
+        "pos": {
+            "formats": list(POS_FORMATS), "defaults": PosOptions().model_dump(),
+            "max_frames": MAX_POS_FRAMES, "max_total_file_bytes": MAX_FILE_BYTES,
+            "max_total_pixels": MAX_PIXELS,
+        },
+    }
 
 
 @router.post("/barcodes/generate", response_class=Response, responses={
@@ -175,6 +187,27 @@ def generate(payload: GenerateRequest):
         raise HTTPException(422, "Text cannot be encoded in the requested barcode format.") from exc
 
 
+def load_image(content: bytes, *, pixel_limit: int) -> Image.Image:
+    """Validate before allocating decoded pixels; caller owns the returned RGB image."""
+    try:
+        with Image.open(BytesIO(content)) as source:
+            if source.format not in {"PNG", "JPEG", "WEBP"}:
+                raise HTTPException(415, "Upload a PNG, JPEG, or WebP image.")
+            if source.width * source.height > pixel_limit:
+                raise HTTPException(413, "Images exceed the available decoded pixel budget (20 megapixels per request).")
+            if getattr(source, "n_frames", 1) != 1:
+                raise HTTPException(415, "Animated and multi-frame images are not supported.")
+            with ImageOps.exif_transpose(source) as oriented, oriented.convert("RGBA") as normalized:
+                # Composite transparency on white so transparent backgrounds remain readable.
+                with Image.new("RGBA", normalized.size, "white") as background:
+                    with Image.alpha_composite(background, normalized) as composite:
+                        return composite.convert("RGB")
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+        raise HTTPException(413, "Image dimensions are too large.") from exc
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
+        raise HTTPException(400, "File is not a valid supported image.") from exc
+
+
 @router.post("/barcodes/read", response_model=ReadResponse)
 def read(file: UploadFile, response: Response):
     """Read PNG, JPEG, or WebP. Positions use EXIF-normalized image coordinates."""
@@ -184,24 +217,7 @@ def read(file: UploadFile, response: Response):
         file.file.close()
     if len(content) > MAX_FILE_BYTES:
         raise HTTPException(413, "Image exceeds the 10 MiB file limit.")
-    try:
-        with Image.open(BytesIO(content)) as source:
-            if source.format not in {"PNG", "JPEG", "WEBP"}:
-                raise HTTPException(415, "Upload a PNG, JPEG, or WebP image.")
-            if source.width * source.height > MAX_PIXELS:
-                raise HTTPException(413, "Image exceeds the 20 megapixel limit.")
-            if getattr(source, "n_frames", 1) != 1:
-                raise HTTPException(415, "Animated and multi-frame images are not supported.")
-            normalized = ImageOps.exif_transpose(source).convert("RGBA")
-            # Composite transparency on white so transparent backgrounds remain readable.
-            background = Image.new("RGBA", normalized.size, "white")
-            image = Image.alpha_composite(background, normalized).convert("RGB")
-    except (Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
-        raise HTTPException(413, "Image dimensions are too large.") from exc
-    except (UnidentifiedImageError, OSError, ValueError) as exc:
-        raise HTTPException(400, "File is not a valid supported image.") from exc
-
-    with image:
+    with load_image(content, pixel_limit=MAX_PIXELS) as image:
         results = read_barcodes(image)
         barcodes = []
         for code in results:
@@ -216,6 +232,97 @@ def read(file: UploadFile, response: Response):
             ))
         response.headers["Cache-Control"] = "no-store"
         return ReadResponse(barcodes=barcodes, image=ImageSize(width=image.width, height=image.height))
+
+
+@router.post("/pos/decode", response_model=PosResponse)
+async def pos_decode(
+    request: Request,
+    response: Response,
+    frames: Annotated[list[UploadFile], File(description="One to five images of one target product.")],
+    options: Annotated[str, Form(description="JSON object: allowed_formats and confirmation_frames (1–3).")] = "{}",
+):
+    """Decide one POS result from a stateless burst; conflicting identities are ambiguous.
+
+    Confirmation defaults to two distinct images. Set confirmation_frames to 1
+    to accept a single match. Identical normalized pixels never add confirmation.
+    No agreement or camera state is retained between requests.
+    """
+    form = await request.form()
+    try:
+        if set(form) - {"frames", "options"}:
+            raise HTTPException(422, "Use only the frames and options multipart fields.")
+        raw_options = form.getlist("options")
+        if len(raw_options) > 1:
+            raise HTTPException(422, "Supply the options field only once.")
+        # FastAPI treats an empty form field as its default; explicit empty JSON
+        # must instead be rejected, so read the original cached form value.
+        options = raw_options[0] if raw_options else options
+        if not isinstance(options, str):
+            raise HTTPException(422, "The options field must contain a JSON string.")
+        result = await run_in_threadpool(decode_pos_burst, frames, options)
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return result
+    finally:
+        await form.close()
+
+
+def decode_pos_burst(frames: list[UploadFile], options: str) -> PosResponse:
+    """Run bounded image work in a worker thread; the route owns upload handles."""
+    images = []
+    try:
+        if not 1 <= len(frames) <= MAX_POS_FRAMES:
+            raise HTTPException(422, "Upload between one and five frames.")
+        if len(options.encode("utf-8")) > MAX_POS_OPTIONS_BYTES:
+            raise HTTPException(422, "The options field exceeds 8192 UTF-8 bytes.")
+        try:
+            config = PosOptions.model_validate_json(options)
+        except ValidationError as exc:
+            # Pydantic error contexts may contain non-JSON-serializable exceptions.
+            raise HTTPException(422, exc.errors(include_context=False, include_input=False)) from exc
+
+        total_bytes = total_pixels = 0
+        for frame in frames:
+            content = frame.file.read(MAX_FILE_BYTES - total_bytes + 1)
+            total_bytes += len(content)
+            if total_bytes > MAX_FILE_BYTES:
+                raise HTTPException(413, "Combined images exceed the 10 MiB file limit.")
+            image = load_image(content, pixel_limit=MAX_PIXELS - total_pixels)
+            images.append(image)
+            total_pixels += image.width * image.height
+
+        # Validate the entire burst before spending time decoding any frame.
+        seen_images = {}
+        decoded_frames = []
+        for index, image in enumerate(images):
+            digest = hashlib.sha256()
+            digest.update(image.width.to_bytes(8, "big"))
+            digest.update(image.height.to_bytes(8, "big"))
+            digest.update(image.tobytes())
+            fingerprint = digest.digest()
+            duplicate_of = seen_images.get(fingerprint)
+            if duplicate_of is not None:
+                barcodes = decoded_frames[duplicate_of]["barcodes"]
+            else:
+                seen_images[fingerprint] = index
+                barcodes = []
+                for code in read_barcodes(image, allowed_formats=config.allowed_formats):
+                    name = canonical_format_name(code.format)
+                    if name not in config.allowed_formats:
+                        continue
+                    barcodes.append({
+                        "text": code.text, "format": name,
+                        "bytes_base64": base64.b64encode(code.bytes).decode("ascii"),
+                        "position": [{"x": x, "y": y} for x, y in code.points],
+                    })
+            decoded_frames.append({
+                "index": index, "image": {"width": image.width, "height": image.height},
+                "duplicate_of": duplicate_of, "barcodes": barcodes,
+            })
+        return decide_pos(config, decoded_frames)
+    finally:
+        for image in images:
+            image.close()
 
 
 app.include_router(router)

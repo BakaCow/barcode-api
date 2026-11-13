@@ -1,4 +1,21 @@
-# Verification for the damage-testing update
+# Verification
+
+## POS decoding update (0.6.0)
+
+Verified on 13 November 2026:
+
+- **219 Python tests passed, 1 skipped** (Windows symlink creation unavailable), and **174 Node tests passed**. Python emitted an upstream Starlette warning about its current HTTPX test-client adapter.
+- The added checks comprise **67 POS HTTP tests**, **40 decision-policy tests**, and **24 reader-format tests**. They cover native format restrictions on the first and recovery passes, strict options, two- and three-image agreement, single-image mode, duplicate pixel detection, same-label multiple detections, conflicts despite a majority, request isolation, image normalization, authentication, shared byte/pixel budgets, and resource cleanup on success and failure.
+- Actual decoder fixtures verify the known angled EAN-13 image: an EAN-13 allowlist returns its correct value; explicitly enabling UPC-E as well returns `ambiguous` with no selected value. A separate invalid-checksum regression returns `rescan` with no candidate. These are targeted regressions, not a new overall accuracy measurement.
+- Two actual QR codes with identical payload bytes but different ECI text encodings cannot confirm each other. Agreement requires exact canonical format, raw bytes **and decoded text**; encoding disagreements return `ambiguous`.
+- The existing CI development benchmarks also pass: browser 128/171 exact positives, unrestricted API 126/171, and custom Code 128 44/57. Each rejects all 48 development negatives without unexpected results. The eight-image Code 128 development demo also passes. These are synthetic development checks, not fresh held-out evaluation or a test of real cameras.
+- The new endpoint is stateless. Its tests use generated images, including near-identical pixel variants to test evidence counting. Distinct pixels do not establish separate physical camera captures. Repeated wrong readings can still agree, and the POS must perform its own catalogue lookup.
+
+The existing unrestricted endpoint and browser scanner retain their decoding behavior, including the known broader-verification ambiguity described below. The POS mode adds a conservative decision policy; it does not remove every native-decoder failure. Docker's file list now includes `pos_decoding.py`; a Docker image build and physical-phone testing were not run locally for this backend update.
+
+See [POS-DECODING.md](POS-DECODING.md) for configuration and request examples. Reproduce both suites from the project folder with the commands below; GitHub Actions discovers the added Python tests automatically.
+
+## Damage-testing update (0.5.0)
 
 Version 0.5.0, verified on 12 November 2026:
 

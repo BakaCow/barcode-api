@@ -2,9 +2,13 @@
 
 A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
 
-Version 0.5.0 adds broader damage testing and Android/iPhone capability simulations. See [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for measured improvements, examples, and an unresolved extra UPC-E reading on an angled EAN-13. [MOBILE-TESTING.md](MOBILE-TESTING.md) describes 35 application simulations; these do not run real Android/iPhone browsers or cameras.
+Version 0.6.0 adds [configurable POS decoding](POS-DECODING.md): restrict formats before decoding, reject conflicting results, and optionally require agreement across uploaded frames. See [TESTING.md](TESTING.md) for verification.
+
+Version 0.5.0 added broader damage testing and Android/iPhone capability simulations. See [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for measured improvements, examples, and an extra UPC-E reading still present in the unrestricted reader on an angled EAN-13. [MOBILE-TESTING.md](MOBILE-TESTING.md) describes 35 application simulations; these do not run real Android/iPhone browsers or cameras.
 
 An [experimental Code 128 lab](CODE128-LAB.md) adds a custom decoder, local photo/video collection, and comparison with ZXing. Open `/scan/lab/` when using the API server, or `/lab/` when hosting the `web/` contents directly. The regular scanner and API continue to use ZXing. The lab includes synthetic development examples; real-phone accuracy and Scanbot parity have not been established.
+
+For a POS integration, [the burst decoding endpoint](POS-DECODING.md) accepts up to five images and returns `confirmed`, `ambiguous`, or `rescan`. It supports a format allowlist and configurable agreement across frames. Your POS handles catalogue lookup and cart updates.
 
 ## Scan live through the camera
 
@@ -58,7 +62,8 @@ Then open <http://127.0.0.1:8000/>. Keep the server running during the first com
 | `GET /scan/lab/` | None | Experimental Code 128 collection and comparison lab; no API key needed |
 | `POST /v1/barcodes/generate` | JSON with `format`, `text`, optional `output` and `scale` | PNG or SVG image |
 | `POST /v1/barcodes/read` | Multipart upload in the `file` field | JSON with decoded values, formats, raw bytes, and four corner positions |
-| `GET /v1/formats` | None | Available generation formats |
+| `POST /v1/pos/decode` | Repeated `frames` image fields and an optional `options` JSON string | POS decision, candidates, confirmation counts and per-frame decoding details |
+| `GET /v1/formats` | None | Generation formats, reading support, and POS formats, defaults and limits |
 | `GET /health` | None | Public health check |
 
 Generation supports `qr`, `code128`, `ean13`, and `upca`. Reading uses ZXing-C++'s supported formats, including QR and common retail barcodes. Each `/v1` endpoint requires an `X-API-Key` header.
@@ -130,6 +135,18 @@ Corner positions use the EXIF-normalized image's pixel coordinates. UPC-A may be
 
 Invalid images return 400, missing or wrong keys return 401, oversized inputs return 413, unsupported image types return 415, and invalid generation parameters return 422. Requests are bounded before multipart parsing. Uploaded images are processed for the request; the application does not archive them. The framework may spool multipart uploads to temporary disk storage during processing.
 
+## Decode a burst for a POS
+
+`POST /v1/pos/decode` defaults to `ean13`, `upca`, `code128` and `qr`, requiring the same decoded text, raw payload and format in two distinct images. Send one to five still images together; the combined limits are 10 MiB and 20 million decoded pixels, including duplicate uploads. Identical normalized images count only once. There is no confirmation memory between requests.
+
+With the API running and its key in the request terminal's `BARCODE_API_KEY` variable, send two captures of the same label:
+
+```powershell
+curl.exe --fail-with-body -X POST "http://127.0.0.1:8000/v1/pos/decode" -H "X-API-Key: $env:BARCODE_API_KEY" -F "frames=@frame-1.jpg" -F "frames=@frame-2.jpg" -F "options=<examples/pos-options.json"
+```
+
+Use `confirmation_frames: 1` to disable agreement across frames. Any conflicting candidate makes the burst `ambiguous`, even if another candidate has more matching frames. Only use a `confirmed` result after an exact catalogue lookup, and prevent retried scan attempts from creating duplicate cart events. Confirmation is a decision policy, not a correctness guarantee. Keep the shared API key on your backend, never in browser code. See [POS-DECODING.md](POS-DECODING.md) for options, response fields, identifier handling and the single-frame example.
+
 ## Tests
 
 Install `requirements-dev.txt` for the API, image tools and Python tests. The optional `requirements-research.txt` adds OpenCV for video extraction and its tests; install it to run the full CI dependency set. Neither the browser app nor the deployed API needs OpenCV.
@@ -161,7 +178,7 @@ For a public service, deploy behind HTTPS and add rate limits, per-customer keys
 2. Go to <https://github.com/new>, choose a repository name such as `barcode-api`, and choose **Private** or **Public**.
 3. Leave the README, `.gitignore`, and license initialization options off, then create the repository.
 4. On the empty repository page, choose **uploading an existing file**. In an existing repository, use **Add file → Upload files**.
-5. Open the extracted project folder and drag its contents into GitHub. Include `.github`, `.gitignore`, `.dockerignore`, `app.py`, `barcode_reader.py`, documentation, requirements files, `Dockerfile`, `examples`, `tests`, `tools`, the shipped `data/synthetic` examples, `data/README.md`, `data/manifest.example.json`, `benchmark-results`, and the entire `web` folder. Upload the contents, not the ZIP or an enclosing folder. The workflow path must remain `.github/workflows/tests.yml`.
+5. Open the extracted project folder and drag its contents into GitHub. Include `.github`, `.gitignore`, `.dockerignore`, `app.py`, `barcode_reader.py`, `pos_decoding.py`, documentation, requirements files, `Dockerfile`, `examples`, `tests`, `tools`, the shipped `data/synthetic` examples, `data/README.md`, `data/manifest.example.json`, `benchmark-results`, and the entire `web` folder. Upload the contents, not the ZIP or an enclosing folder. The workflow path must remain `.github/workflows/tests.yml`.
 6. Enter `Initial barcode API` as the commit message and choose **Commit changes**.
 7. Check that `app.py` and `README.md` appear at the repository root. The **Actions** tab shows the test workflow.
 

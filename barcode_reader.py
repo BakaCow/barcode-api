@@ -5,6 +5,7 @@ images; they cannot reconstruct information absent from the photograph. The
 deadline prevents starting more work, but cannot interrupt a native decode.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 import math
 from time import monotonic
@@ -17,6 +18,16 @@ import zxingcpp
 MAX_RETRY_PIXELS = 4_000_000
 RETRY_SECONDS = 2.5
 PointMap = Callable[[float, float], tuple[float, float]]
+POS_FORMATS = {name: getattr(zxingcpp.BarcodeFormat, native) for name, native in {
+    "qr": "QRCode", "code128": "Code128", "ean13": "EAN13", "ean8": "EAN8",
+    "upca": "UPCA", "upce": "UPCE", "datamatrix": "DataMatrix", "aztec": "Aztec",
+    "pdf417": "PDF417", "code93": "Code93",
+}.items()}
+_CANONICAL_FORMAT_NAMES = {native.name: name for name, native in POS_FORMATS.items()}
+_CANONICAL_FORMAT_NAMES.update({
+    "QRCodeModel1": "qr", "QRCodeModel2": "qr", "AztecCode": "aztec",
+    "AztecRune": "aztec", "CompactPDF417": "pdf417",
+})
 # Transforms can make damaged bars resemble unchecked formats such as short ITF.
 # Keep those formats on the untouched first pass; recovery requires a mandatory
 # checksum or error correction. These checks reduce risk, not prove a true read.
@@ -41,6 +52,26 @@ class DecodedBarcode:
     format: object
     bytes: bytes
     points: tuple[tuple[int, int], ...]
+
+
+def canonical_format_name(format_) -> str | None:
+    """Name a supported POS family without rewriting its payload or identifier.
+
+    UPC-A can be reported as EAN13 when EAN13 is enabled. UPC-E payloads can
+    already be expanded by ZXing. Keep the reported family and native bytes;
+    catalog identifier normalization belongs in a separate explicit policy.
+    """
+    return _CANONICAL_FORMAT_NAMES.get(getattr(format_, "name", None))
+
+
+def _requested_formats(allowed_formats: Sequence[str] | None):
+    if allowed_formats is None:
+        return None
+    if (isinstance(allowed_formats, (str, bytes, bytearray)) or
+            not isinstance(allowed_formats, Sequence) or not allowed_formats or
+            any(not isinstance(name, str) or name not in POS_FORMATS for name in allowed_formats)):
+        raise ValueError("allowed_formats must be a nonempty sequence of supported POS format names.")
+    return tuple(dict.fromkeys(allowed_formats))
 
 
 def _source_bars_agree(record: DecodedBarcode, source: Image.Image, original_size):
@@ -88,13 +119,16 @@ def _source_bars_agree(record: DecodedBarcode, source: Image.Image, original_siz
     return alignment >= math.cos(math.radians(50))
 
 
-def _records(codes, size: tuple[int, int], mapping: PointMap | None = None, *, recovery=False):
+def _records(codes, size: tuple[int, int], mapping: PointMap | None = None, *, recovery=False,
+             allowed_names: Sequence[str] | None = None):
     width, height = size
     records = []
     for code in codes:
         if not code.valid or code.error:
             continue
         if recovery and code.format.name not in RECOVERY_NAMES:
+            continue
+        if allowed_names is not None and canonical_format_name(code.format) not in allowed_names:
             continue
         position = code.position
         points = []
@@ -154,12 +188,23 @@ def _rotated(image: Image.Image):
     return candidate, to_working
 
 
-def read_barcodes(image: Image.Image) -> list[DecodedBarcode]:
-    """Keep native successes unchanged, then try at most six recovery passes."""
+def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None = None) -> list[DecodedBarcode]:
+    """Read the requested families on every pass, or retain legacy behavior for None."""
+    requested = _requested_formats(allowed_formats)
     started = monotonic()
-    records = _records(zxingcpp.read_barcodes(image), image.size)
+    first_options = {} if requested is None else {
+        "formats": zxingcpp.BarcodeFormats([POS_FORMATS[name] for name in requested])}
+    records = _records(zxingcpp.read_barcodes(image, **first_options), image.size, allowed_names=requested)
     if records or monotonic() - started >= RETRY_SECONDS:
         return records
+    recovery_formats = RECOVERY_FORMATS
+    if requested is not None:
+        recovery_values = [POS_FORMATS[name] for name in requested if POS_FORMATS[name].name in RECOVERY_NAMES]
+        # An empty native format mask can mean all formats: never pass one as
+        # the intersection when none of the requested families support recovery.
+        if not recovery_values:
+            return []
+        recovery_formats = zxingcpp.BarcodeFormats(recovery_values)
     working, to_original = _working_image(image)
     with working:
         with ImageOps.autocontrast(working, cutoff=0.5) as contrast:
@@ -167,7 +212,7 @@ def read_barcodes(image: Image.Image) -> list[DecodedBarcode]:
                 if monotonic() - started >= RETRY_SECONDS:
                     break
                 mapping = to_original
-                options = {"formats": RECOVERY_FORMATS}
+                options = {"formats": recovery_formats}
                 if attempt == 0:
                     candidate = contrast.copy()
                     options["binarizer"] = zxingcpp.Binarizer.GlobalHistogram
@@ -206,7 +251,7 @@ def read_barcodes(image: Image.Image) -> list[DecodedBarcode]:
                     if monotonic() - started >= RETRY_SECONDS:
                         break
                     records = _records(zxingcpp.read_barcodes(candidate, **options),
-                                       image.size, mapping, recovery=True)
+                                       image.size, mapping, recovery=True, allowed_names=requested)
                     records = [record for record in records if _source_bars_agree(record, working, image.size)]
                 if records:
                     return records
