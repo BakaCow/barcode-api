@@ -116,6 +116,10 @@ Primary actions use green and white; secondary actions use white, a thin line bo
 
 The camera stage contains the preview, detected-code outlines, state labels, and the initial permission explanation. Result and history areas preserve arbitrary payload text, distinguish format from value, and expose explicit copy/export actions. Camera selection and zoom appear only when applicable. Status and errors use live-region semantics; the skip link provides direct access to the scanner.
 
+## Live POS controls
+
+The regular scanner places an optional POS-mode checkbox above the camera. A nearby new-scan action clears the current attempt, while an inline status beneath the toolbar explains confirmation or conflicts. A Scanning options disclosure holds frame-selection and region-retry toggles plus the POS format and confirmation controls. Existing paper/green colors, focus outlines and native inputs are preserved. Format checkboxes use two columns; the confirmation selector fills the phone width. The results panel keeps its natural height when the disclosure expands.
+
 ## Experimental lab flow
 
 The Code 128 lab reuses the same self-hosted typography, paper and green palette, camera surface, buttons, field styling and focus treatment. An Experimental label identifies its scope and a persistent Back to scanner link returns to the regular app. The wider desktop layout pairs capture controls with label details, then places comparison results below; phone layouts stack these sections in the same reading order.

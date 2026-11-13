@@ -1,11 +1,12 @@
 /* Everything needed to scan is cached here; camera frames never pass through it. */
-const VERSION = "1.3.0";
-const FEATURES = ["code128-lab"];
+const VERSION = "1.4.2";
+const FEATURES = ["code128-lab", "live-pos"];
 const SCOPE = new URL(self.registration.scope);
 const CACHE_PREFIX = `barcode-camera:${SCOPE.href}:`;
 const CACHE_NAME = `${CACHE_PREFIX}${VERSION}`;
 const CORE_PATHS = [
   "./", "./index.html", "./styles.css", "./scan-policy.js", "./app.js", "./scanner-worker.js",
+  "./pos-policy.js", "./frame-analysis.js", "./capture-selection.js",
   "./vendor/zxing-reader.js", "./vendor/zxing_reader.wasm",
   "./vendor/public-sans-latin.woff2", "./manifest.webmanifest",
   "./icon.svg", "./icon-192.png", "./icon-512.png",

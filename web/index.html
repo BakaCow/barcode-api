@@ -12,6 +12,9 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
   <script src="./scan-policy.js" defer></script>
+  <script src="./pos-policy.js" defer></script>
+  <script src="./frame-analysis.js" defer></script>
+  <script src="./capture-selection.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -32,6 +35,7 @@
 
     <div class="workspace">
       <section class="scanner-section" id="scanner" aria-label="Camera scanner">
+        <div class="scan-mode"><label><input type="checkbox" id="pos-mode">POS mode <span>One product per scan</span></label><button id="rescan" class="text-button" hidden>Start a new scan</button></div>
         <div class="camera-stage" id="camera-stage">
           <video id="video" playsinline muted aria-label="Live camera preview" hidden></video>
           <svg id="overlay" class="overlay" aria-hidden="true" preserveAspectRatio="xMidYMid meet"></svg>
@@ -50,6 +54,31 @@
         </div>
         <div class="camera-settings" id="camera-settings" hidden><label for="camera-select">Camera</label><select id="camera-select" aria-label="Choose camera"></select><div id="zoom-control" hidden><label for="zoom">Zoom</label><input id="zoom" type="range" min="1" max="4" value="1" step="0.1"></div></div>
         <p class="camera-footnote" id="engine-status" role="status">Camera scanning runs here, even without internet once the app is ready.</p>
+        <p class="pos-status" id="pos-status" role="status" hidden>POS mode checks for one matching code across two distinct frames.</p>
+        <details class="scanner-options"><summary>Scanning options</summary>
+          <div class="capture-options">
+            <label><input type="checkbox" id="better-frames" checked>Prefer clearer camera frames</label>
+            <label><input type="checkbox" id="target-crops" checked>Retry detected barcode areas</label>
+          </div>
+          <p class="option-help">Frame selection compares a short burst. Cropping keeps the full-image check and retries likely barcode areas.</p>
+          <fieldset id="pos-settings" hidden><legend>POS safeguards</legend>
+            <label class="confirmation-setting" for="pos-confirmation">Matching frames <select id="pos-confirmation"><option value="1">1 — no frame confirmation</option><option value="2" selected>2 — recommended</option><option value="3">3 — extra confirmation</option></select></label>
+            <p class="option-help" id="format-help">Read only these formats. Keep at least one selected.</p>
+            <div class="format-options" role="group" aria-labelledby="format-help">
+              <label><input id="pos-format-ean13" type="checkbox" checked>EAN-13</label>
+              <label><input id="pos-format-upca" type="checkbox" checked>UPC-A</label>
+              <label><input id="pos-format-code128" type="checkbox" checked>Code 128</label>
+              <label><input id="pos-format-qr" type="checkbox" checked>QR code</label>
+              <label><input id="pos-format-ean8" type="checkbox">EAN-8</label>
+              <label><input id="pos-format-upce" type="checkbox">UPC-E</label>
+              <label><input id="pos-format-datamatrix" type="checkbox">Data Matrix</label>
+              <label><input id="pos-format-aztec" type="checkbox">Aztec</label>
+              <label><input id="pos-format-pdf417" type="checkbox">PDF417</label>
+              <label><input id="pos-format-code93" type="checkbox">Code 93</label>
+            </div>
+            <p class="option-help">Conflicting readings require another scan. Imported images cannot confirm across frames. POS settings apply only to this page session.</p>
+          </fieldset>
+        </details>
       </section>
 
       <aside class="results" aria-label="Scan results">

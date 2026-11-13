@@ -2,7 +2,9 @@
 
 A live camera scanner with an optional Python API for uploaded images and barcode generation. The camera app decodes barcodes on the device using a bundled [ZXing-C++ WebAssembly decoder](https://github.com/Sec-ant/zxing-wasm). The server API uses [FastAPI](https://fastapi.tiangolo.com/) and [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp).
 
-Version 0.6.0 adds [configurable POS decoding](POS-DECODING.md): restrict formats before decoding, reject conflicting results, and optionally require agreement across uploaded frames. See [TESTING.md](TESTING.md) for verification.
+Version 0.7.0 adds [live POS safeguards, clearer-frame selection and barcode-region retries](LIVE-SCANNING.md) to the on-device scanner. Enable **POS mode** above the camera and configure it under **Scanning options**. Frame selection and region retries are on by default. See [TESTING.md](TESTING.md) for verification and its limits.
+
+Version 0.6.0 added [configurable server-side POS decoding](POS-DECODING.md): restrict formats before decoding, reject conflicting results, and optionally require agreement across uploaded frames. The browser mode works locally without calling that endpoint.
 
 Version 0.5.0 added broader damage testing and Android/iPhone capability simulations. See [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for measured improvements, examples, and an extra UPC-E reading still present in the unrestricted reader on an angled EAN-13. [MOBILE-TESTING.md](MOBILE-TESTING.md) describes 35 application simulations; these do not run real Android/iPhone browsers or cameras.
 
@@ -18,15 +20,17 @@ The scanner is a separate browser app. It does not need your API key. The existi
 
 ### Reading difficult labels
 
-The scanner preserves more camera detail, retries selected center crops, and asks for continuous autofocus when the camera supports it. When the initial decode fails, it can retry contrast normalization, sharpening, a diagonal rotation, light/dark inversion, local illumination correction, and bounded 2× resampling. The browser's illumination retry also straightens coherently oriented bars. The browser image reader and uploaded-image API have at most six recovery passes within their existing time and pixel limits; neither reconstructs completely missing barcode data.
+**Prefer clearer camera frames** compares a short burst and selects the best-scoring fresh image. Quality hints can suggest holding still, improving lighting, reducing possible glare or keeping the whole code visible. The scanner also requests continuous autofocus when the camera supports it. These are bounded heuristics; they cannot recover detail the camera never captured.
 
-Transformed recovery only accepts formats with mandatory checksums or error correction, and linear results must agree with the visible source-bar direction. Formats such as unchecked ITF, Codabar and Code 39 remain available on the untouched initial pass. This reduces specific false readings found in testing; it does not eliminate all false readings from the underlying decoder. Live scanning runs at most one recovery strategy per frame.
+**Retry detected barcode areas** keeps the full-image read first, then retries likely regions when that read fails. It can search away from the centre, retains real surrounding margins, and maps returned corners back to the source. These are heuristic rectangular crops from captured pixels, not exact perspective correction. Live scanning retries at most two regions and one enhancement strategy within its retry-start budget.
 
-Live results need matching payload bytes and format in two separate video frames before appearing. Formats without a known mandatory checksum require three. This adds a short confirmation delay and helps reject transient mistakes; it cannot rule out a persistent wrong reading. Modern browsers use presented-frame callbacks or decoded-frame counters. Browsers without either use playback timestamps, which cannot reliably distinguish a frozen video image from a new frame.
+Existing enhancement strategies include contrast normalization, sharpening, diagonal rotation, light/dark inversion, local illumination correction and bounded 2× resampling. Recovery only accepts formats with mandatory checksums or error correction, and linear results must agree with visible source-bar direction. Unchecked formats remain available on the original pass when POS mode is off. These checks reduce specific false readings; they do not eliminate every native decoder error.
 
-Clean images use the original decoder first. Difficult images may take longer. Recovery stops when a pass finds a code, so an easy code can prevent extra recovery attempts for a harder code in the same image. Imported images do not use live-frame confirmation.
+In **POS mode**, select supported formats and require one, two or three matching frames. Two is the default. The format, raw bytes and exact decoded text must agree; competing identities make the attempt ambiguous even when one has more observations. Duplicate frame IDs and pixel fingerprints do not add evidence. Only confirmed results reach history. A single imported image cannot meet a multi-frame requirement. POS mode is off by default, preserving general multi-code scanning when it is not needed.
 
-See [ACCURACY.md](ACCURACY.md) for reproducible before/after measurements and remaining limits. The measurements use generated images, not real phone footage or a Scanbot comparison.
+With POS mode off, the existing live confirmation policy requires two frames for checked formats and three for other formats. Camera frame-counter support varies; POS mode declines multi-frame confirmation when only a playback-clock fallback is available. Repeated wrong readings can still agree. Your POS must perform its own exact catalogue lookup and cart-event deduplication.
+
+See [LIVE-SCANNING.md](LIVE-SCANNING.md) for controls, freshness rules, crop limits and offline updates. [DAMAGE-TESTING.md](DAMAGE-TESTING.md) records earlier synthetic recognition measurements; those are not a new accuracy percentage for this update or a comparison with Scanbot.
 
 ### Use it offline
 
@@ -34,7 +38,7 @@ See [ACCURACY.md](ACCURACY.md) for reproducible before/after measurements and re
 2. On a phone, use the browser's **Install app** or **Add to Home Screen** option if available. On iPhone, use Safari's Share menu and **Add to Home Screen**.
 3. Turn on airplane mode, reopen the scanner at the same address or from its home-screen icon, and start the camera.
 
-Only the camera app and its locally bundled functionality work offline. Requests to the Python barcode generation and image-upload APIs still require a running server and a network connection. The regular scanner does not store camera frames. If local scan-history saving is enabled, the browser stores decoded values and scan metadata, not photos; clear that history from the app when it is no longer needed. The lab has separate, explicit photo/video capture and download controls for collecting labelled examples locally.
+Only the camera app and its locally bundled functionality work offline. Requests to the Python barcode generation and image-upload APIs still require a running server and a network connection. The regular scanner temporarily buffers at most three camera images for selection; it does not archive or upload them. If local scan-history saving is enabled, the browser stores decoded values and scan metadata, not photos; clear that history from the app when it is no longer needed. The lab has separate, explicit photo/video capture and download controls for collecting labelled examples locally.
 
 Offline readiness applies to the current browser and device. Clearing site data, private-browsing restrictions, storage pressure, or browser cache eviction can remove the offline files. If that happens, open the app online again and wait for offline readiness before disconnecting. After an app update, wait for the new version to finish downloading before testing offline mode.
 

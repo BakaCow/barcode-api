@@ -33,6 +33,14 @@ function initialize() {
   return decoder;
 }
 
+function loadPosPolicy() {
+  if (typeof PosPolicy === 'undefined') importScripts('./pos-policy.js');
+}
+
+function loadFrameAnalysis() {
+  if (typeof FrameAnalysis === 'undefined') importScripts('./frame-analysis.js');
+}
+
 // Work on luminance only for retries; the first pass always sees the original.
 // Contrast stretching cannot reconstruct bars that the camera never captured.
 function luminance(image) {
@@ -203,24 +211,54 @@ function validResults(results, inverse, width, height, recovery = false, gray) {
   }).filter(Boolean);
 }
 
-async function decode(image, mode, retryIndex) {
+async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   const started = performance.now();
   const budgetMs = mode === 'live' ? 350 : 2500;
-  let results = validResults(await ZXingWASM.readBarcodes(image, OPTIONS));
-  if (results.length) return { results, diagnostics: { passes: 1, strategy: 'original' } };
+  const allowed = posOptions && new Set(posOptions.allowedFormats);
+  const permitted = (results) => allowed ? results.filter((result) => allowed.has(PosPolicy.canonicalFormat(result.format))) : results;
+  const firstOptions = posOptions ? { ...OPTIONS, formats: PosPolicy.nativeFormats(posOptions) } : OPTIONS;
+  const recoveryOptions = posOptions ? { ...RECOVERY_OPTIONS,
+    formats: PosPolicy.nativeFormats(posOptions).filter((format) => RECOVERY_FORMATS.includes(format)) } : RECOVERY_OPTIONS;
+  const analysis = enhanceLive ? FrameAnalysis.analyze(image) : undefined;
+  const details = analysis ? { analysis } : {};
+  // Always inspect the full supplied image first. A crop must not hide a
+  // conflicting value that the whole-image reader already found.
+  let results = permitted(validResults(await ZXingWASM.readBarcodes(image, firstOptions)));
+  if (results.length) return { results, ...details, diagnostics: { passes: 1, strategy: 'original' } };
+  // An empty native format list means all formats in some ZXing versions.
+  if (!recoveryOptions.formats.length) return { results, ...details, diagnostics: { passes: 1, strategy: 'original' } };
   const gray = luminance(image);
+  let passes = 1, strategy = 'original';
+  if (analysis) {
+    const seen = new Set(), croppedResults = [];
+    for (const region of analysis.regions.slice(0, mode === 'live' ? 2 : 3)) {
+      if (performance.now() - started > budgetMs) break;
+      const crop = FrameAnalysis.crop(image, region, MAX_PIXELS);
+      if (performance.now() - started > budgetMs) break;
+      const candidate = new ImageData(new Uint8ClampedArray(crop.image.data), crop.image.width, crop.image.height);
+      const found = permitted(validResults(await ZXingWASM.readBarcodes(candidate, recoveryOptions),
+        crop.mapPoint, image.width, image.height, true, gray));
+      passes++; strategy = 'barcode-crop';
+      // Examine the remaining bounded crops even after a match. Different
+      // values must reach the POS policy together rather than first-one-wins.
+      for (const result of found) {
+        const key = JSON.stringify([result.format, result.bytes, result.text]);
+        if (!seen.has(key)) { seen.add(key); croppedResults.push(result); }
+      }
+    }
+    if (croppedResults.length) return { results: croppedResults, ...details, diagnostics: { passes, strategy } };
+  }
   // Live mode spreads expensive retries over different camera frames. Imported
   // images have no next frame, so they may use all six bounded fallback passes.
   const retries = mode === 'live' ? [retryIndex % 6] : [0, 1, 2, 3, 4, 5];
-  let passes = 1, strategy = 'original';
   for (const retry of retries) {
     // A single WASM call cannot be interrupted here. The app also has a hard
     // worker timeout; this deadline prevents starting further expensive work.
     if (performance.now() - started > budgetMs) break;
-    let candidate, inverse, options = RECOVERY_OPTIONS;
+    let candidate, inverse, options = recoveryOptions;
     if (retry === 0) {
       strategy = 'contrast'; candidate = rgba(gray, image.width, image.height);
-      options = { ...RECOVERY_OPTIONS, binarizer: 'GlobalHistogram' };
+      options = { ...recoveryOptions, binarizer: 'GlobalHistogram' };
     } else if (retry === 1) {
       strategy = 'sharpen'; candidate = sharpen(gray, image.width, image.height);
     } else if (retry === 2) {
@@ -243,32 +281,45 @@ async function decode(image, mode, retryIndex) {
       strategy = 'upscale';
       ({ image: candidate, inverse } = enlarged);
     }
-    results = validResults(await ZXingWASM.readBarcodes(candidate, options), inverse, image.width, image.height, true, gray);
+    results = permitted(validResults(await ZXingWASM.readBarcodes(candidate, options), inverse, image.width, image.height, true, gray));
     passes++;
     if (results.length) break;
   }
-  return { results, diagnostics: { passes, strategy } };
+  return { results, ...details, diagnostics: { passes, strategy } };
 }
 
 self.onmessage = async ({ data: message }) => {
   const { id, type } = message || {};
   try {
-    await initialize();
     if (type === 'init') {
+      await initialize();
       self.postMessage({ id, type: 'ready' });
       return;
     }
-    if (type !== 'decode') throw new Error('Unknown decoder request.');
+    if (!['decode', 'analyze'].includes(type)) throw new Error('Unknown decoder request.');
     const { width, height, data } = message.image || {};
     if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 ||
         width * height > MAX_PIXELS || !(data instanceof ArrayBuffer) || data.byteLength !== width * height * 4) {
       throw new Error('Image is too large or invalid.');
     }
+    const image = new ImageData(new Uint8ClampedArray(data), width, height);
+    if (type === 'analyze') {
+      loadFrameAnalysis();
+      self.postMessage({ id, type: 'analysis', analysis: FrameAnalysis.analyze(image) });
+      return;
+    }
     const mode = message.mode ?? 'image';
     if (!['image', 'live'].includes(mode)) throw new Error('Unknown scanning mode.');
+    if (message.enhanceLive !== undefined && typeof message.enhanceLive !== 'boolean') throw new Error('Invalid frame enhancement setting.');
+    let posOptions;
+    if (message.posOptions !== undefined) {
+      loadPosPolicy();
+      posOptions = PosPolicy.validateOptions(message.posOptions);
+    }
+    if (message.enhanceLive) loadFrameAnalysis();
     const retryIndex = Number.isSafeInteger(message.retryIndex) && message.retryIndex >= 0 ? message.retryIndex : 0;
-    const image = new ImageData(new Uint8ClampedArray(data), width, height);
-    self.postMessage({ id, type: 'result', ...await decode(image, mode, retryIndex) });
+    await initialize();
+    self.postMessage({ id, type: 'result', ...await decode(image, mode, retryIndex, posOptions, message.enhanceLive === true) });
   } catch (error) {
     self.postMessage({ id, type: 'error', message: error.message || 'Could not read this image.' });
   }

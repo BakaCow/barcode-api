@@ -14,9 +14,54 @@ let offlineReady = false, updateRequested = false, lastAnnouncement = '', import
 const confirmation = ScanPolicy.createConfirmation();
 let scanRevision = 0, lastVideoFrame = null, misses = 0, retryIndex = 0, candidateCrop = null, lastAcceptedAt = 0;
 let videoFrameCallbackId = null, presentedFrame = null, trackingPresentedFrames = false;
+const POS_NAMES = ['ean13', 'upca', 'code128', 'qr', 'ean8', 'upce', 'datamatrix', 'aztec', 'pdf417', 'code93'];
+let posConfirmation = null, frameSelection = null;
+
+function posOptions() {
+  if (!$('pos-mode').checked) return undefined;
+  return PosPolicy.validateOptions({
+    allowedFormats: POS_NAMES.filter(name => $(`pos-format-${name}`).checked),
+    confirmationFrames: Number($('pos-confirmation').value),
+  });
+}
+
+function applyScanOptions() {
+  resetScanEvidence(); dismissError();
+  $('pos-settings').hidden = !$('pos-mode').checked;
+  $('pos-status').hidden = !$('pos-mode').checked;
+  $('rescan').hidden = !$('pos-mode').checked;
+  try {
+    const options = posOptions();
+    posConfirmation = options ? PosPolicy.createConfirmation(options) : null;
+    if (options) setPosStatus('rescan', options.confirmationFrames === 1
+      ? 'Single-frame POS mode. Conflicting codes still require a rescan.'
+      : `Waiting for one code to agree across ${options.confirmationFrames} distinct frames.`);
+  } catch {
+    posConfirmation = null;
+    stopCamera('Choose at least one POS format, then start the camera.');
+    setPosStatus('rescan', 'Choose at least one barcode format in Scanning options.');
+    showError('Choose at least one barcode format in Scanning options.');
+  }
+}
+
+function setPosStatus(state, message) {
+  $('pos-status').setAttribute('data-state', state);
+  $('pos-status').textContent = message;
+}
+
+function qualityHint(analysis) {
+  return {
+    dark: 'Add light or try the flashlight.',
+    'low-detail': 'Hold still and let the camera focus on the code.',
+    glare: 'Try a slight tilt to reduce possible glare.',
+    small: 'Move closer while keeping the whole code and its border visible.',
+    clipped: 'Move back slightly to include the entire code and its border.',
+  }[analysis?.hint] || 'Hold the code steady in view';
+}
 
 function resetScanEvidence() {
   scanRevision += 1; confirmation.reset(); lastVideoFrame = null;
+  posConfirmation?.reset(); frameSelection?.reset();
   misses = 0; retryIndex = 0; candidateCrop = null; lastAcceptedAt = performance.now();
 }
 
@@ -93,10 +138,14 @@ function renderControls() {
   $('start').querySelector('span').textContent = starting ? 'Opening camera…' : active ? 'Stop camera' : 'Start camera';
   $('choose-image').disabled = starting || importBusy;
   $('camera-select').disabled = starting || importBusy;
+  $('rescan').disabled = starting || importBusy;
   $('camera-state').textContent = starting ? 'Opening camera' : active ? 'Camera live' : 'Camera is off';
   $('video').hidden = !active;
   $('camera-placeholder').hidden = active;
   $('camera-stage').classList.toggle('live', active);
+  for (const id of ['pos-mode', 'better-frames', 'target-crops', 'pos-confirmation', ...POS_NAMES.map(name => `pos-format-${name}`)]) {
+    $(id).disabled = starting || importBusy;
+  }
 }
 
 function stopCamera(description) {
@@ -136,6 +185,8 @@ async function startCamera(deviceId) {
   if ($('sound').checked) enableSound();
   let acquired;
   try {
+    const options = posOptions();
+    posConfirmation = options ? PosPolicy.createConfirmation(options) : null;
     await initializeScanner();
     if (token !== generation) return;
     const constraints = { audio: false, video: { width: { ideal: 1920 }, height: { ideal: 1080 },
@@ -195,21 +246,62 @@ async function scanFrame(token) {
   if (!active || token !== generation) return;
   try {
     const frameId = currentVideoFrame();
+    const revision = scanRevision;
+    const options = posOptions();
+    const better = $('better-frames').checked;
+    const crops = $('target-crops').checked;
+    let selected = null;
     if (video.readyState >= 2 && video.videoWidth && frameId !== null && frameId !== lastVideoFrame) {
-      const revision = scanRevision;
       const capturedAt = performance.now();
       const width = video.videoWidth, height = video.videoHeight;
       lastVideoFrame = frameId;
-      const { image, plan } = capture(video, width, height, { fraction: candidateCrop ?? ScanPolicy.cropFraction(misses) });
-      const { results } = await workerCall('decode', { image, mode: 'live', retryIndex }, [image.data]);
+      // POS and region retries always see the full image before any crop.
+      const fraction = options || better || crops ? 1 : candidateCrop ?? ScanPolicy.cropFraction(misses);
+      const { image, plan } = capture(video, width, height, { fraction, maxPixels: 2_100_000 });
+      // Analysis bounds its internal thumbnail but measures source-image detail
+      // and fingerprints all captured pixels. Never analyze a later video frame.
+      const analysis = better || options ? FrameAnalysis.analyze(image) : null;
+      const candidate = { image, plan, width, height, frameId, capturedAt, analysis, revision };
+      if (better) {
+        frameSelection ||= CaptureSelection.create();
+        selected = frameSelection.push(candidate);
+        $('scan-hint').textContent = qualityHint(analysis);
+      } else selected = candidate;
+    } else if (better) selected = frameSelection?.flush(performance.now());
+    if (selected) {
+      const { image, plan, width, height, frameId, capturedAt, analysis } = selected;
+      const reply = await workerCall('decode', { image, mode: 'live', retryIndex,
+        enhanceLive: crops, ...(options ? { posOptions: options } : {}) }, [image.data]);
+      const { results } = reply;
       if (!active || token !== generation) return;
-      // Discard frames captured before a zoom or lighting change.
-      if (revision === scanRevision) {
+      // Discard captures from before settings changes, including buffered frames.
+      if (revision === scanRevision && selected.revision === scanRevision) {
         const mapped = ScanPolicy.remapResults(results, plan);
-        const accepted = confirmation.observe(mapped, frameId, capturedAt);
+        let accepted, conflictHint = null;
+        if (options) {
+          if (performance.now() - capturedAt > 1200) {
+            posConfirmation.reset();
+            accepted = [];
+            setPosStatus('rescan', 'That frame is too old. Hold still for a fresh scan.');
+          } else {
+            const decision = posConfirmation.observe(mapped, frameId, capturedAt, reply.analysis?.fingerprint || analysis?.fingerprint);
+            accepted = decision.results;
+            const messages = {
+              conflicting_values: 'Conflicting codes. Isolate one label, then start a new scan.',
+              unreliable_frames: 'Fresh frames could not be verified. Try another browser or choose single-frame confirmation.',
+              insufficient_confirmation: `Hold steady: ${decision.matchedFrames} of ${decision.requiredFrames} matching frames.`,
+              no_code: 'No allowed code found. Keep one complete label in view.',
+              single_match: 'One code confirmed. Check its product in your POS catalogue.',
+              frame_agreement: 'Code confirmed across distinct frames. Check its product in your POS catalogue.',
+            };
+            setPosStatus(decision.status, messages[decision.reason] || 'Rescan this label.');
+            if (decision.status === 'ambiguous') conflictHint = 'Conflicting readings. Isolate one label and rescan.';
+          }
+        } else accepted = confirmation.observe(mapped, frameId, capturedAt);
         drawPositions(accepted, width, height);
         if (accepted.length) {
           handleResults(accepted); lastAcceptedAt = performance.now();
+          posConfirmation?.reset();
           misses = 0; retryIndex = 0; candidateCrop = null;
           $('scan-hint').textContent = `${accepted.length > 1 ? accepted.length + ' codes' : 'Code'} confirmed. Ready for the next.`;
         } else if (results.length) {
@@ -219,17 +311,19 @@ async function scanFrame(token) {
         } else {
           misses += 1; retryIndex += 1; candidateCrop = null;
           const elapsed = performance.now() - lastAcceptedAt;
-          if (elapsed > 8000) $('scan-hint').textContent = 'Try another angle or more light. Keep the whole code visible.';
+          if ((reply.analysis || analysis)?.hint) $('scan-hint').textContent = qualityHint(reply.analysis || analysis);
+          else if (elapsed > 8000) $('scan-hint').textContent = 'Try another angle or more light. Keep the whole code visible.';
           else if (elapsed > 3500) $('scan-hint').textContent = 'Move closer and hold steady, keeping the code’s border visible.';
           else $('scan-hint').textContent = 'Hold the code steady in view';
         }
+        if (conflictHint) $('scan-hint').textContent = conflictHint;
       }
     }
   } catch (error) {
     if (token === generation) { stopCamera(); showError(error.message); }
     return;
   }
-  if (active && token === generation) setTimeout(() => scanFrame(token), 180);
+  if (active && token === generation) setTimeout(() => scanFrame(token), $('better-frames').checked ? 80 : 180);
 }
 
 function drawPositions(results, width, height) {
@@ -246,7 +340,7 @@ function drawPositions(results, width, height) {
 
 function formatName(value) { return ({ QRCode: 'QR code', Code128: 'Code 128', EAN13: 'EAN-13', UPCA: 'UPC-A', DataMatrix: 'Data Matrix' })[value] || value; }
 function displayValue(result) { return result.text || `Binary barcode (${result.bytes?.length || 0} bytes)`; }
-function keyFor(result) { return ScanPolicy.keyFor(result); }
+function keyFor(result) { return JSON.stringify([ScanPolicy.keyFor(result), result.text]); }
 function timeLabel(timestamp) { return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
 
 function handleResults(results) {
@@ -325,20 +419,41 @@ function playSound() {
 async function scanImage(file) {
   if (!file || importBusy || starting) return;
   stopCamera(); dismissError(); importBusy = true; renderControls();
+  const token = generation, revision = scanRevision;
   $('engine-status').textContent = 'Reading the image on this device…';
   let objectUrl;
   try {
+    const options = posOptions();
     if (file.size > 10 * 1024 * 1024) throw new Error('Choose an image smaller than 10 MB.');
     if (!/image\/(png|jpeg|webp)/.test(file.type)) throw new Error('Choose a PNG, JPEG, or WebP image.');
     await initializeScanner();
+    if (token !== generation || revision !== scanRevision) return;
     const source = new Image(); objectUrl = URL.createObjectURL(file);
     await new Promise((resolve, reject) => { source.onload = resolve; source.onerror = () => reject(new Error('This image could not be opened. Try a PNG or JPEG.')); source.src = objectUrl; });
+    if (token !== generation || revision !== scanRevision) return;
     if (source.naturalWidth * source.naturalHeight > 20_000_000) throw new Error('Choose an image under 20 megapixels.');
     const { image } = capture(source, source.naturalWidth, source.naturalHeight, { maxSide: 3072 });
-    const { results } = await workerCall('decode', { image, mode: 'image' }, [image.data]);
-    if (results.length) { handleResults(results); $('engine-status').textContent = `Found ${results.length} ${results.length === 1 ? 'code' : 'codes'} in your image. Nothing was uploaded.`; }
+    const identity = options ? FrameAnalysis.analyze(image).fingerprint : null;
+    const { results } = await workerCall('decode', { image, mode: 'image', enhanceLive: $('target-crops').checked,
+      ...(options ? { posOptions: options } : {}) }, [image.data]);
+    if (token !== generation || revision !== scanRevision) return;
+    if (options) {
+      const decision = PosPolicy.createConfirmation(options).observe(results, 'image:1', performance.now(), identity);
+      if (decision.status === 'confirmed') {
+        handleResults(decision.results);
+        setPosStatus('confirmed', 'One code confirmed from this image. Check its product in your POS catalogue.');
+      } else if (decision.status === 'ambiguous') setPosStatus('ambiguous', 'Conflicting codes in this image. Isolate one label and rescan.');
+      else if (decision.reason === 'insufficient_confirmation') setPosStatus('rescan', 'One image cannot confirm across frames. Use the camera, or select single-frame confirmation.');
+      else setPosStatus('rescan', 'No allowed code found. Try a clearer image of the whole label.');
+      $('engine-status').textContent = 'POS image check complete. Nothing was uploaded.';
+    }
+    else if (results.length) { handleResults(results); $('engine-status').textContent = `Found ${results.length} ${results.length === 1 ? 'code' : 'codes'} in your image. Nothing was uploaded.`; }
     else { $('engine-status').textContent = 'No barcode found. Try a sharper image with the entire code and its border visible.'; }
-  } catch (error) { showError(error.message); $('engine-status').textContent = 'Choose another image or start the camera.'; }
+  } catch (error) {
+    if (token === generation && revision === scanRevision) {
+      showError(error.message); $('engine-status').textContent = 'Choose another image or start the camera.';
+    }
+  }
   finally { if (objectUrl) URL.revokeObjectURL(objectUrl); $('image-file').value = ''; importBusy = false; renderControls(); }
 }
 
@@ -356,7 +471,7 @@ async function checkOffline(repair = false) {
     channel.port1.onmessage = ({ data }) => { clearTimeout(timer); channel.port1.close(); resolve(data); };
     target.postMessage({ type: repair ? 'REPAIR_OFFLINE' : 'OFFLINE_STATUS' }, [channel.port2]);
   });
-  offlineReady = status.ready === true; updateOfflineLabel();
+  offlineReady = status.ready === true && status.features?.includes('live-pos') === true; updateOfflineLabel();
   if (!offlineReady) { $('offline-label').textContent = 'Offline access not ready'; $('offline-state').classList.add('failed'); }
 }
 
@@ -384,6 +499,13 @@ async function setupOffline() {
 }
 
 $('start').addEventListener('click', () => active ? stopCamera('Camera stopped. Tap Start camera when you’re ready.') : startCamera($('camera-select').value || undefined));
+for (const id of ['pos-mode', 'better-frames', 'target-crops', 'pos-confirmation', ...POS_NAMES.map(name => `pos-format-${name}`)]) {
+  $(id).addEventListener('change', applyScanOptions);
+}
+$('rescan').addEventListener('click', () => {
+  applyScanOptions(); $('overlay').replaceChildren();
+  $('scan-hint').textContent = 'Keep one complete label in view';
+});
 $('camera-select').addEventListener('change', () => { if (active) startCamera($('camera-select').value); });
 $('torch').addEventListener('click', async () => {
   const track = stream?.getVideoTracks()[0]; if (!track) return;

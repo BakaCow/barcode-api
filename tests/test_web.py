@@ -38,6 +38,9 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
     [
         ("app.js", "application/javascript"),
         ("scanner-worker.js", "application/javascript"),
+        ("pos-policy.js", "application/javascript"),
+        ("frame-analysis.js", "application/javascript"),
+        ("capture-selection.js", "application/javascript"),
         ("code128-lab-worker.js", "application/javascript"),
         ("engine/code128-engine.js", "application/javascript"),
         ("vendor/zxing-reader.js", "application/javascript"),

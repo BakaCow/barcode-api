@@ -16,6 +16,8 @@ The user requested a Scanbot-like live, offline scanning experience. No claim of
 
 The custom engine is limited to an experimental Code 128 subset and does not replace ZXing in the normal scanner or API. Its detector proposes heuristic oriented regions, not exact label corners or learned detections. Supplied development images are synthetic; there is no included real-phone evaluation. Support, source attribution and measurement limits are documented in [CODE128-LAB.md](CODE128-LAB.md).
 
+The regular browser scanner now offers an optional POS mode with native format restrictions, ambiguity handling and one-to-three-frame confirmation. Its default-on capture options select from a bounded fresh-frame burst and retry heuristic barcode regions after a whole-image miss. These features remain local and offline; they do not perform product lookup or cart updates. Region crops are axis-aligned captured pixels, not exact perspective correction. See [LIVE-SCANNING.md](LIVE-SCANNING.md) for limits and defaults.
+
 ## Operating Context
 
 Existing Python/FastAPI backend. This addition uses plain browser HTML/CSS/JavaScript and a locally bundled WebAssembly reader. The interface targets phone and desktop browsers; the specific user's target device is not yet known. Scanner frames and imported images are processed on-device. Scan history is session-only unless the user opts into storage on that device.

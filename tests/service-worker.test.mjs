@@ -72,7 +72,7 @@ test('precache is complete before offline-ready; failed install never claims rea
   await app.lifecycle('install');
   const status = await app.message('OFFLINE_STATUS');
   assert.equal(status.ready, true);
-  assert.deepEqual(Array.from(status.features), ['code128-lab']);
+  assert.deepEqual(Array.from(status.features), ['code128-lab', 'live-pos']);
   assert.equal(app.state.skipped, false);
 });
 
@@ -93,7 +93,7 @@ test('explicit repair restores files after partial cache eviction', async () => 
   assert.equal((await app.message('OFFLINE_STATUS')).ready, false);
   const repaired = await app.message('REPAIR_OFFLINE');
   assert.equal(repaired.ready, true);
-  assert.deepEqual(Array.from(repaired.features), ['code128-lab']);
+  assert.deepEqual(Array.from(repaired.features), ['code128-lab', 'live-pos']);
   assert.equal(repaired.error, undefined);
   assert.equal(items.size, total);
   app.state.offline = true;

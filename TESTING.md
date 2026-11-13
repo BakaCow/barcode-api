@@ -1,5 +1,27 @@
 # Verification
 
+## Live scanner update (0.7.0)
+
+Verified on 13 November 2026:
+
+- **276 Node tests passed; 222 Python tests passed, 1 skipped** (Windows symlink creation unavailable). The Python test client emits its existing upstream HTTPX adapter warning.
+- New tests include 42 browser POS-policy checks, 25 actual-app camera/import integration checks, 14 quality/region tests, 16 worker checks and 5 benchmark CLI checks. They cover raw-byte/text identity, conflicts despite a majority, duplicate pixels, stale replies, setting changes, image-import isolation, sharpest-frame selection, bounded buffering, image coordinates, allowed formats on native passes, and offline-only dependencies. Camera integration uses generated pixels and controlled worker results; real decoder behavior is tested separately with the bundled WASM.
+- Actual bundled-decoder regressions preserve the known EAN-13/UPC-E conflict for the policy to reject and restrict formats before the first native pass. Two off-centre crop-routing tests deliberately force the first full-image attempt to miss; they verify real crop decoding and coordinates, not an improvement over an unreadable original.
+- Development benchmarks for the enhanced worker, both unrestricted and with the default POS format allowlist, each read **128/171** positive images exactly, reject **48/48** negatives, and return **zero unexpected values or errors**. They retain every previously exact read. These runs show **no additional exact reads** on this synthetic set. Reports: [enhanced](benchmark-results/live-scanning/worker-enhanced-dev.json), [POS formats](benchmark-results/live-scanning/worker-pos-dev.json). Each records the worker and helper hashes. These are worker image tests, not live confirmation or frame-selection accuracy measurements.
+- The actual browser UI was checked at desktop and 390px phone widths. A generated image could not satisfy the default two-frame POS requirement; explicitly selecting one frame accepted its exact Code 128 value. After stopping the preview server and reloading from cache, a two-code image produced a conflict without adding a history entry. Existing history survived the service-worker update. This verifies local browser/offline behavior, not physical Android/iPhone cameras.
+- The offline bundle is **1.4.2**, including `pos-policy.js`, `frame-analysis.js` and `capture-selection.js`. The app requires the `live-pos` capability before reporting its updated offline files ready.
+
+The controls, defaults, time/pixel limits and remaining limitations are explained in [LIVE-SCANNING.md](LIVE-SCANNING.md). POS mode starts off; frame selection and detected-region retries start on. Quality scores and region proposals are heuristics, and agreement does not guarantee a correct product identifier. No real-phone recognition-rate or Scanbot-parity claim is established.
+
+Reproduce the new development measurements from the project folder:
+
+```powershell
+node tools/benchmark-accuracy.mjs --corpus tests/fixtures/damage-stress-dev.json --enhance-live --output data/local/enhanced-worker.json
+node tools/benchmark-accuracy.mjs --corpus tests/fixtures/damage-stress-dev.json --enhance-live --pos-formats ean13,upca,code128,qr --output data/local/pos-worker.json
+```
+
+Create `data/local` first if needed. The default benchmark mode is still-image decoding. `--mode live --retry-index 0` evaluates one live retry profile on each still fixture; it does not simulate a camera burst. Historical verification sets already examined during development are not fresh held-out evidence for this update.
+
 ## POS decoding update (0.6.0)
 
 Verified on 13 November 2026:

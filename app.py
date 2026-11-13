@@ -78,7 +78,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Barcode API",
-    version="0.6.0",
+    version="0.7.0",
     description="Read codes from images and generate QR, Code 128, EAN-13, and UPC-A images.",
     lifespan=lifespan,
 )
