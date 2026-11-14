@@ -1,0 +1,3116 @@
+{
+  "description": "Actual experimental Code128 engine on labelled pixels; selects Code128 positives and all negatives. Strict text/format tuples come from the corpus, never predictions. Host times exclude image import, HTTP, camera capture and UI confirmation. Synthetic examples do not establish phone accuracy or Scanbot parity.",
+  "engineDir": "C:\\Users\\1jyer\\Documents\\Codex\\2026-11-12\\what\\work\\barcode-api-github\\web\\engine",
+  "split": "dev",
+  "corpusVersion": 1,
+  "selection": {
+    "corpusCases": 219,
+    "includedCases": 105,
+    "excludedOtherFormatCases": 114
+  },
+  "engineSha256": "c5862718eda643b9af8c8525883ab8a69fcbcea299ed1ef2296af567a6e2fe25",
+  "engineFiles": {
+    "code128-decoder.js": "09dda1f3a9af3c80ea0cbfac5ef109ff6c761aeb9967ea71610b0823b5afe96a",
+    "code128-detector.js": "b4193b183b7634ca085b16ce746f3a4a3b7a600bca7929dcbb1edc27d028759f",
+    "code128-engine.js": "6e7283484db60f0d65dc876403da52d28bded86541dd91810eb034ddc51806fb"
+  },
+  "engineHashMethod": "SHA256 of ordered filename + NUL + UTF-8 source for decoder, detector and engine, with CRLF normalized to LF",
+  "corpusSha256": "c0feee022dd1c53a95f3c590b6461dfd09232bbb76dea7054ba9964c6258dba6",
+  "provenance": {
+    "generator": "tools/generate-damage-stress.py",
+    "generatorSha256": "c805ff52d4cbb0001245f6d6735aae17079e4432766d103cc5cbdcc4ec0b1b84",
+    "generatorHashMethod": "SHA256 of UTF-8 source with CRLF normalized to LF",
+    "dependencies": {
+      "Pillow": "12.3.0",
+      "zxing-cpp": "3.1.1"
+    },
+    "seed": 93640117,
+    "grouping": "Every transform of one payload is confined to one split; dev/eval payload groups are disjoint.",
+    "evaluationPolicy": "Freeze evaluation fixture before algorithm changes. Do not inspect its decoding results while tuning development cases.",
+    "positiveGroupsPerFormat": 3,
+    "variantsPerPositiveGroup": 19,
+    "negativeFamilies": 8,
+    "negativeVariantsPerFamily": 6,
+    "maximumPixelsPerCase": 1500000,
+    "negativePolicy": "No valid encoded labels. Deliberately invalid checksum symbols and unencoded textures. No decoder filtering: any decoder output remains an unexpected result.",
+    "severityMeaning": {
+      "0": "clean positive or constructed negative",
+      "1": "milder damage",
+      "2": "stronger damage; not guaranteed recoverable"
+    }
+  },
+  "nodeVersion": "v24.14.0",
+  "summary": {
+    "total": 105,
+    "positives": 57,
+    "exactPositiveReads": 44,
+    "negatives": 48,
+    "negativesCorrectlyRejected": 48,
+    "unexpectedResults": 0,
+    "errors": 0,
+    "medianMs": 7.795,
+    "p95Ms": 16.54
+  },
+  "cases": [
+    {
+      "name": "code128/dev-code128-label-1/clean-0",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "clean",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 17.718,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 17.5875
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 10.224,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 10.2183
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/motion-blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "motion-blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.795,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 7.7866
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "shading-lowcontrast",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.73,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 7.7242999999999995
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/perspective-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "perspective",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 21.181,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 21.17450000000001
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/angled-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "angled",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 11.243,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 11.237499999999997
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/scratches-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "scratches",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.351,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 6.34320000000001
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/missing-patch-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "missing-patch",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.042,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 6.037999999999997
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/small-in-frame-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "small-in-frame",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 8.235,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 8.230400000000003
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/clipping-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "clipping",
+      "severity": 1,
+      "exact": false,
+      "missing": [
+        "BOX-DEV-917517"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 16.54,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "complete": true,
+        "elapsedMs": 16.537000000000006
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "blur",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.411,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.4057999999999993
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/motion-blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "motion-blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "BOX-DEV-917517"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 11.898,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "complete": true,
+        "elapsedMs": 11.89500000000001
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "shading-lowcontrast",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.904,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.898799999999994
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/perspective-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "perspective",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 2.63,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 2.627200000000016
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/angled-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "angled",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.204,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.201099999999997
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/scratches-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "scratches",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.924,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.921999999999997
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/missing-patch-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "missing-patch",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "BOX-DEV-917517",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.16,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.1573999999999955
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/small-in-frame-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "small-in-frame",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "BOX-DEV-917517"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.972,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 12.969699999999989
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-1/clipping-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "BOX-DEV-917517",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-1",
+      "condition": "clipping",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "BOX-DEV-917517"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 10.478,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 10.475099999999998
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/clean-0",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "clean",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.53,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.5265999999999735
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.755,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.7535000000000025
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/motion-blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "motion-blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.753,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.7497999999999934
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "shading-lowcontrast",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.174,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.171299999999974
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/perspective-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "perspective",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 12.669,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 12.665500000000009
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/angled-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "angled",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.81,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.8078000000000145
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/scratches-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "scratches",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.234,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.230599999999981
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/missing-patch-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "missing-patch",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.056,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 6.052399999999977
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/small-in-frame-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "small-in-frame",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 14.18,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 14.17610000000002
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/clipping-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "clipping",
+      "severity": 1,
+      "exact": false,
+      "missing": [
+        "738625769010342703926757"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.688,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 8.685900000000004
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "blur",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.134,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.130299999999977
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/motion-blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "motion-blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "738625769010342703926757"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 10.671,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "complete": true,
+        "elapsedMs": 10.667900000000031
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "shading-lowcontrast",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.183,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.179399999999987
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/perspective-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "perspective",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 11.119,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 11.114800000000002
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/angled-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "angled",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.151,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.148799999999994
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/scratches-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "scratches",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.796,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.7930999999999813
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/missing-patch-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "missing-patch",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "738625769010342703926757",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.203,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.20070000000004
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/small-in-frame-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "small-in-frame",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "738625769010342703926757"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 11.215,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 11.212499999999977
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-2/clipping-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "738625769010342703926757",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-2",
+      "condition": "clipping",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "738625769010342703926757"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 14.026,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "complete": true,
+        "elapsedMs": 14.022800000000018
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/clean-0",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "clean",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.477,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.4746999999999844
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.262,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.258800000000008
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/motion-blur-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "motion-blur",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.738,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.7343999999999937
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "shading-lowcontrast",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.185,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.1813999999999965
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/perspective-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "perspective",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 6.104,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 6.099999999999966
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/angled-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "angled",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.569,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.565099999999973
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/scratches-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "scratches",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 3.627,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 3.6242000000000303
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/missing-patch-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "missing-patch",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.134,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.130400000000009
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/small-in-frame-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "small-in-frame",
+      "severity": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 7.132,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 7.129700000000014
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/clipping-1",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "clipping",
+      "severity": 1,
+      "exact": false,
+      "missing": [
+        "bx:d-105215/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 6.804,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 6.801700000000039
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "bx:d-105215/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.928,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 8.925700000000006
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/motion-blur-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "motion-blur",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "bx:d-105215/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.251,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "complete": true,
+        "elapsedMs": 12.248400000000004
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "shading-lowcontrast",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 8.031,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 8.025100000000009
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/perspective-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "perspective",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 2.761,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 2.7567999999999984
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/angled-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "angled",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 5.232,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 5.229399999999998
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/scratches-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "scratches",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.489,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.487099999999998
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/missing-patch-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "missing-patch",
+      "severity": 2,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [
+        {
+          "text": "bx:d-105215/aZ",
+          "format": "Code128"
+        }
+      ],
+      "durationMs": 4.766,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 4.762300000000039
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/small-in-frame-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "small-in-frame",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "bx:d-105215/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 11.754,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 11.751300000000015
+      }
+    },
+    {
+      "name": "code128/dev-code128-label-3/clipping-2",
+      "expectedCount": 1,
+      "expected": [
+        {
+          "text": "bx:d-105215/aZ",
+          "formats": [
+            "Code128"
+          ]
+        }
+      ],
+      "source": "synthetic",
+      "groupId": "dev-code128-label-3",
+      "condition": "clipping",
+      "severity": 2,
+      "exact": false,
+      "missing": [
+        "bx:d-105215/aZ"
+      ],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 14.17,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "complete": true,
+        "elapsedMs": 14.167499999999961
+      }
+    },
+    {
+      "name": "negative/receipt-text/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-receipt-text-1",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 1.583,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 1.5790000000000077
+      }
+    },
+    {
+      "name": "negative/woven-texture/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-woven-texture-1",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 17.85,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 17.84620000000001
+      }
+    },
+    {
+      "name": "negative/short-random-bars/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-short-random-bars-1",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.963,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 7.960900000000038
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-finder-lookalikes-1",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 4.002,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 3,
+        "attempted": 3,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 3.999400000000037
+      }
+    },
+    {
+      "name": "negative/noise-texture/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-noise-texture-1",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.273,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 12.269100000000094
+      }
+    },
+    {
+      "name": "negative/circles/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-circles-1",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 6.731,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 6,
+        "attempted": 6,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 6.72950000000003
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-code128-checksum-1",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.489,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 12.486099999999965
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/1",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-ean13-checksum-1",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.923,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 7.921800000000076
+      }
+    },
+    {
+      "name": "negative/receipt-text/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-receipt-text-2",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 1.296,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 1.294499999999971
+      }
+    },
+    {
+      "name": "negative/woven-texture/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-woven-texture-2",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 1.904,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 1.9028000000000702
+      }
+    },
+    {
+      "name": "negative/short-random-bars/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-short-random-bars-2",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.12,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 8.11830000000009
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-finder-lookalikes-2",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 5.182,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 5.180499999999938
+      }
+    },
+    {
+      "name": "negative/noise-texture/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-noise-texture-2",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.961,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 9.958699999999908
+      }
+    },
+    {
+      "name": "negative/circles/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-circles-2",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 5.915,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 6,
+        "attempted": 6,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 5.913400000000024
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-code128-checksum-2",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.308,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 12.305500000000052
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/2",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-ean13-checksum-2",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.928,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 7.925399999999968
+      }
+    },
+    {
+      "name": "negative/receipt-text/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-receipt-text-3",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 2.358,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 2.356300000000033
+      }
+    },
+    {
+      "name": "negative/woven-texture/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-woven-texture-3",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.988,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 12.985700000000065
+      }
+    },
+    {
+      "name": "negative/short-random-bars/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-short-random-bars-3",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.3,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 9.29690000000005
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-finder-lookalikes-3",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 3.504,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 3.5003000000000384
+      }
+    },
+    {
+      "name": "negative/noise-texture/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-noise-texture-3",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.936,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 8.933099999999968
+      }
+    },
+    {
+      "name": "negative/circles/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-circles-3",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.609,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 5,
+        "attempted": 5,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 7.605699999999956
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-code128-checksum-3",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.462,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 12.45959999999991
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/3",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-ean13-checksum-3",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.788,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 8.785499999999956
+      }
+    },
+    {
+      "name": "negative/receipt-text/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-receipt-text-4",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 1.301,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 1.2998000000000047
+      }
+    },
+    {
+      "name": "negative/woven-texture/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-woven-texture-4",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 17.56,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 6,
+        "attempted": 6,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 17.557199999999966
+      }
+    },
+    {
+      "name": "negative/short-random-bars/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-short-random-bars-4",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.175,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 8.172199999999975
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-finder-lookalikes-4",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 4.033,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 3,
+        "attempted": 3,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 4.0312999999999874
+      }
+    },
+    {
+      "name": "negative/noise-texture/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-noise-texture-4",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 10.233,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 10.229399999999941
+      }
+    },
+    {
+      "name": "negative/circles/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-circles-4",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 6.706,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 8,
+        "attempted": 8,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 6.703899999999976
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-code128-checksum-4",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 12.653,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 12.650700000000029
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/4",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-ean13-checksum-4",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.41,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 8.4067
+      }
+    },
+    {
+      "name": "negative/receipt-text/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-receipt-text-5",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 2.108,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 2.106400000000008
+      }
+    },
+    {
+      "name": "negative/woven-texture/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-woven-texture-5",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 14.379,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 2,
+        "attempted": 2,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 2,
+        "complete": true,
+        "elapsedMs": 14.37620000000004
+      }
+    },
+    {
+      "name": "negative/short-random-bars/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-short-random-bars-5",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.974,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 7.970700000000079
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-finder-lookalikes-5",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 5.59,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 2,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 5.587199999999939
+      }
+    },
+    {
+      "name": "negative/noise-texture/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-noise-texture-5",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 14.232,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 14.225199999999973
+      }
+    },
+    {
+      "name": "negative/circles/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-circles-5",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 7.853,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 8,
+        "attempted": 8,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 7.849399999999946
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-code128-checksum-5",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 13.46,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 13.456299999999942
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/5",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-ean13-checksum-5",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.719,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 8.716400000000021
+      }
+    },
+    {
+      "name": "negative/receipt-text/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-receipt-text-6",
+      "condition": "receipt-text",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 1.29,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 0,
+        "attempted": 0,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 1.288499999999999
+      }
+    },
+    {
+      "name": "negative/woven-texture/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-woven-texture-6",
+      "condition": "woven-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 33.165,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 7,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 33.16210000000001
+      }
+    },
+    {
+      "name": "negative/short-random-bars/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-short-random-bars-6",
+      "condition": "short-random-bars",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.658,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 4,
+        "attempted": 4,
+        "sourceRowRetries": 4,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 9.654800000000023
+      }
+    },
+    {
+      "name": "negative/finder-lookalikes/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-finder-lookalikes-6",
+      "condition": "finder-lookalikes",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 2.94,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 2.9372999999999365
+      }
+    },
+    {
+      "name": "negative/noise-texture/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-noise-texture-6",
+      "condition": "noise-texture",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.338,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 9.334600000000023
+      }
+    },
+    {
+      "name": "negative/circles/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-circles-6",
+      "condition": "circles",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 8.193,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 10,
+        "attempted": 10,
+        "sourceRowRetries": 0,
+        "horizontalRetries": 3,
+        "complete": true,
+        "elapsedMs": 8.189499999999953
+      }
+    },
+    {
+      "name": "negative/invalid-code128-checksum/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-code128-checksum-6",
+      "condition": "invalid-code128-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 15.904,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 0,
+        "complete": true,
+        "elapsedMs": 15.900199999999927
+      }
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/6",
+      "expectedCount": 0,
+      "expected": [],
+      "source": "synthetic",
+      "groupId": "dev-negative-invalid-ean13-checksum-6",
+      "condition": "invalid-ean13-checksum",
+      "severity": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "results": [],
+      "durationMs": 9.558,
+      "diagnostics": {
+        "version": "custom-code128-v1",
+        "candidates": 1,
+        "attempted": 1,
+        "sourceRowRetries": 1,
+        "horizontalRetries": 1,
+        "complete": true,
+        "elapsedMs": 9.553199999999947
+      }
+    }
+  ]
+}

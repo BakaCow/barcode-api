@@ -173,7 +173,7 @@ test('our actual bundled WASM goes through the benchmark adapter, two-frame poli
         ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
         location: { href: 'https://local.test/scanner-worker.js' },
         importScripts(filename) { assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js',
-          './qr-geometry.js', './qr-recovery.js',
+          './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js',
           './independent-reader.js', './vendor/zbar/index.js', './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(filename)); vm.runInContext(fs.readFileSync(new URL('web/' + filename.slice(2), root), 'utf8'), context); },
         async fetch(url) {
           const paths = new Map(['vendor/zxing_reader.wasm', 'vendor/zbar/zbar.wasm'].map(path => ['https://local.test/' + path, path]));

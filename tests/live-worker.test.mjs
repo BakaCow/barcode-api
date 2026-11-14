@@ -35,7 +35,7 @@ function harness({ read, frameAnalysis, clock = performance } = {}) {
     ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
     location: { href: 'https://offline.test/nested/scanner-worker.js' },
     importScripts(path) {
-      assert.ok(['./vendor/zxing-reader.js', './qr-geometry.js', './qr-recovery.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js', './vendor/zbar/index.js',
+      assert.ok(['./vendor/zxing-reader.js', './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js', './vendor/zbar/index.js',
         './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
       imports.push(path);
       if (path === './vendor/zxing-reader.js' && read) {

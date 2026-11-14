@@ -1,0 +1,1889 @@
+{
+  "description": "Actual API reader on identical labelled pixels. Host decode times exclude HTTP, image import and camera work. Synthetic damage examples do not establish real phone accuracy.",
+  "split": "signal-upgrade",
+  "reader": "barcode_reader.py",
+  "readerSha256": "397783cd87730f3e8cae2bec46019206c2f650e70816ca321da1dcd8e551d71c",
+  "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+  "runtimeRoot": "C:\\Users\\1jyer\\Documents\\Codex\\2026-11-12\\what\\work\\signal-upgrade\\baseline",
+  "runtimeSourcesSha256": {
+    "barcode_reader.py": "397783cd87730f3e8cae2bec46019206c2f650e70816ca321da1dcd8e551d71c",
+    "independent_zbar.py": "347e94219b4d7cfbc08069a689d717187b6f49500ada9397f13a6a905f5a355e",
+    "qr_recovery.py": "b76ac26f4e0be378bdb32559e8c5ac47c2f2813b85e4f1a392c3a5c9fdd3b9b1"
+  },
+  "nativeDependencies": {
+    "zbar": {
+      "version": "0.10",
+      "library": "libzbar-64.dll",
+      "sha256": "43ecda0a3e803ffadeab912f5ecaa2655a8a51c6af1c4286bf9ef21cc90a4b04"
+    }
+  },
+  "versions": {
+    "zxing-cpp": "3.1.1",
+    "Pillow": "12.3.0",
+    "pyzbar": "0.1.9"
+  },
+  "summary": {
+    "total": 219,
+    "positives": 171,
+    "exactPositiveReads": 133,
+    "negatives": 48,
+    "negativesCorrectlyRejected": 48,
+    "unexpectedResults": 1,
+    "errors": 0,
+    "medianMs": 7.43,
+    "p95Ms": 97.031
+  },
+  "cases": [
+    {
+      "name": "qr/signal-upgrade-qr-label-1/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.677
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.454
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.438
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.41
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.579
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.654
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.425
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/missing-patch-1",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/6723512333/0"
+      ],
+      "unexpected": [],
+      "durationMs": 23.765
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 7.106
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.411
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/6723512333/0"
+      ],
+      "unexpected": [],
+      "durationMs": 24.038
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/6723512333/0"
+      ],
+      "unexpected": [],
+      "durationMs": 8.843
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.365
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.587
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.702
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/scratches-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/6723512333/0"
+      ],
+      "unexpected": [],
+      "durationMs": 10.377
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/missing-patch-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/6723512333/0"
+      ],
+      "unexpected": [],
+      "durationMs": 25.466
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/6723512333/0"
+      ],
+      "unexpected": [],
+      "durationMs": 174.24
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-1/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/6723512333/0"
+      ],
+      "unexpected": [],
+      "durationMs": 11.243
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.482
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.432
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.436
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.402
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.574
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.588
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.42
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/missing-patch-1",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/5034900288/1"
+      ],
+      "unexpected": [],
+      "durationMs": 24.031
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 7.081
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.425
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/blur-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 23.86
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/5034900288/1"
+      ],
+      "unexpected": [],
+      "durationMs": 9.404
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.366
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.599
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.707
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/scratches-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/5034900288/1"
+      ],
+      "unexpected": [],
+      "durationMs": 9.74
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/missing-patch-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/5034900288/1"
+      ],
+      "unexpected": [],
+      "durationMs": 23.659
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/5034900288/1"
+      ],
+      "unexpected": [],
+      "durationMs": 174.236
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-2/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/5034900288/1"
+      ],
+      "unexpected": [],
+      "durationMs": 10.926
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.453
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.414
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.559
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.419
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.563
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.638
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.454
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/missing-patch-1",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/4850786375/2"
+      ],
+      "unexpected": [],
+      "durationMs": 24.529
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 7.162
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.432
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/blur-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 23.353
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/4850786375/2"
+      ],
+      "unexpected": [],
+      "durationMs": 8.908
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.287
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.584
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 0.568
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/scratches-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/4850786375/2"
+      ],
+      "unexpected": [],
+      "durationMs": 9.485
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/missing-patch-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/4850786375/2"
+      ],
+      "unexpected": [],
+      "durationMs": 22.849
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 87.783
+    },
+    {
+      "name": "qr/signal-upgrade-qr-label-3/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "https://example.com/stress/signal-upgrade/4850786375/2"
+      ],
+      "unexpected": [],
+      "durationMs": 10.848
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 7.43
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.981
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.815
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 13.781
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 8.708
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 98.849
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.63
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/missing-patch-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.261
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 13.177
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.631
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/blur-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.47
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "BOX-SIGNAL-UPGRADE-226724"
+      ],
+      "unexpected": [],
+      "durationMs": 79.423
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 32.511
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 10.272
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 116.1
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/scratches-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.6
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/missing-patch-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.397
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "BOX-SIGNAL-UPGRADE-226724"
+      ],
+      "unexpected": [],
+      "durationMs": 202.196
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-1/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "BOX-SIGNAL-UPGRADE-226724"
+      ],
+      "unexpected": [],
+      "durationMs": 97.031
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.093
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.862
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.29
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 22.136
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.478
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 61.052
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.315
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/missing-patch-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.165
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 23.291
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.42
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/blur-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.954
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "742456258901945042049059"
+      ],
+      "unexpected": [],
+      "durationMs": 51.78
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 20.224
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.829
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 63.376
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/scratches-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.215
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/missing-patch-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.763
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "742456258901945042049059"
+      ],
+      "unexpected": [],
+      "durationMs": 189.671
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-2/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "742456258901945042049059"
+      ],
+      "unexpected": [],
+      "durationMs": 61.764
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.252
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.055
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.792
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.087
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 5.686
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 74.244
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.147
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/missing-patch-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.242
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 23.586
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.006
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/blur-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.404
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "bx:s-222420/aZ"
+      ],
+      "unexpected": [],
+      "durationMs": 52.347
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 21.298
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.013
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 30.68
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/scratches-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 4.204
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/missing-patch-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 3.854
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "bx:s-222420/aZ"
+      ],
+      "unexpected": [],
+      "durationMs": 182.622
+    },
+    {
+      "name": "code128/signal-upgrade-code128-label-3/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "bx:s-222420/aZ"
+      ],
+      "unexpected": [],
+      "durationMs": 66.017
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.558
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.025
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.525
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.731
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.794
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 8.37
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.54
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/missing-patch-1",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7087706699694"
+      ],
+      "unexpected": [
+        {
+          "text": "0108770000067",
+          "format": "UPCE",
+          "points": [
+            [
+              45,
+              34
+            ],
+            [
+              197,
+              34
+            ],
+            [
+              197,
+              155
+            ],
+            [
+              45,
+              155
+            ]
+          ]
+        }
+      ],
+      "durationMs": 1.439
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 7.275
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.517
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/blur-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.23
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7087706699694"
+      ],
+      "unexpected": [],
+      "durationMs": 31.421
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.387
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.027
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.804
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/scratches-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.431
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/missing-patch-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.199
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7087706699694"
+      ],
+      "unexpected": [],
+      "durationMs": 181.04
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-1/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7087706699694"
+      ],
+      "unexpected": [],
+      "durationMs": 39.201
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.781
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.484
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.466
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.723
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.757
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.292
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.557
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/missing-patch-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.333
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 11.519
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.513
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/blur-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 14.999
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7893660631331"
+      ],
+      "unexpected": [],
+      "durationMs": 31.222
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.632
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.066
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.027
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/scratches-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.534
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/missing-patch-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.268
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7893660631331"
+      ],
+      "unexpected": [],
+      "durationMs": 190.454
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-2/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7893660631331"
+      ],
+      "unexpected": [],
+      "durationMs": 41.643
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/clean-0",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.551
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.46
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/motion-blur-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.441
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/shading-lowcontrast-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.708
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/perspective-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.749
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/angled-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.259
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/scratches-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.507
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/missing-patch-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.428
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/small-in-frame-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 6.733
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/clipping-1",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.36
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7686367018556"
+      ],
+      "unexpected": [],
+      "durationMs": 36.124
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/motion-blur-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7686367018556"
+      ],
+      "unexpected": [],
+      "durationMs": 30.453
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/shading-lowcontrast-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 2.19
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/perspective-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.965
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/angled-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 15.701
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/scratches-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.49
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/missing-patch-2",
+      "expectedCount": 1,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 1.228
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/small-in-frame-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7686367018556"
+      ],
+      "unexpected": [],
+      "durationMs": 177.231
+    },
+    {
+      "name": "ean13/signal-upgrade-ean13-label-3/clipping-2",
+      "expectedCount": 1,
+      "exact": false,
+      "missing": [
+        "7686367018556"
+      ],
+      "unexpected": [],
+      "durationMs": 41.515
+    },
+    {
+      "name": "negative/receipt-text/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 36.791
+    },
+    {
+      "name": "negative/woven-texture/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 61.254
+    },
+    {
+      "name": "negative/short-random-bars/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 40.511
+    },
+    {
+      "name": "negative/finder-lookalikes/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 31.169
+    },
+    {
+      "name": "negative/noise-texture/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 54.642
+    },
+    {
+      "name": "negative/circles/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 34.811
+    },
+    {
+      "name": "negative/invalid-code128-checksum/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 80.613
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/1",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 49.657
+    },
+    {
+      "name": "negative/receipt-text/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 36.132
+    },
+    {
+      "name": "negative/woven-texture/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 62.427
+    },
+    {
+      "name": "negative/short-random-bars/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 38.29
+    },
+    {
+      "name": "negative/finder-lookalikes/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 30.825
+    },
+    {
+      "name": "negative/noise-texture/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 56.694
+    },
+    {
+      "name": "negative/circles/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 34.82
+    },
+    {
+      "name": "negative/invalid-code128-checksum/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 79.205
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/2",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 46.808
+    },
+    {
+      "name": "negative/receipt-text/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 35.22
+    },
+    {
+      "name": "negative/woven-texture/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 59.619
+    },
+    {
+      "name": "negative/short-random-bars/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 37.956
+    },
+    {
+      "name": "negative/finder-lookalikes/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 31.273
+    },
+    {
+      "name": "negative/noise-texture/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 54.289
+    },
+    {
+      "name": "negative/circles/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 35.706
+    },
+    {
+      "name": "negative/invalid-code128-checksum/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 79.748
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/3",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 47.656
+    },
+    {
+      "name": "negative/receipt-text/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 35.611
+    },
+    {
+      "name": "negative/woven-texture/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 57.821
+    },
+    {
+      "name": "negative/short-random-bars/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 38.934
+    },
+    {
+      "name": "negative/finder-lookalikes/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 30.733
+    },
+    {
+      "name": "negative/noise-texture/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 56.277
+    },
+    {
+      "name": "negative/circles/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 35.014
+    },
+    {
+      "name": "negative/invalid-code128-checksum/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 80.917
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/4",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 50.654
+    },
+    {
+      "name": "negative/receipt-text/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 35.93
+    },
+    {
+      "name": "negative/woven-texture/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 56.946
+    },
+    {
+      "name": "negative/short-random-bars/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 39.075
+    },
+    {
+      "name": "negative/finder-lookalikes/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 30.773
+    },
+    {
+      "name": "negative/noise-texture/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 54.287
+    },
+    {
+      "name": "negative/circles/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 36.651
+    },
+    {
+      "name": "negative/invalid-code128-checksum/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 79.838
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/5",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 44.327
+    },
+    {
+      "name": "negative/receipt-text/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 35.02
+    },
+    {
+      "name": "negative/woven-texture/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 54.341
+    },
+    {
+      "name": "negative/short-random-bars/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 39.074
+    },
+    {
+      "name": "negative/finder-lookalikes/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 30.824
+    },
+    {
+      "name": "negative/noise-texture/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 53.75
+    },
+    {
+      "name": "negative/circles/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 36.11
+    },
+    {
+      "name": "negative/invalid-code128-checksum/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 82.516
+    },
+    {
+      "name": "negative/invalid-ean13-checksum/6",
+      "expectedCount": 0,
+      "exact": true,
+      "missing": [],
+      "unexpected": [],
+      "durationMs": 50.671
+    }
+  ]
+}

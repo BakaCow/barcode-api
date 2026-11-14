@@ -1,5 +1,51 @@
 # Verification
 
+## Motion blur and tiny codes (14 November 2026)
+
+The [source-signal update](MOTION-TINY-UPDATE.md) passes **684 JavaScript tests**
+and **521 Python tests**, with one existing Windows platform skip and the
+upstream Starlette/HTTPX deprecation warning. TypeScript declarations, the
+OpenAPI export and the React production build pass. Copied and built React
+decoder assets match the final source files. CI runs JavaScript test files
+serially (`node --test --test-concurrency=1 tests/*.test.mjs`) so unrelated test
+processes do not compete for the real decoder's deadlines.
+
+The new checks cover original grayscale forward models, complete symbol and
+quiet-margin evidence, source coordinates, exact native bytes, allowed
+formats, conflicting and equal-value separate labels, malformed helper
+observations, unfinished searches and native calls that overrun a deadline.
+The new SDK image regressions exercise all 18 severe motion/tiny cases from the
+previous QR corpus through the real local WASM worker. Their clock is controlled
+to test functionality; separate recognition benchmarks retain production clocks.
+Upload tests exercise all 18 through the production endpoint, plus POS
+duplicate/distinct-image confirmation. An additional actual Uvicorn HTTP run
+also reads all 18 exactly and verifies that served worker/helper files match
+source. No server remains running from that smoke test.
+
+Recognition is measured separately in the [paired evaluation
+report](benchmark-results/signal-upgrade/README.md). Earlier corpora are now
+development data. The fresh damage and byte/label fixtures were frozen before
+updated decoder outcomes were inspected; both sides use the same scorers and
+complete isolated runtimes. Negative controls, incorrect extra readings,
+regressions, per-condition counts and host timings remain in the reports.
+The fresh unrestricted browser/API commands retain exit code 1 because the
+same native UPC-E false reading exists before and after this update. Fresh
+POS profiles and byte/label controls have zero incorrect values. There are no
+regressions across the six profiles; this is not a globally zero-error claim.
+
+All four existing CI benchmark commands pass on these frozen sources. On the
+original development corpus the browser reads **155/171**, the API **156/171**
+and the standalone experimental Code 128 engine **44/57**, each with 48/48
+negative rejections and no incorrect values or runtime errors. The small Code
+128 demonstration also passes its command. These are development scores and
+are separate from both the latest QR-update corpus and the fresh evaluation.
+
+Offline cache **1.12.0** includes both new helpers and readiness tests require
+them. Existing Android Chrome-like and iPhone Safari-like lifecycle simulations
+remain part of the passing suite. These simulate capabilities: physical phones,
+camera optics, real mobile browsers, a new offline-install session, Docker/Linux
+execution and a licensed Scanbot comparison were not tested.
+
 ## QR capture and recovery update (14 November 2026)
 
 The [QR update](QR-UPDATE.md) passes **604 JavaScript tests**, **431 Python tests**

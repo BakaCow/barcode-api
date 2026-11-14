@@ -15,6 +15,8 @@ from PIL import Image, ImageChops, ImageFilter, ImageOps
 import zxingcpp
 from independent_zbar import observations as zbar_observations
 import qr_recovery
+import linear_signal
+import qr_signal
 
 
 MAX_RETRY_PIXELS = 4_000_000
@@ -444,6 +446,61 @@ def _recover_qr(working, mapping, original_size, requested, started):
     return results
 
 
+def _recover_signals(working, mapping, original_size, requested, started):
+    """Complete both planned signal searches before publishing a unique read.
+
+    Helpers prove source geometry/grayscale agreement; native template reading
+    supplies canonical payload semantics only. A timed-out, malformed, or
+    incomplete helper cannot silently hide a competing label in another format.
+    """
+    deadline = started + RETRY_SECONDS
+    families = {'ean13', 'code128'} if requested is None else set(requested) & {'ean13', 'code128'}
+    searches = []
+    if families:
+        searches.append((linear_signal.recover, {'formats': tuple(POS_FORMATS[name].name for name in sorted(families))}, families))
+    if requested is None or 'qr' in requested:
+        searches.append((qr_signal.recover, {}, {'qr'}))
+    records, complete = [], True
+    for recover, options, allowed in searches:
+        if monotonic() >= deadline:
+            complete = False
+            break
+        try:
+            result = recover(working, deadline=deadline, **options)
+            if result.complete is not True:
+                complete = False
+            if not isinstance(result.observations, (list, tuple)) or len(result.observations) > 32:
+                complete = False
+                continue
+            for observation in result.observations:
+                code, points = observation.code, observation.points
+                valid = (code.valid and not code.error and
+                         canonical_format_name(code.format) in allowed and
+                         isinstance(code.text, str) and isinstance(code.bytes, bytes) and 0 < len(code.bytes) <= 8192 and
+                         isinstance(points, (tuple, list)) and len(points) == 4)
+                if valid:
+                    valid = all(isinstance(point, (tuple, list)) and len(point) == 2 and
+                                all(isinstance(value, (int, float)) and math.isfinite(value) for value in point) and
+                                0 <= point[0] <= working.width and 0 <= point[1] <= working.height for point in points)
+                if not valid:
+                    complete = False
+                    continue
+                mapped = tuple(mapping(x, y) for x, y in points)
+                if any(not math.isfinite(x) or not math.isfinite(y) or x < -.5 or y < -.5 or
+                       x > original_size[0] or y > original_size[1] for x, y in mapped):
+                    complete = False
+                    continue
+                source_points = tuple((max(0, min(original_size[0], round(x))),
+                                       max(0, min(original_size[1], round(y)))) for x, y in mapped)
+                records.append(DecodedBarcode(code.text, code.format, code.bytes, source_points))
+        except (ValueError, RuntimeError, AttributeError, TypeError):
+            complete = False
+    if monotonic() >= deadline:
+        complete = False
+    identities = {(record.format.name, record.text, record.bytes) for record in records}
+    return records if complete or len(identities) > 1 else []
+
+
 def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None = None) -> list[DecodedBarcode]:
     """Read the requested families on every pass, or retain legacy behavior for None."""
     requested = _requested_formats(allowed_formats)
@@ -541,5 +598,8 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
                     records = [record for record in records if _source_bars_agree(record, working, image.size)]
                 if records:
                     return _independent_agreement(records, observed, working, to_original, image.size, started, proof_cache)
-        return _recover_qr(working, to_original, image.size, requested, started)
+        qr = _recover_qr(working, to_original, image.size, requested, started)
+        if qr:
+            return qr
+        return _recover_signals(working, to_original, image.size, requested, started)
     return []

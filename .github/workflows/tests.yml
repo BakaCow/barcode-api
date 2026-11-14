@@ -19,7 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/*.test.mjs
+      # Real decoder deadline tests must not compete with other test files.
+      - run: node --test --test-concurrency=1 tests/*.test.mjs
       - name: Check client and scanner TypeScript declarations
         run: npm exec --yes --package=typescript@5.9.3 -- tsc --strict --noEmit --lib ES2022,DOM --module NodeNext --moduleResolution NodeNext tests/client-types.mts
       - name: Build the React integration example

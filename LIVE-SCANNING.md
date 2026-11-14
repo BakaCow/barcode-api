@@ -68,11 +68,22 @@ POS mode also fingerprints a separate full-view thumbnail with a fixed 320-pixel
 
 Recovery still requires checked formats and source-consistent bar geometry for linear readings. The worker retains its 350 ms live / 2.5 second image retry-start deadlines. QR source crops and one selected grid candidate per live region share a 100 ms sub-budget; imported images can try additional bounded candidates within 400 ms. The existing generic enhancement profiles remain available. Detailed source-crop batches also share the caller's deadline. An individual synchronous native decode cannot be interrupted by these checks; the app's worker timeout is separate.
 
+The [motion/tiny update](MOTION-TINY-UPDATE.md) also fits bounded exposure and
+pixel-sampling models to original source values. The linear and QR helpers
+share the remaining worker deadline, with at most 140 ms per helper for live
+requests and 700 ms for image requests (QR applies its own lower cap). They run
+before expensive full-image enlargement, or as the final fallback on other
+live retry indices. Both planned families must finish before a unique signal
+reading is published. These model-validated readings use complete grayscale
+agreement instead of the older thresholded source-bar check; native checksum,
+format, byte and coordinate validation still apply. Live retry-zero benchmark
+results do not measure later retries, capture quality or frame confirmation.
+
 The detector can miss regions or propose non-barcodes. A successful whole-image read ends retries, so a clear code can still prevent additional attempts on a harder code elsewhere. Ambiguity handling covers **observed conflicting values**, not proof that only one physical label is present. Keep one intended product in view when using POS mode.
 
 ## Offline operation and POS integration
 
-The service worker caches the POS policy, QR geometry/recovery modules, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.11.0. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
+The service worker caches the POS policy, QR geometry/recovery modules, linear/QR source-signal recovery, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.12.0. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
 
 This browser mode does not call `POST /v1/pos/decode`; that remains a separate server-side option documented in [POS-DECODING.md](POS-DECODING.md). Neither path performs catalogue lookup, pricing or cart updates. Your POS should accept only a unique, exact catalogue match and prevent a retried scan attempt from adding an item twice. The scanner's history deduplicates values; it is not a cart or quantity counter.
 

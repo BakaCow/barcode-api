@@ -44,7 +44,7 @@ function harness({ offscreen = true, regions } = {}) {
     IndependentReader: { initialize: async () => {} },
     importScripts(path) {
       if (path === './vendor/zxing-reader.js') return;
-      assert.ok(['./capture-geometry.js', './frame-analysis.js', './qr-geometry.js', './qr-recovery.js'].includes(path));
+      assert.ok(['./capture-geometry.js', './frame-analysis.js', './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js'].includes(path));
       vm.runInContext(readFileSync(new URL(`../web/${path.slice(2)}`, import.meta.url), 'utf8'), context);
       if (regions && path === './frame-analysis.js') {
         const analyze = context.FrameAnalysis.analyze;

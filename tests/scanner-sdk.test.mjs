@@ -497,7 +497,7 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
         },
         importScripts: path => {
           assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js',
-            './qr-geometry.js', './qr-recovery.js',
+            './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js',
             './vendor/zbar/index.js', './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path));
           vm.runInContext(readFileSync(new URL(path, root), 'utf8'), context);
         },
@@ -605,6 +605,26 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
         assert.equal(result.bytesBase64, Buffer.from(fixture.expected[0].text, 'utf8').toString('base64'));
       } finally { h.scanner.destroy(); }
     }
+  });
+  await t.test('motion and tiny-code recovery reaches the actual SDK image callback with exact values', async t => {
+    const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-qr-upgrade.json', import.meta.url))).cases
+      .filter(item => item.expected.length && ['motion-blur-2', 'small-in-frame-2'].includes(item.name.split('/').at(-1)));
+    assert.equal(cases.length, 18);
+    // These assertions test functionality under a deterministic worker clock.
+    // Separate unchanged-image benchmarks measure production deadline/latency.
+    class FunctionalWorker extends NativeWorker {
+      constructor(url) { super(url); this.context.performance = { now: () => 0 }; }
+    }
+    for (const fixture of cases) await t.test(fixture.name, async () => {
+      const h = harness({ confirmationFrames: 1 }); h.state.fixture = fixture; h.env.Worker = FunctionalWorker;
+      try {
+        const result = await h.scanner.scanImage(new Blob(['fixture'], { type: 'image/png' }));
+        assert.equal(result?.text, fixture.expected[0].text);
+        assert.equal(result.format, fixture.name.split('/')[0]);
+        assert.equal(result.bytesBase64, Buffer.from(fixture.expected[0].text, 'utf8').toString('base64'));
+        assert.equal(h.results.length, 1);
+      } finally { h.scanner.destroy(); }
+    });
   });
   await t.test('early live QR grid recovery still requires two distinct frames before the POS callback', async () => {
     const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-recovery.json', import.meta.url))).cases;

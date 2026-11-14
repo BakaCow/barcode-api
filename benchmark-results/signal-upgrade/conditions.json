@@ -1,0 +1,2950 @@
+{
+  "browser": {
+    "before": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 133,
+        "failedPositiveImages": 38,
+        "unexpectedResults": 1,
+        "imagesWithUnexpected": 1,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 5,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 1,
+          "imagesWithUnexpected": 1,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 2,
+          "failedPositiveImages": 7,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 11,
+          "failedPositiveImages": 7,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 2,
+          "failedPositiveImages": 7,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 20,
+          "failedPositiveImages": 16,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 2,
+          "failedPositiveImages": 16,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 7,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 7,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "after": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 148,
+        "failedPositiveImages": 23,
+        "unexpectedResults": 1,
+        "imagesWithUnexpected": 1,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 5,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 1,
+          "imagesWithUnexpected": 1,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 18,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 17,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 35,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 17,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 12,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 12,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 2,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 11,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "note": "All/severe groups overlap; do not add their denominators. Fixed images do not measure live camera sessions."
+  },
+  "api": {
+    "before": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 133,
+        "failedPositiveImages": 38,
+        "unexpectedResults": 1,
+        "imagesWithUnexpected": 1,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 7,
+          "failedPositiveImages": 2,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 5,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 1,
+          "imagesWithUnexpected": 1,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 1,
+          "failedPositiveImages": 8,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 10,
+          "failedPositiveImages": 8,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 1,
+          "failedPositiveImages": 8,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 19,
+          "failedPositiveImages": 17,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 1,
+          "failedPositiveImages": 17,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 7,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "after": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 149,
+        "failedPositiveImages": 22,
+        "unexpectedResults": 1,
+        "imagesWithUnexpected": 1,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 7,
+          "failedPositiveImages": 2,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 5,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 1,
+          "imagesWithUnexpected": 1,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 18,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 17,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 35,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 17,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 12,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 12,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 2,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 11,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "note": "All/severe groups overlap; do not add their denominators. Fixed images do not measure live camera sessions."
+  },
+  "browser-pos-image": {
+    "before": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 134,
+        "failedPositiveImages": 37,
+        "unexpectedResults": 0,
+        "imagesWithUnexpected": 0,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 2,
+          "failedPositiveImages": 7,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 11,
+          "failedPositiveImages": 7,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 2,
+          "failedPositiveImages": 7,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 20,
+          "failedPositiveImages": 16,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 2,
+          "failedPositiveImages": 16,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 7,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 7,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "after": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 149,
+        "failedPositiveImages": 22,
+        "unexpectedResults": 0,
+        "imagesWithUnexpected": 0,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 18,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 17,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 35,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 17,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 12,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 12,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 2,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 11,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "note": "All/severe groups overlap; do not add their denominators. Fixed images do not measure live camera sessions."
+  },
+  "browser-pos-live": {
+    "before": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 129,
+        "failedPositiveImages": 42,
+        "unexpectedResults": 0,
+        "imagesWithUnexpected": 0,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 1,
+          "failedPositiveImages": 8,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 10,
+          "failedPositiveImages": 8,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 1,
+          "failedPositiveImages": 8,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 19,
+          "failedPositiveImages": 17,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 1,
+          "failedPositiveImages": 17,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 7,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 5,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 3,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 0,
+            "failedPositiveImages": 6,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "after": {
+      "corpusSha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "allPositives": {
+        "positiveImages": 171,
+        "exactPositiveReads": 142,
+        "failedPositiveImages": 29,
+        "unexpectedResults": 0,
+        "imagesWithUnexpected": 0,
+        "errors": 0
+      },
+      "byCondition": {
+        "angled-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "angled-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 8,
+          "failedPositiveImages": 1,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clean-0": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "clipping-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 0,
+          "failedPositiveImages": 9,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "missing-patch-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "perspective-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "scratches-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "shading-lowcontrast-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 6,
+          "failedPositiveImages": 3,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-1": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-2": {
+          "positiveImages": 9,
+          "exactPositiveReads": 5,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroups": {
+        "motion-blur-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 18,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-blur-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 9,
+          "failedPositiveImages": 0,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-all": {
+          "positiveImages": 18,
+          "exactPositiveReads": 14,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "small-in-frame-severe": {
+          "positiveImages": 9,
+          "exactPositiveReads": 5,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-all": {
+          "positiveImages": 36,
+          "exactPositiveReads": 32,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        },
+        "motion-and-small-severe": {
+          "positiveImages": 18,
+          "exactPositiveReads": 14,
+          "failedPositiveImages": 4,
+          "unexpectedResults": 0,
+          "imagesWithUnexpected": 0,
+          "errors": 0
+        }
+      },
+      "targetGroupsByFormat": {
+        "code128": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 2,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 11,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "ean13": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 1,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 10,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 4,
+            "failedPositiveImages": 2,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        },
+        "qr": {
+          "motion-blur-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 6,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-blur-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 3,
+            "failedPositiveImages": 0,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-all": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "small-in-frame-severe": {
+            "positiveImages": 3,
+            "exactPositiveReads": 2,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-all": {
+            "positiveImages": 12,
+            "exactPositiveReads": 11,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          },
+          "motion-and-small-severe": {
+            "positiveImages": 6,
+            "exactPositiveReads": 5,
+            "failedPositiveImages": 1,
+            "unexpectedResults": 0,
+            "imagesWithUnexpected": 0,
+            "errors": 0
+          }
+        }
+      }
+    },
+    "note": "All/severe groups overlap; do not add their denominators. Fixed images do not measure live camera sessions."
+  }
+}

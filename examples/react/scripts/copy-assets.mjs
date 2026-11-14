@@ -7,7 +7,7 @@ const destination = fileURLToPath(new URL('../public/scanner-assets/', import.me
 const exampleRoot = fileURLToPath(new URL('../', import.meta.url));
 const boundary = relative(resolve(exampleRoot, 'public'), resolve(destination));
 if (boundary.startsWith('..') || isAbsolute(boundary)) throw new Error('Asset destination must remain inside this example/public.');
-const files = ['sdk', 'vendor', 'engine', 'independent-reader.js', 'qr-geometry.js', 'qr-recovery.js', 'scanner-worker.js', 'scan-policy.js', 'pos-policy.js', 'frame-analysis.js', 'capture-selection.js', 'capture-geometry.js', 'styles.css', 'icon.svg', 'LICENSE.txt'];
+const files = ['sdk', 'vendor', 'engine', 'independent-reader.js', 'qr-geometry.js', 'qr-recovery.js', 'linear-signal.js', 'qr-signal.js', 'scanner-worker.js', 'scan-policy.js', 'pos-policy.js', 'frame-analysis.js', 'capture-selection.js', 'capture-geometry.js', 'styles.css', 'icon.svg', 'LICENSE.txt'];
 mkdirSync(destination, { recursive: true });
 for (const name of files) cpSync(resolve(source, name), resolve(destination, name), { recursive: true });
 const examplesStyle = resolve(destination, 'examples.css');

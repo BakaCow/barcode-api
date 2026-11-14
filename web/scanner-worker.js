@@ -29,6 +29,8 @@ function initialize() {
   if (!decoder) {
     if (typeof QRGeometry === 'undefined') importScripts('./qr-geometry.js');
     if (typeof QRRecovery === 'undefined') importScripts('./qr-recovery.js');
+    if (typeof LinearSignal === 'undefined') importScripts('./linear-signal.js');
+    if (typeof QRSignal === 'undefined') importScripts('./qr-signal.js');
     if (typeof IndependentReader === 'undefined') importScripts('./independent-reader.js');
     decoder = Promise.all([ZXingWASM.prepareZXingModule({
       overrides: { locateFile: (path) => new URL('./vendor/' + path, self.location.href).href },
@@ -465,6 +467,67 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
     passes += qr.diagnostics.passes;
     if (qr.results.length || (qr.observed && !qr.diagnostics.qrComplete)) return { results: permitted(qr.results), ...details, diagnostics: { ...qr.diagnostics, passes } };
   }
+  let signalAttempted = false;
+  async function recoverSourceSignals() {
+    signalAttempted = true;
+    // Recover from original pixels before a costly full-image enlargement can
+    // exhaust the retry budget. Native reading preserves payload semantics.
+    const helpers = [
+      { helper: typeof LinearSignal === 'undefined' ? null : LinearSignal, formats: ['EAN13', 'Code128'], name: 'linear-signal' },
+      { helper: typeof QRSignal === 'undefined' ? null : QRSignal, formats: ['QRCode'], name: 'qr-signal' },
+    ];
+    const signalResults = [], signalKeys = new Set();
+    let signalComplete = analysis?.regionsComplete !== false, signalStrategy = 'signal-recovery';
+    for (const entry of helpers) {
+      const formats = entry.formats.filter(format => recoveryOptions.formats.includes(format));
+      const remaining = budgetMs - (performance.now() - started);
+      if (!entry.helper || !formats.length) continue;
+      if (remaining <= 0) { signalComplete = false; break; }
+      const readNative = async (candidate, options = {}) => {
+        if (!Number.isSafeInteger(candidate?.width) || !Number.isSafeInteger(candidate?.height) ||
+            candidate.width < 1 || candidate.height < 1 || candidate.width * candidate.height > MAX_PIXELS ||
+            candidate.data?.byteLength !== candidate.width * candidate.height * 4) throw new Error('Invalid signal-recovery image.');
+        const prepared = new ImageData(candidate.data instanceof ArrayBuffer ? new Uint8ClampedArray(candidate.data) : candidate.data,
+          candidate.width, candidate.height);
+        // Never allow a helper's optional sampling settings to expand formats.
+        return ZXingWASM.readBarcodes(prepared, { ...recoveryOptions, ...options, formats,
+          returnErrors: false, maxNumberOfSymbols: 12 });
+      };
+      const recovered = await entry.helper.recover(image, { formats, mode, retryIndex,
+        timeBudgetMs: Math.min(mode === 'live' ? 140 : 700, remaining), readNative, read: readNative });
+      passes += recovered.passes || 0;
+      const raw = Array.isArray(recovered.results) && recovered.results.length <= 32 ? recovered.results : [];
+      const malformedBatch = !Array.isArray(recovered.results) || recovered.results.length > 32;
+      const supported = raw.filter(result => result && typeof result.text === 'string' &&
+        result.bytes?.length > 0 && result.bytes.length <= 8192 && Array.from(result.bytes).every(value => Number.isInteger(value) && value >= 0 && value <= 255) &&
+        result.position && ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'].every(name => {
+          const point = result.position[name];
+          return point && Number.isFinite(point.x) && Number.isFinite(point.y) && point.x >= 0 && point.x <= image.width && point.y >= 0 && point.y <= image.height;
+        }));
+      // These helpers validate a complete grayscale forward model against the
+      // source. Requiring the old binary-run proof here would discard the very
+      // weak/blurred bars they recovered. Native validity and bounds still apply.
+      const found = permitted(validResults(supported))
+        .filter(result => entry.formats.includes(result.format) || (formats.includes('QRCode') && QR_RECOVERY_RESULTS.has(result.format)));
+      const keys = new Set(found.map(resultIdentity));
+      const partial = recovered.complete !== true || recovered.incompleteEvidence === true || malformedBatch ||
+        found.length !== raw.length || performance.now() - started >= budgetMs;
+      const withheld = Boolean(recovered.incompleteEvidence || malformedBatch ||
+        (partial && (raw.length > 0 || recovered.observed > 0)));
+      signalComplete &&= !partial;
+      for (const result of found) {
+        const key = resultIdentity(result); signalKeys.add(key);
+        if (!signalResults.some(existing => resultIdentity(existing) === key &&
+          (sameSymbolSegment(existing.position, result.position) || sameSymbolSegment(result.position, existing.position)))) signalResults.push(result);
+      }
+      if (found.length) signalStrategy = recovered.strategy || entry.name;
+      if (withheld && signalKeys.size < 2) return { results: [], ...details,
+        diagnostics: { passes, strategy: recovered.strategy || entry.name, signalComplete: false, incompleteEvidence: true } };
+    }
+    if (signalResults.length) return { results: signalComplete || signalKeys.size > 1 ? signalResults : [], ...details,
+      diagnostics: { passes, strategy: signalStrategy, signalComplete, incompleteEvidence: !signalComplete && signalKeys.size < 2 } };
+    return null;
+  }
   // Live mode spreads expensive retries over different camera frames. Imported
   // images have no next frame, so they may use all seven bounded fallback passes.
   const retries = mode === 'live' ? [retryIndex % 7] : [0, 1, 2, 3, 4, 5, 6];
@@ -472,6 +535,11 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
     // A single WASM call cannot be interrupted here. The app also has a hard
     // worker timeout; this deadline prevents starting further expensive work.
     if (performance.now() - started > budgetMs) break;
+    if (retry === 5 && !signalAttempted) {
+      const signal = await recoverSourceSignals();
+      if (signal) return signal;
+      if (performance.now() - started > budgetMs) break;
+    }
     let candidate, inverse, options = recoveryOptions;
     if (retry === 0) {
       strategy = 'contrast'; candidate = rgba(gray, image.width, image.height);
@@ -513,6 +581,10 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
     if (retry === 6) results = results.filter(result => QR_RECOVERY_RESULTS.has(result.format));
     passes++;
     if (results.length) break;
+  }
+  if (!results.length && !signalAttempted) {
+    const signal = await recoverSourceSignals();
+    if (signal) return signal;
   }
   return { results, ...details, diagnostics: { passes, strategy } };
 }

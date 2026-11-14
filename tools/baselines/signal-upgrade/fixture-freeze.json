@@ -1,0 +1,24 @@
+{
+  "baselineCommit": "bc0ed027bb4358237b029993d7db18b6e0aa2537",
+  "fixtures": {
+    "damage-stress-signal-upgrade.json": {
+      "sha256": "77490dac3baba27065100c150b630d85036f2084ebd4005e4b7b6a119c6ed80f",
+      "byteIdenticalRegeneration": true
+    },
+    "signal-byte-safety.json": {
+      "sha256": "ef31527aaf2c0b33050a9d0499563e96a9456721bbd31a25ef0d3301ba541f16",
+      "byteIdenticalRegeneration": true
+    }
+  },
+  "generatorSha256": {
+    "generate-signal-verification.py": "91440c042d18d4d1124ec870a8758d006d9be6657225159f0c199a74cb5ea8d4",
+    "generate-signal-byte-safety.py": "67fa4f49a641d8bfb1da10ccd772cfb27c71bfd74c45a247c2acc5f40ebd9ef7",
+    "generate-damage-stress.py": "c805ff52d4cbb0001245f6d6735aae17079e4432766d103cc5cbdcc4ec0b1b84"
+  },
+  "generatorHashMethod": "SHA256 of UTF-8 source with CRLF normalized to LF",
+  "method": "Known encoder input truth; no decoder calls or outcome filtering; positive groups disjoint from earlier fixtures.",
+  "freezeTiming": "Fixtures generated before any baseline or updated decoder outcomes; byte-identical regeneration verified after baseline aggregate-only run. No fixture changes after decoder outcomes.",
+  "updatedAlgorithmOutcomesInspected": false,
+  "perCaseBaselineOutcomesInspected": false,
+  "fixtureRevisions": []
+}

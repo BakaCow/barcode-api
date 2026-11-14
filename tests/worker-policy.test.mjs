@@ -43,6 +43,127 @@ function verticalBars(width = 120, height = 60) {
 }
 const valid = { isValid: true, error: '', text: 'verified', format: 'Code128', bytes: new Uint8Array([1, 2]) };
 
+const signalResult = { isValid: true, error: '', text: '5901234123457', format: 'EAN13',
+  bytes: Array.from('5901234123457', character => character.charCodeAt(0)), position: {
+    topLeft: { x: 10, y: 10 }, topRight: { x: 100, y: 10 },
+    bottomLeft: { x: 10, y: 40 }, bottomRight: { x: 100, y: 40 },
+  } };
+
+test('new signal recovery retains canonical bytes, source coordinates and a strict native allowlist', async () => {
+  const worker = harness(() => []);
+  let called = 0;
+  worker.context.LinearSignal = { async recover(input, options) {
+    called++; assert.ok(options.timeBudgetMs > 0 && options.timeBudgetMs <= 700);
+    await options.readNative(input, { formats: ['Code39'], returnErrors: true });
+    assert.deepEqual(Array.from(worker.calls.at(-1).options.formats), ['EAN13', 'Code128']);
+    assert.equal(worker.calls.at(-1).options.returnErrors, false);
+    return { results: [signalResult], complete: true, passes: 1 };
+  } };
+  const result = await worker.send({ image: image() });
+  assert.equal(called, 1); assert.equal(result.results[0].text, signalResult.text);
+  assert.deepEqual(result.results[0].bytes, signalResult.bytes);
+  assert.deepEqual(result.results[0].position, signalResult.position);
+  assert.equal(result.diagnostics.signalComplete, true);
+});
+
+test('source recovery can finish before an expensive full-image enlargement consumes the deadline', async () => {
+  let time = 0;
+  const worker = harness(candidate => {
+    if (candidate.width === 240 && candidate.height === 120) time = 2501;
+    else time += 10;
+    return [];
+  }, { now: () => time });
+  worker.context.LinearSignal = { recover: async () => ({ results: [signalResult], complete: true, passes: 1 }) };
+  worker.context.QRSignal = { recover: async () => ({ results: [], complete: true, passes: 0 }) };
+  const result = await worker.send({ image: image() });
+  assert.equal(result.results[0].text, signalResult.text);
+  assert.ok(time < 2500);
+});
+
+test('signal recovery cannot publish malformed or out-of-frame helper observations', async () => {
+  for (const result of [{ ...signalResult, isValid: false }, { ...signalResult, error: 'checksum' },
+    { ...signalResult, bytes: [256] }, { ...signalResult, position: { ...signalResult.position, topLeft: { x: -1, y: 0 } } },
+    { ...signalResult, format: 'Code39' }]) {
+    const worker = harness(() => []);
+    worker.context.LinearSignal = { recover: async () => ({ results: [result], complete: true, passes: 0 }) };
+    assert.deepEqual((await worker.send({ image: image() })).results, []);
+  }
+});
+
+test('partial signal observations veto later recovery while observed conflicts remain visible', async () => {
+  for (const conflict of [false, true]) {
+    const worker = harness(() => []);
+    worker.context.LinearSignal = { recover: async () => ({ results: conflict ? [signalResult,
+      { ...signalResult, text: '4006381333931', bytes: Array.from('4006381333931', c => c.charCodeAt(0)) }] : [signalResult],
+      complete: false, passes: 1 }) };
+    worker.context.QRSignal = { recover: async () => {
+      assert.equal(conflict, true, 'withheld unique evidence must stop later acceptance');
+      return { results: [], complete: true, passes: 0 };
+    } };
+    const result = await worker.send({ image: image() });
+    assert.equal(result.results.length, conflict ? 2 : 0);
+    assert.equal(result.diagnostics.incompleteEvidence, !conflict);
+  }
+});
+
+test('signal recovery checks its candidate pixel budget before calling a native decoder', async () => {
+  const worker = harness(() => []);
+  worker.context.LinearSignal = { async recover(_input, { readNative }) {
+    await readNative({ width: 4_000_001, height: 1, data: new Uint8Array(4) });
+  } };
+  const result = await worker.send({ image: image() });
+  assert.equal(result.type, 'error'); assert.match(result.message, /signal-recovery image/);
+});
+
+test('malformed neighbouring signal evidence and native overruns cannot leave an accepted singleton', async () => {
+  const invalid = [
+    { ...signalResult, bytes: [256] },
+    { ...signalResult, position: { ...signalResult.position, topLeft: { x: -1, y: 0 } } },
+    { ...signalResult, format: 'Code39' },
+  ];
+  for (const bad of invalid) {
+    const worker = harness(() => []);
+    worker.context.LinearSignal = { recover: async () => ({ results: [signalResult, bad], complete: true }) };
+    const result = await worker.send({ image: image() });
+    assert.deepEqual(result.results, []); assert.equal(result.diagnostics.incompleteEvidence, true);
+  }
+  let time = 0;
+  const worker = harness(() => [], { now: () => time });
+  worker.context.QRSignal = { recover: async () => {
+    time = 2501;
+    return { results: [{ ...signalResult, format: 'QRCode' }], complete: true };
+  } };
+  const result = await worker.send({ image: image() });
+  assert.deepEqual(result.results, []); assert.equal(result.diagnostics.incompleteEvidence, true);
+});
+
+test('complete linear and QR recovery observations are both retained for ambiguity handling', async () => {
+  const worker = harness(() => []);
+  worker.context.LinearSignal = { recover: async () => ({ results: [signalResult], complete: true, passes: 1 }) };
+  worker.context.QRSignal = { recover: async () => ({ results: [{ ...signalResult, format: 'QRCode', text: 'QR-B', bytes: [81, 82, 45, 66] }], complete: true, passes: 1 }) };
+  const result = await worker.send({ image: image() });
+  assert.equal(result.results.length, 2);
+  assert.deepEqual(result.results.map(item => item.format), ['EAN13', 'QRCode']);
+  assert.equal(result.diagnostics.incompleteEvidence, false);
+});
+
+test('a later incomplete or timed-out helper cannot leave an accepted unique signal result', async () => {
+  for (const timeout of [false, true]) {
+    let time = 0;
+    const worker = harness(() => [], { now: () => time });
+    worker.context.LinearSignal = { recover: async () => {
+      if (timeout) time = 2501;
+      return { results: [signalResult], complete: true, passes: 1 };
+    } };
+    worker.context.QRSignal = { recover: async () => {
+      assert.equal(timeout, false, 'no native work should start after the deadline');
+      return { results: [], complete: false, passes: 0 };
+    } };
+    const result = await worker.send({ image: image() });
+    assert.deepEqual(result.results, []); assert.equal(result.diagnostics.incompleteEvidence, true);
+  }
+});
+
 test('clean images return immediately without enhancement work', async () => {
   const worker = harness(() => [valid]);
   const result = await worker.send({ image: image() });
