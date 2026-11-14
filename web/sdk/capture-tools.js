@@ -1,7 +1,7 @@
 /** Pure bounded geometry/camera policies shared by the SDK and its tests. */
 import * as geometryModule from '../capture-geometry.js';
 const Geometry = globalThis.CaptureGeometry || geometryModule.default;
-export const { validateTarget, regionPlan, sourceRegions } = Geometry;
+export const { validateTarget, regionPlan, sourceRegions, expandSourceRegion } = Geometry;
 
 export function clearFrame(analysis, width, height) {
   if (!analysis || analysis.regionsComplete === false || analysis.qr?.complete === false ||

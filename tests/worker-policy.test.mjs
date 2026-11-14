@@ -147,6 +147,19 @@ test('complete linear and QR recovery observations are both retained for ambigui
   assert.equal(result.diagnostics.incompleteEvidence, false);
 });
 
+test('damage-aware QR search preserves late conflicts and vetoes incomplete unique recovery', async () => {
+  for (const conflict of [false, true]) {
+    const worker = harness(() => []);
+    worker.context.LinearSignal = { recover: async () => ({ results: [], complete: true }) };
+    worker.context.QRSignal = { recover: async () => ({ results: [{ ...signalResult, format: 'QRCode' }], complete: true }) };
+    worker.context.QRDamage = { recover: async () => ({ results: conflict ? [{ ...signalResult, format: 'QRCode', text: 'OTHER', bytes: [79, 84, 72, 69, 82] }] : [],
+      complete: false, observed: 1, incompleteEvidence: true }) };
+    const response = await worker.send({ image: image() });
+    assert.equal(response.results.length, conflict ? 2 : 0);
+    assert.equal(response.diagnostics.incompleteEvidence, !conflict);
+  }
+});
+
 test('a later incomplete or timed-out helper cannot leave an accepted unique signal result', async () => {
   for (const timeout of [false, true]) {
     let time = 0;

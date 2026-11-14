@@ -7,12 +7,12 @@ import test from 'node:test';
 // Pixel fixtures and expected payloads were generated independently of decoding.
 // Discovered wrong reads are explicitly promoted to regressions; the fresh
 // verification split for the current update is never loaded here. Earlier
-// accuracy-next verification is now explicitly promoted to development data.
+// accuracy-next and signal-update verification are now development data.
 const project = new URL('../', import.meta.url);
 const source = readFileSync(new URL('web/scanner-worker.js', project), 'utf8');
 const reader = readFileSync(new URL('web/vendor/zxing-reader.js', project), 'utf8');
 const wasm = readFileSync(new URL('web/vendor/zxing_reader.wasm', project));
-const development = ['accuracy-pixels.json', 'damage-stress-dev.json', 'damage-regressions.json', 'damage-stress-accuracy-next.json'].flatMap((name) =>
+const development = ['accuracy-pixels.json', 'damage-stress-dev.json', 'damage-regressions.json', 'damage-stress-accuracy-next.json', 'damage-stress-signal-upgrade.json'].flatMap((name) =>
   JSON.parse(readFileSync(new URL(`fixtures/${name}`, import.meta.url), 'utf8')).cases);
 const fixtures = new Map(development.map((entry) => [entry.name, entry]));
 const messages = new Map();
@@ -24,7 +24,7 @@ context = vm.createContext({
   ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
   location: { href: 'https://offline.test/scan/scanner-worker.js' },
   importScripts(path) {
-    assert.ok(['./vendor/zxing-reader.js', './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js', './independent-reader.js', './vendor/zbar/index.js',
+    assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js', './qr-damage.js', './independent-reader.js', './vendor/zbar/index.js',
       './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
     vm.runInContext(path === './vendor/zxing-reader.js' ? reader : readFileSync(new URL('web/' + path.slice(2), project), 'utf8'), context);
   },
@@ -39,14 +39,14 @@ context = vm.createContext({
 context.self = context;
 vm.runInContext(source, context);
 
-async function decode(name) {
+async function decode(name, options = {}) {
   const fixture = fixtures.get(name);
   assert.ok(fixture, `Missing development fixture ${name}`);
   const pixels = inflateSync(Buffer.from(fixture.rgba_zlib_base64, 'base64'));
   const image = { width: fixture.width, height: fixture.height,
     data: pixels.buffer.slice(pixels.byteOffset, pixels.byteOffset + pixels.byteLength) };
   const id = ++sequence;
-  await context.onmessage({ data: { id, type: 'decode', image, mode: 'image' } });
+  await context.onmessage({ data: { id, type: 'decode', image, mode: 'image', ...options } });
   const response = messages.get(id); messages.delete(id);
   assert.equal(response?.type, 'result', response?.message);
   return { fixture, response: JSON.parse(JSON.stringify(response)) };
@@ -86,6 +86,17 @@ for (const name of [
 test('clipped EAN-13 never becomes a plausible unchecked ITF read during recovery', async () => {
   const { response } = await decode('ean13/dev-ean13-label-3/clipping-2');
   assert.deepEqual(response.results, [], 'missing barcode bars must produce a miss, not ITF 8650');
+});
+
+test('damaged EAN source conflict withholds a false UPC-E and restricted reading recovers exact EAN', async () => {
+  const name = 'ean13/signal-upgrade-ean13-label-1/missing-patch-1';
+  const unrestricted = await decode(name);
+  assert.ok(unrestricted.response.results.every(result => result.format === 'EAN13' && result.text === unrestricted.fixture.expected[0].text));
+  if (!unrestricted.response.results.length) assert.equal(unrestricted.response.diagnostics.incompleteEvidence, true);
+  const restricted = await decode(name, { posOptions: { allowedFormats: ['ean13'], confirmationFrames: 1 } });
+  assert.equal(restricted.response.results.length, 1);
+  assert.equal(restricted.response.results[0].text, restricted.fixture.expected[0].text);
+  assert.equal(restricted.response.results[0].format, 'EAN13');
 });
 
 test('an oblique transformed scanline cannot turn invalid EAN bars into UPC-E', async () => {

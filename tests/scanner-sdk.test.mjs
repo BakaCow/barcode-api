@@ -497,7 +497,7 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
         },
         importScripts: path => {
           assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js',
-            './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js',
+            './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js', './qr-damage.js',
             './vendor/zbar/index.js', './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path));
           vm.runInContext(readFileSync(new URL(path, root), 'utf8'), context);
         },
@@ -552,6 +552,37 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     assert.notEqual(successfulMethod, null, 'the production reader found a candidate before confirmation');
     assert.equal(h.results[0]?.text, label.expected[0].text);
     assert.equal(h.results[0]?.format, 'qr'); h.scanner.destroy();
+  });
+  await t.test('actual live fusion needs two disjoint bursts even with one-frame confirmation configured', async () => {
+    const fixture = JSON.parse(readFileSync(new URL('fixtures/camera-fusion-development.json', import.meta.url)));
+    const h = harness({ formats: ['qr'], confirmationFrames: 1 });
+    h.video.videoWidth = fixture.clean.width; h.video.videoHeight = fixture.clean.height;
+    const decoded = [];
+    h.env.Worker = class extends NativeWorker {
+      postMessage(data) {
+        if (data.type !== 'decode') return super.postMessage(data);
+        const before = this.context.postMessage;
+        this.context.postMessage = reply => { if (reply.id === data.id) decoded.push({ frame: h.state.frame, count: reply.results?.length || 0 }); before(reply); };
+        super.postMessage(data);
+      }
+    };
+    try {
+      await h.scanner.start();
+      for (let index = 0; index < 6; index++) {
+        const source = fixture.frames[index % 3], pixels = inflateSync(Buffer.from(source.rgba_zlib_base64, 'base64'));
+        if (index >= 3) for (let p = 0; p < pixels.length; p += 4) if (pixels[p] < 128) pixels[p] = pixels[p + 1] = pixels[p + 2] = 2;
+        h.state.fixture = { ...source, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+        await h.tick({ advance: 150 });
+        for (let wait = 0; wait < 300 && !h.results.length && !h.errors.length &&
+          ![...h.timers.values()].some(timer => timer.ms <= 180); wait++) await flush();
+        assert.equal(h.errors.length, 0);
+        if (index < 5) assert.equal(h.results.length, 0, 'three constituent frames provide only one recovery observation');
+      }
+      assert.equal(decoded.filter(read => read.count).length, 2, 'only the two fused bursts decode');
+      assert.equal(decoded.filter(read => !read.count).length, 6, 'all six original live exposures fail');
+      assert.equal(h.results.length, 1); assert.equal(h.results[0].text, fixture.text);
+      assert.equal(h.results[0].bytesBase64, Buffer.from(fixture.text).toString('base64'));
+    } finally { h.scanner.destroy(); }
   });
   await t.test('explicit target isolates one actual label from a two-label image',async()=>{
     const fixture = fixtures.find(f=>f.name==='Multiple QR codes');
@@ -791,6 +822,116 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
   });
 });
 
+
+const fusionFixture = JSON.parse(readFileSync(new URL('fixtures/camera-fusion-development.json', import.meta.url)));
+const fusionItem = { text: fusionFixture.text, format: 'QRCode', bytes: [...Buffer.from(fusionFixture.text)] };
+function fusionHarness(settings = {}) {
+  const h = harness({ formats: ['qr'], confirmationFrames: 1, ...settings });
+  h.video.videoWidth = fusionFixture.clean.width; h.video.videoHeight = fusionFixture.clean.height;
+  return h;
+}
+async function fusionFrame(h, index, exposure = 0) {
+  const source = fusionFixture.frames[index % 3], pixels = inflateSync(Buffer.from(source.rgba_zlib_base64, 'base64'));
+  if (exposure) for (let p = 0; p < pixels.length; p += 4) if (pixels[p] < 128) pixels[p] = pixels[p + 1] = pixels[p + 2] = exposure;
+  h.state.fixture = { ...source, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+  await h.tick({ advance: 150 }); await h.reply([]);
+}
+
+test('live fusion rejects reused source frames across bursts and retains direct/fused conflicts', async () => {
+  const h = fusionHarness();
+  try {
+    await h.scanner.start();
+    for (let i = 0; i < 3; i++) await fusionFrame(h, i);
+    assert.equal(h.waiting.length, 1); await h.reply([fusionItem]); assert.equal(h.results.length, 0);
+    for (let i = 0; i < 3; i++) { await fusionFrame(h, i); assert.equal(h.waiting.length, 0, 'new IDs with previously consumed pixels cannot form another burst'); }
+    h.state.fixture = fusionFixture.alternateClean;
+    await h.tick();
+    await h.reply([{ ...fusionItem, text: fusionFixture.alternateText, bytes: [...Buffer.from(fusionFixture.alternateText)] }]);
+    assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).state, 'ambiguous');
+  } finally { h.scanner.destroy(); }
+});
+
+test('incomplete fused replies retain conflicting identities and never become a singleton later', async () => {
+  const h = fusionHarness();
+  try {
+    await h.scanner.start(); for (let i = 0; i < 3; i++) await fusionFrame(h, i);
+    await h.reply([fusionItem, { ...fusionItem, text: fusionFixture.alternateText, bytes: [...Buffer.from(fusionFixture.alternateText)] }],
+      { diagnostics: { incompleteEvidence: true } });
+    assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).state, 'ambiguous');
+    for (let burst = 1; burst <= 2; burst++) {
+      for (let i = 0; i < 3; i++) await fusionFrame(h, i, burst * 2);
+      await h.reply([fusionItem]); assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).state, 'ambiguous');
+    }
+  } finally { h.scanner.destroy(); }
+});
+
+test('direct reads and fused bursts never share confirmation counts in either direction', async () => {
+  for (const directFirst of [false, true]) {
+    const h = fusionHarness({ confirmationFrames: 2 });
+    try {
+      await h.scanner.start();
+      async function direct(exposure) {
+        const pixels = inflateSync(Buffer.from(fusionFixture.clean.rgba_zlib_base64, 'base64'));
+        for (let p = 0; p < pixels.length; p += 4) if (pixels[p] < 128) pixels[p] = pixels[p + 1] = pixels[p + 2] = exposure;
+        h.state.fixture = { ...fusionFixture.clean, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+        await h.tick({ advance: 150 }); await h.reply([fusionItem]);
+      }
+      if (directFirst) await direct(1);
+      for (let i = 0; i < 3; i++) await fusionFrame(h, i);
+      await h.reply([fusionItem]); assert.equal(h.results.length, 0);
+      if (directFirst) {
+        for (let i = 0; i < 3; i++) await fusionFrame(h, i, 2);
+        await h.reply([fusionItem]);
+      } else {
+        await direct(1); assert.equal(h.results.length, 0, 'a burst cannot supply the first native-frame vote');
+        await direct(2);
+      }
+      assert.equal(h.results.length, 1);
+    } finally { h.scanner.destroy(); }
+  }
+});
+
+test('three-frame configuration requires three disjoint fusion bursts', async () => {
+  const h = fusionHarness({ confirmationFrames: 3 });
+  try {
+    await h.scanner.start();
+    for (let burst = 0; burst < 3; burst++) {
+      for (let i = 0; i < 3; i++) await fusionFrame(h, i, burst * 2);
+      await h.reply([fusionItem]); assert.equal(h.results.length, burst === 2 ? 1 : 0);
+    }
+  } finally { h.scanner.destroy(); }
+});
+
+test('oldest contributing frame expires even if the last frame is still fresh', async () => {
+  const h = fusionHarness();
+  try {
+    await h.scanner.start(); for (let i = 0; i < 3; i++) await fusionFrame(h, i);
+    assert.equal(h.waiting.length, 1); h.state.now += 1001;
+    await h.reply([fusionItem]);
+    assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).reason, 'stale_frame');
+  } finally { h.scanner.destroy(); }
+});
+
+test('control, target, lifecycle and incomplete-evidence changes discard prepared fusion history', async () => {
+  for (const change of ['torch', 'zoom', 'target', 'options', 'camera', 'restart', 'incomplete']) {
+    const h = fusionHarness(); h.state.capabilities = { torch: true, zoom: { min: 1, max: 4, step: 0.5 } };
+    try {
+      await h.scanner.start(); await fusionFrame(h, 0); await fusionFrame(h, 1);
+      if (change === 'torch') await h.scanner.setTorch(true);
+      if (change === 'zoom') await h.scanner.setZoom(2);
+      if (change === 'target') h.scanner.setOptions({ targetRegion: { x: 0, y: 0, width: 1, height: 1 } });
+      if (change === 'options') await h.scanner.setCaptureMode('detail');
+      if (change === 'camera') await h.scanner.switchCamera('another-camera');
+      if (change === 'restart') { h.scanner.stop(); await h.scanner.start(); }
+      if (change === 'incomplete') {
+        h.state.fixture = fusionFixture.frames[2]; await h.tick({ advance: 150 });
+        await h.reply([], { diagnostics: { incompleteEvidence: true } });
+      } else await fusionFrame(h, 2);
+      assert.equal(h.waiting.length, 0, change + ' cannot reuse earlier constituent frames');
+      assert.equal(h.results.length, 0);
+    } finally { h.scanner.destroy(); }
+  }
+});
 
 test('async analysis keeps only one pending frame and cannot publish stale target proposals', async () => {
   let proposals = 0;

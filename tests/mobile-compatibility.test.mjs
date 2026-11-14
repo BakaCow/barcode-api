@@ -160,7 +160,7 @@ function harness(page, profile, overrides = {}) {
   if (options.recorderTypes !== null) globals.MediaRecorder = MediaRecorder;
   context = vm.createContext(globals); context.window = context;
   vm.runInContext(readFileSync(new URL(page === 'lab' ? '../web/lab/lab-policy.js' : '../web/scan-policy.js', import.meta.url), 'utf8'), context);
-  if (page === 'scanner') for (const file of ['pos-policy.js', 'capture-geometry.js', 'qr-geometry.js', 'frame-analysis.js', 'capture-selection.js']) {
+  if (page === 'scanner') for (const file of ['pos-policy.js', 'capture-geometry.js', 'qr-geometry.js', 'frame-analysis.js', 'capture-selection.js', 'frame-fusion.js']) {
     vm.runInContext(readFileSync(new URL(`../web/${file}`, import.meta.url), 'utf8'), context, { filename: file });
   }
   vm.runInContext(readFileSync(new URL('../web/camera-constraints.js', import.meta.url), 'utf8'), context);

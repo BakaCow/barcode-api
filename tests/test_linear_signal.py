@@ -171,3 +171,98 @@ def test_native_overrun_does_not_publish_late_unique_result(signal, monkeypatch)
         result = signal.recover(source, deadline=deadline)
     assert not result.complete and result.observed == 1
     assert not result.observations
+
+
+def staggered_damage(source, color=255, full_height=False):
+    from PIL import ImageDraw, ImageOps
+    result = source.copy()
+    left, _, right, _ = ImageOps.invert(source).getbbox()
+    span = right - left
+    patch = max(18, round(span * .075))
+    draw = ImageDraw.Draw(result)
+    for y in range(source.height):
+        part = 1 if full_height else (y * 9 // source.height) % 3
+        center = round(left + span * (.25 + .25 * part))
+        draw.line((center - patch // 2, y, center + (patch + 1) // 2 - 1, y), fill=color)
+    return result
+
+
+@pytest.mark.parametrize('family', ['ean13', 'code128'])
+@pytest.mark.parametrize('color', [0, 255])
+def test_cross_row_reconstruction_uses_surviving_original_pixels(signal, family, color):
+    case = next(case for case in CASES if case['name'].startswith(family + '/') and case['name'].endswith('/clean-0'))
+    with image(case) as original, staggered_damage(original, color) as damaged:
+        before = damaged.tobytes()
+        assert not zxingcpp.read_barcodes(damaged, formats=zxingcpp.BarcodeFormats([zxingcpp.BarcodeFormat.EAN13, zxingcpp.BarcodeFormat.Code128]))
+        result = signal.recover(damaged, deadline=monotonic() + 1.2)
+        assert result.complete and len(result.observations) == 1
+        code = result.observations[0].code
+        assert code.text == case['expected'][0]['text']
+        assert code.bytes == case['expected'][0]['text'].encode()
+        assert damaged.tobytes() == before
+
+
+def test_known_native_false_upce_has_positive_full_ean_source_evidence(signal):
+    cases = json.loads((ROOT / 'tests/fixtures/damage-stress-signal-upgrade.json').read_text())['cases']
+    case = next(case for case in cases if case['name'] == 'ean13/signal-upgrade-ean13-label-1/missing-patch-1')
+    with image(case) as source:
+        result = signal.recover(source, deadline=monotonic() + 1.2)
+    assert result.complete and len(result.observations) == 1
+    assert result.observations[0].code.format.name == 'EAN13'
+    assert result.observations[0].code.text == case['expected'][0]['text']
+
+
+def test_no_original_row_can_supply_a_full_height_missing_stripe(signal):
+    for family in ('ean13', 'code128'):
+        case = next(case for case in CASES if case['name'].startswith(family + '/') and case['name'].endswith('/clean-0'))
+        for color in (0, 255):
+            with image(case) as original, staggered_damage(original, color, full_height=True) as source:
+                assert not signal.recover(source, deadline=monotonic() + 1.2).observations
+
+
+def test_cross_row_reconstruction_preserves_control_bytes(signal):
+    cases = json.loads((ROOT / 'tests/fixtures/independent-code128-safety.json').read_text())['cases']
+    for group in (1, 5):
+        case = next(case for case in cases if case['name'] == f'code128/independent-code128-{group}/clean')
+        with image(case) as original, staggered_damage(original) as source:
+            result = signal.recover(source, deadline=monotonic() + 1.2)
+        assert result.complete and len(result.observations) == 1
+        assert result.observations[0].code.bytes == bytes(case['expected'][0]['bytes'])
+
+
+def test_uninspected_neighbour_of_reconstructed_code_cannot_be_hidden(signal):
+    case = next(case for case in CASES if case['name'].startswith('code128/') and case['name'].endswith('/clean-0'))
+    with image(case) as original, staggered_damage(original) as label:
+        with Image.new('L', (label.width * 2 + 40, label.height), 255) as source:
+            source.paste(label, (0, 0)); source.paste(label, (label.width + 40, 0))
+            result = signal.recover(source, deadline=monotonic() + 1.2)
+    assert not result.complete and result.observed > 0 and not result.observations
+
+
+def test_different_valid_row_patterns_cannot_be_voted_away_as_damage(signal):
+    cases = [case for case in CASES if case['name'].startswith('ean13/') and case['name'].endswith('/clean-0')][:2]
+    with image(cases[0]) as first, image(cases[1]) as second:
+        with staggered_damage(first) as a, staggered_damage(second) as b:
+            for fraction in (.2, .4):
+                with a.copy() as mixed:
+                    y = int(mixed.height * (1 - fraction))
+                    with b.crop((0, y, b.width, b.height)) as strip:
+                        mixed.paste(strip, (0, y))
+                    assert not signal.recover(mixed, deadline=monotonic() + 1.2).observations
+
+
+def test_deadline_retains_completed_cross_row_proof_as_withheld_evidence(signal, monkeypatch):
+    case = next(case for case in CASES if case['name'].startswith('ean13/') and case['name'].endswith('/clean-0'))
+    real_proof, clock = signal._composite_proof, {'expired': False}
+    deadline, real_clock = monotonic() + 1.2, monotonic
+    def completed_proof(*args):
+        result = real_proof(*args)
+        if result:
+            clock['expired'] = True
+        return result
+    monkeypatch.setattr(signal, '_composite_proof', completed_proof)
+    monkeypatch.setattr(signal, 'monotonic', lambda: deadline + 1 if clock['expired'] else real_clock())
+    with image(case) as original, staggered_damage(original) as source:
+        result = signal.recover(source, deadline=deadline)
+    assert clock['expired'] and not result.complete and result.observed > 0
+    assert not result.observations

@@ -1,5 +1,46 @@
 # Verification
 
+## Damaged-code recovery (14 November 2026)
+
+The [damage recovery update](DAMAGE-RECOVERY-UPDATE.md) passes **729 JavaScript
+tests** and **566 Python tests**, with one existing Windows platform skip and
+the upstream Starlette/HTTPX warning. TypeScript declarations, the OpenAPI
+export and React production build pass. All 44 copied and built React runtime
+assets match the corresponding source files.
+
+New checks exercise QR erasure constraints, raw bytes, separate labels, damaged
+linear rows, complete source margins, clipped symbols, deadlines, and the
+known false native UPC-E reading. The extra QR geometry search retains caller
+and total deadlines without prematurely withholding a proved tiny Code 128.
+The public upload regressions make 17 real decoder requests through the
+production endpoints. An additional Uvicorn loopback smoke run passes the same
+17 HTTP uploads, checks four served assets against source, and stops its server.
+
+Camera component and integration tests use generated pixels and actual local
+WASM. A six-exposure sequence misses on each original frame, then produces one
+exact-byte callback after two disjoint combined bursts. Checks cover small
+translations, rotation rejection, moving bright occlusions, permanent holes,
+near-payload label switching, reuse/reset, oldest-frame expiry, one-/two-/three-
+frame settings, native/fused transitions and conflict preservation. Explicit
+targets remain exact while automatic detail crops include original margins.
+
+The [fresh paired evaluation](benchmark-results/damage-upgrade/README.md)
+reports recognition separately, including incorrect outputs, remaining misses,
+regressions, negative controls, timings and complete source/dependency hashes.
+Old corpora are development data. Fresh outputs were not used to tune this
+release. Fresh browser/server image results improve from 151/150 to **154/153
+out of 171**, with zero wrong outputs and zero lost correct cases. Both reject
+48/48 negatives. Both byte/label suites retain 54/54 positives and 8/8 negative
+rejections. [Validation metadata](benchmark-results/damage-upgrade/validation.json)
+records the test counts, asset hashes and HTTP checks. Fixed-image live retry-zero reports do not evaluate camera acquisition,
+frame fusion or end-to-end confirmation speed.
+
+Offline cache **1.13.0** includes the new QR damage and camera fusion modules;
+readiness and static-serving tests require them. Android Chrome-like and iPhone
+Safari-like lifecycle simulations pass. Physical phones, actual mobile browser
+camera behavior, a new offline-install session, Docker/Linux execution and a
+licensed Scanbot comparison were not tested.
+
 ## Motion blur and tiny codes (14 November 2026)
 
 The [source-signal update](MOTION-TINY-UPDATE.md) passes **684 JavaScript tests**

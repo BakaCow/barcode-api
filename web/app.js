@@ -19,8 +19,12 @@ const confirmation = ScanPolicy.createConfirmation();
 let scanRevision = 0, lastVideoFrame = null, misses = 0, retryIndex = 0, candidateCrop = null, lastAcceptedAt = 0;
 let videoFrameCallbackId = null, presentedFrame = null, trackingPresentedFrames = false;
 const POS_NAMES = ['ean13', 'upca', 'code128', 'qr', 'ean8', 'upce', 'datamatrix', 'aztec', 'pdf417', 'code93'];
-let posConfirmation = null, frameSelection = null;
+let posConfirmation = null, directConfirmation = null, frameSelection = null;
 const cameraRecovery = CaptureSelection.createRecovery();
+const cameraFusion = FrameFusion.create();
+let fusionConfirmation = null, fusionOptionsIdentity = null;
+const generalRecoveryIdentities = new Set();
+let generalRecoverySeen = false;
 
 function posOptions() {
   if (!$('pos-mode').checked) return undefined;
@@ -38,6 +42,7 @@ function applyScanOptions() {
   try {
     const options = posOptions();
     posConfirmation = options ? PosPolicy.createConfirmation(options) : null;
+    directConfirmation = options ? PosPolicy.createConfirmation(options) : null;
     if (options) setPosStatus('rescan', options.confirmationFrames === 1
       ? 'Single-frame POS mode. Conflicting codes still require a rescan.'
       : `Waiting for one code to agree across ${options.confirmationFrames} distinct frames.`);
@@ -67,8 +72,10 @@ function qualityHint(analysis) {
 
 function resetScanEvidence() {
   scanRevision += 1; confirmation.reset(); lastVideoFrame = null;
-  posConfirmation?.reset(); frameSelection?.reset();
+  posConfirmation?.reset(); directConfirmation?.reset(); frameSelection?.reset();
+  generalRecoveryIdentities.clear(); generalRecoverySeen = false;
   cameraRecovery.reset();
+  cameraFusion.reset(); fusionConfirmation = null; fusionOptionsIdentity = null;
   misses = 0; retryIndex = 0; candidateCrop = null; lastAcceptedAt = performance.now();
 }
 
@@ -194,6 +201,7 @@ async function startCamera(deviceId) {
   try {
     const options = posOptions();
     posConfirmation = options ? PosPolicy.createConfirmation(options) : null;
+    directConfirmation = options ? PosPolicy.createConfirmation(options) : null;
     await initializeScanner();
     if (token !== generation) return;
     const highResolution = $('target-crops').checked;
@@ -274,7 +282,7 @@ function captureLive(width, height, fraction, detail, analyze) {
     const recovery = [];
     if (detail && source === snapshot && sample.plan.width < snapshot.width) {
       for (const proposal of proposals.slice(0, 2)) {
-        const { kind, ...region } = proposal;
+        const region = CaptureGeometry.expandSourceRegion(proposal, width, height);
         const crop = capture(source, width, height, { region, sourceScale, maxPixels: 1_000_000, maxSide: 3840 });
         if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
       }
@@ -313,11 +321,18 @@ async function scanFrame(token) {
     } else if (better) selected = frameSelection?.flush(performance.now());
     if (selected) {
       const { image, plan, width, height, frameId, capturedAt, analysis } = selected;
+      const fusionFormats = (options?.allowedFormats || ['qr', 'ean13', 'code128']).filter(name => ['qr', 'ean13', 'code128'].includes(name));
+      const fusionOptions = { allowedFormats: fusionFormats, confirmationFrames: Math.max(2, options?.confirmationFrames || 2) };
+      if (crops && fusionFormats.length && JSON.stringify(fusionOptions) !== fusionOptionsIdentity) {
+        fusionOptionsIdentity = JSON.stringify(fusionOptions); fusionConfirmation = PosPolicy.createConfirmation(fusionOptions); cameraFusion.reset();
+      }
+      const fusionSource = crops && fusionFormats.length ? cameraFusion.capture(image, analysis, selected) : null;
       const decodeStarted = performance.now();
       const reply = await workerCall('decode', { image, mode: 'live', retryIndex,
         enhanceLive: crops, ...(options ? { posOptions: options } : {}) }, [image.data]);
       if (!active || token !== generation) return;
       let mapped = ScanPolicy.remapResults(reply.results, plan);
+      let incompleteEvidence = reply.diagnostics?.incompleteEvidence === true || selected.recoveryComplete === false;
       if (!mapped.length && !reply.diagnostics?.incompleteEvidence && revision === scanRevision && selected.revision === scanRevision) {
         const identities = new Set(); let complete = selected.recoveryComplete;
         for (const crop of selected.recovery) {
@@ -332,22 +347,52 @@ async function scanFrame(token) {
             if (!identities.has(key)) { identities.add(key); mapped.push(result); }
           }
         }
+        incompleteEvidence ||= !complete;
         if (identities.size === 1 && !complete) mapped = [];
+      }
+      let burst = null;
+      if (mapped.length || incompleteEvidence || !fusionSource || performance.now() - capturedAt > 1200) {
+        cameraFusion.reset(); fusionConfirmation?.reset();
+      } else if (revision === scanRevision && selected.revision === scanRevision) {
+        burst = cameraFusion.push(fusionSource, performance.now());
+        if (burst) {
+          const recovered = await workerCall('decode', { image: burst.image, mode: 'live', retryIndex,
+            enhanceLive: true, posOptions: { allowedFormats: fusionFormats, confirmationFrames: 1 } }, [burst.image.data]);
+          if (!active || token !== generation) return;
+          const conflicting = new Set((recovered.results || []).map(PosPolicy.keyFor).filter(key => key !== null)).size > 1;
+          if (recovered.diagnostics?.incompleteEvidence) { cameraFusion.reset(); fusionConfirmation?.reset(); }
+          if (!recovered.diagnostics?.incompleteEvidence || conflicting) {
+            const scaleX = plan.cropWidth / plan.width, scaleY = plan.cropHeight / plan.height;
+            mapped = ScanPolicy.remapResults(recovered.results, { x: plan.x + burst.region.x * scaleX, y: plan.y + burst.region.y * scaleY,
+              width: burst.region.width, height: burst.region.height, cropWidth: burst.region.width * scaleX, cropHeight: burst.region.height * scaleY });
+          }
+        }
       }
       const results = mapped;
       // Discard captures from before settings changes, including buffered frames.
       if (revision === scanRevision && selected.revision === scanRevision) {
-        const stale = performance.now() - capturedAt > 1200;
+        const stale = performance.now() - (burst?.oldestCapturedAt ?? capturedAt) > 1200;
         const moreDetail = crops && cameraRecovery.observe({ now: performance.now(), frameId,
           analysis: reply.analysis || analysis, hasResults: results.length > 0, stale });
         let accepted, conflictHint = null;
         if (options) {
           if (stale) {
-            posConfirmation.reset();
+            posConfirmation.reset(); directConfirmation?.reset(); cameraFusion.reset(); fusionConfirmation?.reset();
             accepted = [];
             setPosStatus('rescan', 'That frame is too old. Hold still for a fresh scan.');
           } else {
-            const decision = posConfirmation.observe(mapped, frameId, capturedAt, reply.analysis?.fingerprint || analysis?.fingerprint, selected.cameraFingerprint);
+            const evidence = burst || selected;
+            let decision = posConfirmation.observe(mapped, evidence.frameId, capturedAt,
+              burst ? burst.fingerprint : reply.analysis?.fingerprint || analysis?.fingerprint, evidence.cameraFingerprint);
+            if (burst) {
+              directConfirmation.reset();
+              const fusedDecision = fusionConfirmation.observe(mapped, burst.frameId, capturedAt, burst.fingerprint, burst.cameraFingerprint);
+              if (decision.status !== 'ambiguous' && (fusedDecision.status !== 'confirmed' || decision.status === 'confirmed')) decision = fusedDecision;
+            } else {
+              const directDecision = directConfirmation.observe(mapped, selected.frameId, capturedAt,
+                reply.analysis?.fingerprint || analysis?.fingerprint, selected.cameraFingerprint);
+              if (decision.status !== 'ambiguous' && (directDecision.status !== 'confirmed' || decision.status === 'confirmed')) decision = directDecision;
+            }
             accepted = decision.results;
             const messages = {
               conflicting_values: 'Conflicting codes. Isolate one label, then start a new scan.',
@@ -360,12 +405,27 @@ async function scanFrame(token) {
             setPosStatus(decision.status, messages[decision.reason] || 'Rescan this label.');
             if (decision.status === 'ambiguous') conflictHint = 'Conflicting readings. Isolate one label and rescan.';
           }
-        } else accepted = confirmation.observe(mapped, frameId, capturedAt);
+        } else {
+          if (crops) for (const result of mapped) {
+            // Keep all native formats, including those outside POS/fusion's
+            // allowlist. Bound the ledger; two identities already block fusion.
+            if (generalRecoveryIdentities.size < 48) generalRecoveryIdentities.add(keyFor(result));
+          }
+          if (burst) { confirmation.reset(); generalRecoverySeen = true; }
+          accepted = burst ? fusionConfirmation.observe(mapped, burst.frameId, capturedAt, burst.fingerprint, burst.cameraFingerprint).results
+            : confirmation.observe(mapped, frameId, capturedAt);
+          if (generalRecoverySeen && generalRecoveryIdentities.size > 1) {
+            accepted = []; conflictHint = 'Conflicting readings. Isolate one label and rescan.';
+          }
+          if (stale) { accepted = []; cameraFusion.reset(); fusionConfirmation?.reset(); }
+        }
         drawPositions(accepted, width, height);
         if (accepted.length) {
           handleResults(accepted); lastAcceptedAt = performance.now();
           posConfirmation?.reset();
+          directConfirmation?.reset(); generalRecoveryIdentities.clear(); generalRecoverySeen = false;
           cameraRecovery.reset();
+          cameraFusion.reset(); fusionConfirmation?.reset();
           misses = 0; retryIndex = 0; candidateCrop = null;
           $('scan-hint').textContent = `${accepted.length > 1 ? accepted.length + ' codes' : 'Code'} confirmed. Ready for the next.`;
         } else if (results.length) {

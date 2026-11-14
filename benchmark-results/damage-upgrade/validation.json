@@ -1,0 +1,196 @@
+{
+  "python-tests": {
+    "exitCode": 0
+  },
+  "javascript-tests-final": {
+    "exitCode": 0
+  },
+  "http-smoke": {
+    "exitCode": 0
+  },
+  "typescript": {
+    "exitCode": 0
+  },
+  "openapi": {
+    "exitCode": 0
+  },
+  "react-build": {
+    "exitCode": 0
+  },
+  "public/scanner-assets": {
+    "matchingFiles": 44,
+    "sha256": {
+      "capture-geometry.js": "1c33f977c50f2d4848c6d891fc4bc9930cc47e0b430b7beff11f208049c3da3b",
+      "capture-selection.js": "7eb2413760636bcc91cb5af9ec1861ec90e9994e00e4d3fa257d55e12614d189",
+      "examples.css": "ee463d4195303bdb22816f7324695bdfd0875cf473d91c8e54bd1cb062491fab",
+      "frame-analysis.js": "8b237efb6be94b4066c8fc32a9fcacb03e0d3930d331109335715a21ecd7737e",
+      "frame-fusion.js": "f074cee6960f9886ffcf15a5209223f63fb08b1030b1f5de13244d8be638d7a6",
+      "icon.svg": "43bfc9ffa2838dcb27ba5d00747830b5bc2c76845db0699666545d0098baf564",
+      "independent-reader.js": "8428bbd9ff0b391dbea21a7877684dd48e76dc1824e9c5fe86adbb6d3eb17a00",
+      "LICENSE.txt": "b210485b14430e7a0145439c3d6999538d1ce865a33b9bd50039b2614476e3b8",
+      "linear-signal.js": "bb98e7d8c31c47641bbe79f549824413d9436618b4d95eb42c3ffacce7eadc38",
+      "pos-policy.js": "f7a8bff17423ade661de4ff6df42c888f2e968ecc78d6319a23f0c675a84c470",
+      "qr-damage.js": "64539d114fc7d1603c68a50a34161556631a0a79a1cd7bd60bbee44c738aa5f9",
+      "qr-geometry.js": "d62bc0b1288c418e804a269c708fc3be65f2f47621847b7631108e6e9692f1a6",
+      "qr-recovery.js": "02fe70bb3354932c42e59b9ad15aea95382ddbde349e65bc1a9acde3c2887a01",
+      "qr-signal.js": "d4ec9bea5c9f87f32b7081e03a7a96670689ca3e829b0ad015480a1f17b1db6b",
+      "scan-policy.js": "071707b6b9a4331799d71623076ed89228524e9da23fce1853bc7ccac0a21aa4",
+      "scanner-worker.js": "f8335a2f4109c6c8e3c4108dde544644e406dba31a14f47a4dc57c8cf09a3823",
+      "styles.css": "f915254a8a796e3428463d25e5ae4f99e7d215334ed7330907b97fde4193a6da",
+      "engine/code128-decoder.js": "09dda1f3a9af3c80ea0cbfac5ef109ff6c761aeb9967ea71610b0823b5afe96a",
+      "engine/code128-detector.js": "b4193b183b7634ca085b16ce746f3a4a3b7a600bca7929dcbb1edc27d028759f",
+      "engine/code128-engine.js": "6e7283484db60f0d65dc876403da52d28bded86541dd91810eb034ddc51806fb",
+      "engine/THIRD-PARTY.txt": "1ab7a56eed0262a46cb5a9ab749b0a7d27a1a496bc25b1161a983958c47d4a42",
+      "sdk/capture-tools.js": "3e25e94a5075e7f0fa477ecb701e2c8e0da2bd92e0fb1358c2dbeb3b88a0db31",
+      "sdk/controls.css": "e58da1d6706886b355f9b9d1aad48eb96e4b16cf74a4e1e9e9156b3633cd793b",
+      "sdk/controls.d.ts": "206dcfeea2a4a73110c42983259f2f6234eabcf53011c21cdcf2c389a85c2a23",
+      "sdk/controls.js": "167e43af54cc3366b74ef085b035b5ead7eeb9178fb107ff4d9724d6e79cabcf",
+      "sdk/CONTROLS.md": "74851242f4735314c598e4da1b647e4dc995d7a8f89b041d901a342407a28ae9",
+      "sdk/scanner.d.ts": "272256774479b7943746f87e576ea8fcbccfadfd18ca63b7c6a98b9617f0a339",
+      "sdk/scanner.js": "89a37478f6c8eb545187dbeafcc478401501e5d11c2c5594e93e8ea7c2587645",
+      "vendor/public-sans-latin.woff2": "5ed4d31c988e73b258894244f209069ebe77dc7e564861954b21198b6de90d68",
+      "vendor/PUBLIC-SANS-LICENSE.txt": "705a497c781f6463ff819abb513bb495f3fb05256f1d20321e3275813c0bafa5",
+      "vendor/THIRD-PARTY.txt": "cd64afa9cf6c7732be83b7714e67cad8ff5815c55d81afb171c15bbf7adf809f",
+      "vendor/ZXING-CPP-LICENSE.txt": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+      "vendor/zxing-reader.js": "ffd72d59d54082194f7c086b384dcd930bdeb0c5b39fbb13779694e69bb0d344",
+      "vendor/ZXING-WASM-CPP-LICENSE.txt": "80caa1dd3fca8e626335ca3b936c97b71463241718f77d51589727a8cfd9b41b",
+      "vendor/ZXING-WASM-LICENSE.txt": "fb506e4ade12d7a9efa67c9d76a9a28c8e15d347ca49a69e48e29b40b34ad2ab",
+      "vendor/zxing_reader.wasm": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e",
+      "vendor/zbar/index.js": "31ba69c462230c7c7333e5eb75fb3d694b2c8b4ac8430dd7f9f74a62cf92160a",
+      "vendor/zbar/index.js.map": "4fda778b456a3fe9caff8498beb7400ff878745c2f98360ecb1fdedb89851a79",
+      "vendor/zbar/LICENSE.txt": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331",
+      "vendor/zbar/provenance.json": "f80c80816ac1e6266c5c18c4901a4ec59ad184fa73942d2a324c884d4b3dd4a8",
+      "vendor/zbar/README.md": "d534bee8f82de8b65c0cb6d4fc90d8d35bdb08a0bf9c0c3c185046f24725633d",
+      "vendor/zbar/zbar.wasm": "438f95e4b5d122c4c2a8da2b72ad19faa4ba4e541f473dcae0371e4cfc8159ee",
+      "vendor/zbar/sources/zbar-0.23.90.tar.gz": "25fdd6726d5c4c6f95c95d37591bfbb2dde63d13d0b10cb1350923ea8b11963b",
+      "vendor/zbar/sources/zbar-wasm-c04ab596.tar.gz": "69eddfeefa65519c9d313e055b7a3041c08becc78f639d1c8890c1cf5c6cffd7"
+    }
+  },
+  "dist/scanner-assets": {
+    "matchingFiles": 44,
+    "sha256": {
+      "capture-geometry.js": "1c33f977c50f2d4848c6d891fc4bc9930cc47e0b430b7beff11f208049c3da3b",
+      "capture-selection.js": "7eb2413760636bcc91cb5af9ec1861ec90e9994e00e4d3fa257d55e12614d189",
+      "examples.css": "ee463d4195303bdb22816f7324695bdfd0875cf473d91c8e54bd1cb062491fab",
+      "frame-analysis.js": "8b237efb6be94b4066c8fc32a9fcacb03e0d3930d331109335715a21ecd7737e",
+      "frame-fusion.js": "f074cee6960f9886ffcf15a5209223f63fb08b1030b1f5de13244d8be638d7a6",
+      "icon.svg": "43bfc9ffa2838dcb27ba5d00747830b5bc2c76845db0699666545d0098baf564",
+      "independent-reader.js": "8428bbd9ff0b391dbea21a7877684dd48e76dc1824e9c5fe86adbb6d3eb17a00",
+      "LICENSE.txt": "b210485b14430e7a0145439c3d6999538d1ce865a33b9bd50039b2614476e3b8",
+      "linear-signal.js": "bb98e7d8c31c47641bbe79f549824413d9436618b4d95eb42c3ffacce7eadc38",
+      "pos-policy.js": "f7a8bff17423ade661de4ff6df42c888f2e968ecc78d6319a23f0c675a84c470",
+      "qr-damage.js": "64539d114fc7d1603c68a50a34161556631a0a79a1cd7bd60bbee44c738aa5f9",
+      "qr-geometry.js": "d62bc0b1288c418e804a269c708fc3be65f2f47621847b7631108e6e9692f1a6",
+      "qr-recovery.js": "02fe70bb3354932c42e59b9ad15aea95382ddbde349e65bc1a9acde3c2887a01",
+      "qr-signal.js": "d4ec9bea5c9f87f32b7081e03a7a96670689ca3e829b0ad015480a1f17b1db6b",
+      "scan-policy.js": "071707b6b9a4331799d71623076ed89228524e9da23fce1853bc7ccac0a21aa4",
+      "scanner-worker.js": "f8335a2f4109c6c8e3c4108dde544644e406dba31a14f47a4dc57c8cf09a3823",
+      "styles.css": "f915254a8a796e3428463d25e5ae4f99e7d215334ed7330907b97fde4193a6da",
+      "engine/code128-decoder.js": "09dda1f3a9af3c80ea0cbfac5ef109ff6c761aeb9967ea71610b0823b5afe96a",
+      "engine/code128-detector.js": "b4193b183b7634ca085b16ce746f3a4a3b7a600bca7929dcbb1edc27d028759f",
+      "engine/code128-engine.js": "6e7283484db60f0d65dc876403da52d28bded86541dd91810eb034ddc51806fb",
+      "engine/THIRD-PARTY.txt": "1ab7a56eed0262a46cb5a9ab749b0a7d27a1a496bc25b1161a983958c47d4a42",
+      "sdk/capture-tools.js": "3e25e94a5075e7f0fa477ecb701e2c8e0da2bd92e0fb1358c2dbeb3b88a0db31",
+      "sdk/controls.css": "e58da1d6706886b355f9b9d1aad48eb96e4b16cf74a4e1e9e9156b3633cd793b",
+      "sdk/controls.d.ts": "206dcfeea2a4a73110c42983259f2f6234eabcf53011c21cdcf2c389a85c2a23",
+      "sdk/controls.js": "167e43af54cc3366b74ef085b035b5ead7eeb9178fb107ff4d9724d6e79cabcf",
+      "sdk/CONTROLS.md": "74851242f4735314c598e4da1b647e4dc995d7a8f89b041d901a342407a28ae9",
+      "sdk/scanner.d.ts": "272256774479b7943746f87e576ea8fcbccfadfd18ca63b7c6a98b9617f0a339",
+      "sdk/scanner.js": "89a37478f6c8eb545187dbeafcc478401501e5d11c2c5594e93e8ea7c2587645",
+      "vendor/public-sans-latin.woff2": "5ed4d31c988e73b258894244f209069ebe77dc7e564861954b21198b6de90d68",
+      "vendor/PUBLIC-SANS-LICENSE.txt": "705a497c781f6463ff819abb513bb495f3fb05256f1d20321e3275813c0bafa5",
+      "vendor/THIRD-PARTY.txt": "cd64afa9cf6c7732be83b7714e67cad8ff5815c55d81afb171c15bbf7adf809f",
+      "vendor/ZXING-CPP-LICENSE.txt": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+      "vendor/zxing-reader.js": "ffd72d59d54082194f7c086b384dcd930bdeb0c5b39fbb13779694e69bb0d344",
+      "vendor/ZXING-WASM-CPP-LICENSE.txt": "80caa1dd3fca8e626335ca3b936c97b71463241718f77d51589727a8cfd9b41b",
+      "vendor/ZXING-WASM-LICENSE.txt": "fb506e4ade12d7a9efa67c9d76a9a28c8e15d347ca49a69e48e29b40b34ad2ab",
+      "vendor/zxing_reader.wasm": "5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e",
+      "vendor/zbar/index.js": "31ba69c462230c7c7333e5eb75fb3d694b2c8b4ac8430dd7f9f74a62cf92160a",
+      "vendor/zbar/index.js.map": "4fda778b456a3fe9caff8498beb7400ff878745c2f98360ecb1fdedb89851a79",
+      "vendor/zbar/LICENSE.txt": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331",
+      "vendor/zbar/provenance.json": "f80c80816ac1e6266c5c18c4901a4ec59ad184fa73942d2a324c884d4b3dd4a8",
+      "vendor/zbar/README.md": "d534bee8f82de8b65c0cb6d4fc90d8d35bdb08a0bf9c0c3c185046f24725633d",
+      "vendor/zbar/zbar.wasm": "438f95e4b5d122c4c2a8da2b72ad19faa4ba4e541f473dcae0371e4cfc8159ee",
+      "vendor/zbar/sources/zbar-0.23.90.tar.gz": "25fdd6726d5c4c6f95c95d37591bfbb2dde63d13d0b10cb1350923ea8b11963b",
+      "vendor/zbar/sources/zbar-wasm-c04ab596.tar.gz": "69eddfeefa65519c9d313e055b7a3041c08becc78f639d1c8890c1cf5c6cffd7"
+    }
+  },
+  "pythonCounts": [
+    "566 passed, 1 skipped, 1 warning in 53.65s"
+  ],
+  "javascriptCounts": [
+    "\u2139 tests 729",
+    "\u2139 pass 729",
+    "\u2139 fail 0",
+    "\u2139 cancelled 0",
+    "\u2139 skipped 0"
+  ],
+  "date": "2026-11-14",
+  "physicalPhonesTested": false,
+  "commands": [
+    "python -m pytest -q",
+    "node --test --test-concurrency=1 tests/*.test.mjs",
+    "npm exec --yes --package=typescript@5.9.3 -- tsc --strict --noEmit --lib ES2022,DOM --module NodeNext --moduleResolution NodeNext tests/client-types.mts",
+    "python tools/export-openapi.py --check",
+    "npm run build (examples/react)"
+  ],
+  "http": {
+    "loopbackOnly": true,
+    "productionApp": "app:app",
+    "assets": {
+      "scanner-worker.js": "matches source over HTTP",
+      "linear-signal.js": "matches source over HTTP",
+      "qr-damage.js": "matches source over HTTP",
+      "sw.js": "matches source over HTTP"
+    },
+    "checks": [
+      {
+        "name": "old QR patch 1 read",
+        "exact": true
+      },
+      {
+        "name": "old QR patch 1 pos",
+        "exact": true
+      },
+      {
+        "name": "old QR patch 2 read",
+        "exact": true
+      },
+      {
+        "name": "old QR patch 2 pos",
+        "exact": true
+      },
+      {
+        "name": "old QR patch 3 read",
+        "exact": true
+      },
+      {
+        "name": "old QR patch 3 pos",
+        "exact": true
+      },
+      {
+        "name": "false UPC-E abstention and EAN-only source recovery",
+        "exact": true
+      },
+      {
+        "name": "ean13 staggered patches 0",
+        "exact": true
+      },
+      {
+        "name": "ean13 staggered patches 255",
+        "exact": true
+      },
+      {
+        "name": "code128 staggered patches 0",
+        "exact": true
+      },
+      {
+        "name": "code128 staggered patches 255",
+        "exact": true
+      }
+    ],
+    "uploads": 17,
+    "passed": 11,
+    "serverStopped": true
+  }
+}

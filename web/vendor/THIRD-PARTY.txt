@@ -17,3 +17,10 @@ Public Sans Variable 5.3.0 via Fontsource: https://github.com/uswds/public-sans
 SIL Open Font License 1.1 (PUBLIC-SANS-LICENSE.txt).
 
 All executable assets and font files are bundled locally. No runtime CDN dependency.
+
+QR version, alignment and error-correction block constants in ../qr-damage.js
+and the server's qr_damage.py are adapted from jsQR 1.4.0 by Cosmo Wolfe and
+contributors: https://github.com/cozmo/jsQR (Apache-2.0).
+Constants are reduced to QR versions 1–10 and reformatted. GF reconstruction,
+source uncertainty masks and safeguards are project code. The complete
+Apache-2.0 license is included in ZXING-CPP-LICENSE.txt. No jsQR runtime is loaded.

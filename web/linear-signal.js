@@ -1,7 +1,9 @@
-/* Source-signal recovery for complete EAN13 and supported Code128 symbols.
+/* Source-signal recovery for EAN13 and supported Code128 symbols.
  * Project code. It models a bounded uniform exposure blur, then checks the
  * entire decoded template against ORIGINAL grayscale samples. Native decoding
  * of a derived candidate supplies canonical bytes/text, not additional votes.
+ * A second path combines aligned source rows with independently located flat
+ * defects; every reconstructed column still needs three original observations.
  */
 (function (root, factory) {
   const api = factory(typeof module === 'object' && module.exports ? require('./engine/code128-decoder.js') : null);
@@ -244,6 +246,84 @@
     }
     return {width,height,data};
   }
+  function compositeProof(rows, candidate, proof) {
+    const unit=proof.unit,left=proof.left,right=left+candidate.bits.length*unit;
+    if(unit<1.4||unit>16||right-left>1800||rows.length<5)return null;
+    const from=floor(left-candidate.quietLeft),to=ceil(right+candidate.quietRight);
+    if(from<0||to>rows[0].values.length)return null;
+    const ideal=idealRow(candidate.bits,rows[0].values.length,left,unit,proof.aperture);
+    const guards=candidate.format==='EAN13'?idealRow('101'+'0'.repeat(42)+'01010'+'0'.repeat(42)+'101',rows[0].values.length,left,unit,proof.aperture):null;
+    const support=new Uint8Array(to-from),sourceRows=[];let squared=0,count=0,damage=0,outerInk=false;
+    for(const {y,values:row} of rows){
+      let low=255,high=0;for(let x=from;x<to;x++){low=min(low,row[x]);high=max(high,row[x]);}
+      if(high-low<100)return null;
+      for(let x=0;x<row.length;x++)if((x<from||x>=to)&&row[x]<high-12)outerInk=true;
+      // EAN guard bars may extend below the data bars. Such rows contain no
+      // data evidence and are excluded only when the whole guard-only image
+      // agrees with measured source geometry; arbitrary short rows are not.
+      if(guards&&row.subarray(from,to).every((value,i)=>abs((value-low)/(high-low)-guards[from+i])<=.16))continue;
+      sourceRows.push(y);
+      const threshold=(low+high)/2,mask=new Uint8Array(to-from);let masked=0,regions=0;
+      // Only a flat run longer than any valid EAN/Code128 element can be
+      // treated as a local defect. Different valid bar patterns stay visible.
+      for(let x=max(from,ceil(left));x<min(to,floor(right));){
+        const start=x,dark=row[x]<threshold;
+        while(x<min(to,floor(right))&&(row[x]<threshold)===dark)x++;
+        if(x-start<4.75*unit)continue;
+        if(start<left+7*unit||x>right-7*unit||x-start>(right-left)*.25)return null;
+        const a=max(from,start-1),b=min(to,x+1);regions++;
+        for(let k=a;k<b;k++)if(!mask[k-from]){mask[k-from]=1;masked++;}
+      }
+      if(regions>4||masked>(right-left)*.35)return null;
+      let rowSquared=0,rowCount=0;
+      for(let x=from;x<to;x++){
+        const error=(row[x]-low)/(high-low)-ideal[x];
+        if(mask[x-from]){if(abs(error)>.3)damage++;continue;}
+        if(abs(error)>.16)return null;
+        support[x-from]++;rowSquared+=error*error;rowCount++;
+      }
+      if(!rowCount||sqrt(rowSquared/rowCount)>.055)return null;
+      squared+=rowSquared;count+=rowCount;
+    }
+    // A full-height missing stripe has no original-pixel support and cannot
+    // be filled even if a rendered hypothesis happens to have a checksum.
+    if(!damage||sourceRows.length<5||support.some(value=>value<3))return null;
+    return {...proof,rmse:sqrt(squared/count),sourceRows,outerInk,strategy:'cross-row-source'};
+  }
+  function compositeCandidates(data,width,sampled,allowed,decoder,expired) {
+    if(sampled.length<5||width>2048)return {candidates:[],complete:true};
+    const rows=sampled.map(({y})=>({y,values:sourceRow(data,width,y)})),output=new Map();
+    if(rows.at(-1).y-rows[0].y<4)return {candidates:[],complete:true};
+    for(const quantile of [.5,.15,.85]){
+      if(expired())return {candidates:[...output.values()],complete:false};
+      const profile=new Float64Array(width);
+      for(let x=0;x<width;x++){
+        const values=rows.map(row=>row.values[x]).sort((a,b)=>a-b);
+        profile[x]=values[floor((values.length-1)*quantile)];
+      }
+      let low=255,high=0;for(const value of profile){low=min(low,value);high=max(high,value);}
+      if(high-low<100)continue;
+      const binary=Uint8Array.from(profile,value=>value<(low+high)/2?0:255),candidates=[];
+      if(allowed.has('EAN13')){const candidate=eanLine(binary);if(candidate)candidates.push(candidate);}
+      if(allowed.has('Code128')&&decoder){
+        const decoded=decoder.decodeScanline(binary,{tryInvert:false,tryLocalThreshold:false});
+        if(decoded&&!decoded.reversed&&!decoded.inverted&&Array.isArray(decoded.codewords)){
+          const bits=decoded.codewords.map(word=>CODEBITS[word]).join('');
+          candidates.push({...decoded,bits,unit:(decoded.right-decoded.left)/bits.length});
+        }
+      }
+      for(const candidate of candidates){
+        const exact=fit(profile,candidate.bits,candidate.left,candidate.unit,1,candidate.quietLeft,candidate.quietRight);
+        const fitted=exact&&exact.rmse<=.045&&exact.maxBlock<=.095?{...exact,left:candidate.left,unit:candidate.unit,aperture:1}:bestFit(profile,candidate,1);
+        if(!fitted)continue;
+        const proof=compositeProof(rows,candidate,fitted);if(!proof)continue;
+        const key=JSON.stringify([candidate.format,candidate.bytes,candidate.left,candidate.right]);
+        const previous=output.get(key);if(!previous||proof.rmse<previous.proof.rmse)output.set(key,{candidate,proof});
+        if(output.size>8)return {candidates:[...output.values()].slice(0,8),complete:false};
+      }
+    }
+    return {candidates:[...output.values()],complete:!expired()&&![...output.values()].some(entry=>entry.proof.outerInk)};
+  }
   async function recover(image,{formats=['EAN13','Code128'],timeBudgetMs=250,readNative}={}) {
     const data=pixels(image);
     if(!Array.isArray(formats)||formats.some(format=>typeof format!=='string')||!Number.isFinite(timeBudgetMs)||timeBudgetMs<0||timeBudgetMs>1200||typeof readNative!=='function')throw new Error('Invalid linear signal options.');
@@ -288,6 +368,14 @@
       }
       if(!complete)break;
     }
+    if(complete)for(const band of new Set(rows.map(row=>row.band))){
+      // Existing complete source evidence stays on its fast path. Do not merge
+      // separate activity bands or replace a short/competing observed symbol.
+      if([...groups.values()].some(group=>group.band===band))continue;
+      const reconstructed=compositeCandidates(data,image.width,rows.filter(row=>row.band===band),allowed,decoder,()=>now()-started>=timeBudgetMs);
+      for(const {candidate,proof} of reconstructed.candidates)for(const y of proof.sourceRows)collect(candidate,proof,y,1,band);
+      if(!reconstructed.complete||groups.size>8){complete=false;break;}
+    }
     const results=[];
     if(complete)for(const group of groups.values()){
       if(group.rows.size<3||group.bottom-group.top<2){complete=false;continue;}
@@ -300,10 +388,11 @@
         matched=true;
         const left=group.proof.left,right=left+group.proof.unit*candidate.bits.length;
         results.push({...code,position:{topLeft:{x:left,y:group.top},topRight:{x:right,y:group.top},bottomRight:{x:right,y:group.bottom},bottomLeft:{x:left,y:group.bottom}},
-          signalProof:{strategy:'grayscale-template',rows:group.rows.size,rmse:group.proof.rmse,blurLengths:[...group.models]}});
+          signalProof:{strategy:group.proof.strategy||'grayscale-template',rows:group.rows.size,rmse:group.proof.rmse,blurLengths:[...group.models]}});
       }
       if(!matched)complete=false;
     }
+    if(now()-started>=timeBudgetMs)complete=false;
     const identities=new Set(results.map(result=>JSON.stringify([result.format,Array.from(result.bytes)])));
     return {results:complete||identities.size>1?results:[],complete,incompleteEvidence:!complete&&groups.size>0,passes,elapsedMs:now()-started};
   }
@@ -323,5 +412,5 @@
     '114131','311141','411131','211412','211214','211232','2331112',
   ].map(pattern => Array.from(pattern, Number));
   const CODEBITS=CODE128.map(pattern=>{let dark=true,bits='';for(const run of pattern){bits+=(dark?'1':'0').repeat(run);dark=!dark;}return bits;});
-  return {recover,version:'grayscale-signal-v1'};
+  return {recover,version:'grayscale-signal-v2'};
 });

@@ -23,7 +23,7 @@ export async function createWorkerAdapter() {
   worker.onmessage = ({ data }) => { const entry = waiting.get(data.id); if (!entry) return; clearTimeout(entry.timer); waiting.delete(data.id); data.type === 'error' ? entry.reject(new Error('Local decoder failed.')) : entry.resolve(data); };
   worker.onerror = dispose;
   try { await call('init'); } catch (error) { dispose(); throw error; }
-  return { metadata: { id: 'barcode-api', version: '0.9.0', configuration: 'worker-image-signal-v1' }, dispose,
+  return { metadata: { id: 'barcode-api', version: '0.9.0', configuration: 'worker-image-damage-v1' }, dispose,
     async decode(image, formats) {
       const pixels = image.data.slice();
       const result = await call('decode', { image: { width: image.width, height: image.height, data: pixels.buffer }, mode: 'image', enhanceLive: true,

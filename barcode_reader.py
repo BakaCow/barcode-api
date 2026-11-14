@@ -17,6 +17,7 @@ from independent_zbar import observations as zbar_observations
 import qr_recovery
 import linear_signal
 import qr_signal
+import qr_damage
 
 
 MAX_RETRY_PIXELS = 4_000_000
@@ -282,6 +283,25 @@ def _corroborate_retail_overlap(records, image, first_options, requested, starte
     """
     upce = [record for record in records if record.format.name == 'UPCE']
     ean = [record for record in records if record.format.name in {'EAN13', 'UPCA'}]
+    if len(records) == 1 and upce and (requested is None or 'ean13' in requested) and monotonic() - started < RETRY_SECONDS:
+        working, to_original = _working_image(image)
+        with working:
+            try:
+                checked = linear_signal.recover(working, formats=('EAN13',), deadline=min(started + RETRY_SECONDS, monotonic() + .25))
+                alternatives = []
+                for observation in checked.observations:
+                    code, points = observation.code, observation.points
+                    if (not code.valid or code.error or code.format.name != 'EAN13' or not isinstance(code.bytes, bytes) or len(code.bytes) != 13 or
+                            not all(48 <= byte <= 57 for byte in code.bytes) or len(points) != 4 or
+                            not all(math.isfinite(x) and math.isfinite(y) and 0 <= x <= working.width and 0 <= y <= working.height for x, y in points)):
+                        continue
+                    alternatives.append(DecodedBarcode(code.text, code.format, code.bytes, tuple(to_original(x, y) for x, y in points)))
+                width = lambda record: math.hypot(record.points[1][0] - record.points[0][0], record.points[1][1] - record.points[0][1])
+                if (any(_same_symbol_segment(upce[0], alternative) and width(alternative) > width(upce[0]) * 1.35 for alternative in alternatives) or
+                        checked.complete is not True and checked.observed > 0):
+                    return []  # Conflicting source evidence asks for a rescan; never substitute a guessed value.
+            except (ValueError, RuntimeError, AttributeError, TypeError):
+                pass
     if not upce or not ean or monotonic() - started >= RETRY_SECONDS:
         return records
     identity = lambda record: (record.format.name, record.text, record.bytes)
@@ -460,6 +480,7 @@ def _recover_signals(working, mapping, original_size, requested, started):
         searches.append((linear_signal.recover, {'formats': tuple(POS_FORMATS[name].name for name in sorted(families))}, families))
     if requested is None or 'qr' in requested:
         searches.append((qr_signal.recover, {}, {'qr'}))
+        searches.append((qr_damage.recover, {}, {'qr'}))
     records, complete = [], True
     for recover, options, allowed in searches:
         if monotonic() >= deadline:
@@ -492,7 +513,18 @@ def _recover_signals(working, mapping, original_size, requested, started):
                     continue
                 source_points = tuple((max(0, min(original_size[0], round(x))),
                                        max(0, min(original_size[1], round(y)))) for x, y in mapped)
-                records.append(DecodedBarcode(code.text, code.format, code.bytes, source_points))
+                record = DecodedBarcode(code.text, code.format, code.bytes, source_points)
+                # Different recovery methods can rediscover the same physical
+                # symbol. Keep separate copies of an equal payload, while
+                # avoiding duplicate API entries for matching corner geometry.
+                span = min(math.hypot(source_points[1][0] - source_points[0][0], source_points[1][1] - source_points[0][1]),
+                           math.hypot(source_points[3][0] - source_points[0][0], source_points[3][1] - source_points[0][1]))
+                tolerance = max(2, span * .04)
+                duplicate = any(previous.format == record.format and previous.text == record.text and previous.bytes == record.bytes and
+                                all(math.hypot(x - px, y - py) <= tolerance for (x, y), (px, py) in zip(record.points, previous.points))
+                                for previous in records)
+                if not duplicate:
+                    records.append(record)
         except (ValueError, RuntimeError, AttributeError, TypeError):
             complete = False
     if monotonic() >= deadline:

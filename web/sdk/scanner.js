@@ -2,12 +2,14 @@
 import * as posModule from '../pos-policy.js';
 import * as selectionModule from '../capture-selection.js';
 import * as captureModule from '../scan-policy.js';
-import { validateTarget, regionPlan, sourceRegions, clearFrame, cameraCapabilities, boundedZoom } from './capture-tools.js';
+import * as fusionModule from '../frame-fusion.js';
+import { validateTarget, regionPlan, sourceRegions, expandSourceRegion, clearFrame, cameraCapabilities, boundedZoom } from './capture-tools.js';
 
 // The existing helpers also support classic-script users of the standalone app.
 const Pos = globalThis.PosPolicy || posModule.default;
 const Selection = globalThis.CaptureSelection || selectionModule.default;
 const Capture = globalThis.ScanPolicy || captureModule.default;
+const Fusion = globalThis.FrameFusion || fusionModule.default;
 const DEFAULTS = { formats: ['ean13', 'upca', 'code128', 'qr'], confirmationFrames: 2,
   preferClearFrames: true, cropBarcodes: true, captureMode: 'balanced', adaptiveFrameSelection: true, automaticRecovery: true, targetRegion: null };
 const OPTION_KEYS = Object.keys(DEFAULTS);
@@ -57,6 +59,9 @@ export function createScanner(configuration = {}) {
   if (base.search || base.hash) throw new TypeError('assetBaseUrl must be a directory without a query or fragment.');
   if (env.location && base.origin !== env.location.origin) throw new TypeError('Host scanner assets on the same origin as this page.');
   let options = checkedOptions(settings), policy = Pos.createConfirmation(policyOptions());
+  let directPolicy = Pos.createConfirmation(policyOptions());
+  const fusion = Fusion.create();
+  let fusionPolicy = Pos.createConfirmation({ ...policyOptions(), confirmationFrames: Math.max(2, options.confirmationFrames) });
   const canvas = doc.createElement('canvas'), context = canvas.getContext('2d', { willReadFrequently: true });
   const snapshot = doc.createElement('canvas'), snapshotContext = snapshot.getContext('2d');
   if (!context) throw new Error('This browser cannot capture camera images.');
@@ -88,7 +93,8 @@ export function createScanner(configuration = {}) {
     else status(active ? 'scanning' : 'idle', message);
   }
   function resetEvidence(rearm = false) {
-    revision++; policy = Pos.createConfirmation(policyOptions()); selection.reset(); recovery.reset();
+    revision++; policy = Pos.createConfirmation(policyOptions()); directPolicy = Pos.createConfirmation(policyOptions()); selection.reset(); recovery.reset();
+    fusion.reset(); fusionPolicy = Pos.createConfirmation({ ...policyOptions(), confirmationFrames: Math.max(2, options.confirmationFrames) });
     if (rearm) accepted = false;
     lastFrame = null; retry = 0;
   }
@@ -237,7 +243,7 @@ export function createScanner(configuration = {}) {
       const recovery = [];
       if (detail && !target && options.cropBarcodes && sample.plan.width < width * scale.x) {
         for (const region of proposals.slice(0, 2)) {
-          const { kind, ...rectangle } = region;
+          const rectangle = expandSourceRegion(region, width, height);
           const crop = capture(input, width, height, 1_000_000, rectangle, 3840, scale);
           if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
         }
@@ -260,6 +266,7 @@ export function createScanner(configuration = {}) {
       // A result too old to confirm must not pin the camera to a slow method.
       if (mode === 'live' && now() - sample.capturedAt <= MAX_FRAME_AGE) retry = retryIndex;
     };
+    sample.incompleteEvidence = false;
     const first = await call('decode', { image, mode, retryIndex, enhanceLive: options.cropBarcodes,
       posOptions: policyOptions() }, [image.data]);
     if (!valid()) throw aborted();
@@ -268,13 +275,13 @@ export function createScanner(configuration = {}) {
       retainMethod();
       return results; // Observed full-view conflicts are never hidden by a crop.
     }
-    if (first.diagnostics?.incompleteEvidence) return [];
+    if (first.diagnostics?.incompleteEvidence) { sample.incompleteEvidence = true; return []; }
     let coverageComplete = sample.recoveryComplete !== false;
     const identities = new Set();
     for (const crop of sample.recovery) {
       // A timed-out remaining region may contain a conflicting label. Do not
       // accept the first crop merely because it was decoded before the budget.
-      if (now() - started > (mode === 'live' ? 350 : 2500)) return identities.size > 1 ? results : [];
+      if (now() - started > (mode === 'live' ? 350 : 2500)) { sample.incompleteEvidence = true; return identities.size > 1 ? results : []; }
       const response = await call('decode', { image: crop.image, mode, retryIndex, enhanceLive: false,
         posOptions: policyOptions() }, [crop.image.data]);
       if (!valid()) throw aborted();
@@ -284,6 +291,7 @@ export function createScanner(configuration = {}) {
         if (!identities.has(key)) { identities.add(key); results.push(result); }
       }
     }
+    sample.incompleteEvidence = !coverageComplete;
     if (identities.size === 1 && !coverageComplete) return [];
     if (results.length) retainMethod();
     return results;
@@ -339,15 +347,46 @@ export function createScanner(configuration = {}) {
       } else if (options.preferClearFrames) selected = selection.flush(now());
       if (selected) {
         const { analysis, capturedAt } = selected;
-        const results = await decodeSample(selected, 'live');
+        const fusionFormats = options.formats.filter(format => ['qr', 'ean13', 'code128'].includes(format));
+        const sourceFrame = options.automaticRecovery && fusionFormats.length ? fusion.capture(selected.image, analysis, selected) : null;
+        let results = await decodeSample(selected, 'live'), burst = null;
         if (!active || accepted || token !== generation || revision !== currentRevision || selected.revision !== revision) return;
-        const stale = now() - capturedAt > MAX_FRAME_AGE;
+        if (results.length || selected.incompleteEvidence || !sourceFrame || now() - capturedAt > MAX_FRAME_AGE) {
+          fusion.reset(); fusionPolicy.reset();
+        } else {
+          burst = fusion.push(sourceFrame, now());
+          if (burst) {
+            const recovered = await call('decode', { image: burst.image, mode: 'live', retryIndex: Math.max(0, retry - 1), enhanceLive: true,
+              posOptions: { allowedFormats: fusionFormats, confirmationFrames: 1 } }, [burst.image.data]);
+            if (!active || accepted || token !== generation || revision !== currentRevision || selected.revision !== revision) return;
+            const conflicting = new Set((recovered.results || []).map(Pos.keyFor).filter(key => key !== null)).size > 1;
+            if (recovered.diagnostics?.incompleteEvidence) { fusion.reset(); fusionPolicy.reset(); }
+            if (!recovered.diagnostics?.incompleteEvidence || conflicting) {
+              const scaleX = selected.plan.cropWidth / selected.plan.width, scaleY = selected.plan.cropHeight / selected.plan.height;
+              results = Capture.remapResults(recovered.results, { x: selected.plan.x + burst.region.x * scaleX,
+                y: selected.plan.y + burst.region.y * scaleY, width: burst.region.width, height: burst.region.height,
+                cropWidth: burst.region.width * scaleX, cropHeight: burst.region.height * scaleY });
+            }
+          }
+        }
+        const stale = now() - (burst?.oldestCapturedAt ?? capturedAt) > MAX_FRAME_AGE;
         const moreDetail = options.automaticRecovery && recovery.observe({ now: now(), frameId: selected.frameId, analysis,
           hasResults: results.length > 0, stale });
         if (stale) {
-          policy.reset(); status('rescan', 'That image is too old. Hold still for a fresh scan.', 'stale_frame');
+          policy.reset(); directPolicy.reset(); fusion.reset(); fusionPolicy.reset(); status('rescan', 'That image is too old. Hold still for a fresh scan.', 'stale_frame');
         } else {
-          publish(policy.observe(results, selected.frameId, capturedAt, analysis.fingerprint, selected.cameraFingerprint), analysis);
+          const evidence = burst || selected;
+          let decision = policy.observe(results, evidence.frameId, capturedAt,
+            burst ? burst.fingerprint : analysis.fingerprint, evidence.cameraFingerprint);
+          if (burst) {
+            directPolicy.reset();
+            const fusedDecision = fusionPolicy.observe(results, burst.frameId, capturedAt, burst.fingerprint, burst.cameraFingerprint);
+            if (decision.status !== 'ambiguous' && (fusedDecision.status !== 'confirmed' || decision.status === 'confirmed')) decision = fusedDecision;
+          } else {
+            const directDecision = directPolicy.observe(results, selected.frameId, capturedAt, analysis.fingerprint, selected.cameraFingerprint);
+            if (decision.status !== 'ambiguous' && (directDecision.status !== 'confirmed' || decision.status === 'confirmed')) decision = directDecision;
+          }
+          publish(decision, analysis);
           if (moreDetail && active && !accepted && token === generation && revision === currentRevision) {
             status('scanning', 'Trying more image detail. Keep the full label steady.', 'detail_recovery');
           }

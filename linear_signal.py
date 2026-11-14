@@ -5,6 +5,10 @@ symbol AND its observed quiet margins on at least three actual source rows.
 Native reading of a rendered template supplies canonical bytes/text only. It is
 not an independent reading of the photographed source.
 
+Cross-row reconstruction is restricted to aligned source columns with local
+oversized flat-run defects. Every reconstructed column needs at least three
+unmasked original observations; missing full-height information is not filled.
+
 Code128 pattern data derives from the project's existing Apache-2.0 ZXing-C++
 ODCode128Patterns.h table: Nu-book 2016 / ZXing authors 2016. See
 web/engine/THIRD-PARTY.txt and web/vendor/ZXING-CPP-LICENSE.txt.
@@ -91,6 +95,9 @@ class Proof:
     unit: float
     rmse: float
     max_block: float
+    aperture: float = 1
+    source_rows: tuple[int, ...] = ()
+    outer_ink: bool = False
 
 
 @dataclass(slots=True)
@@ -328,7 +335,7 @@ def _fit(row, candidate, left, unit, length, aperture=1):
     block = max(1, _round(7 * unit))
     max_block = max(math.sqrt(sum(errors[offset:offset + block]) / len(errors[offset:offset + block]))
                     for offset in range(0, n, block))
-    return Proof(left, unit, math.sqrt(sum(errors) / n), max_block)
+    return Proof(left, unit, math.sqrt(sum(errors) / n), max_block, aperture)
 
 
 def _best_fit(row, candidate, length, deadline=math.inf):
@@ -533,6 +540,113 @@ def _template(candidate):
     return Image.frombytes('L', (len(expanded), 12), expanded * 12)
 
 
+def _composite_proof(rows, candidate, proof):
+    """Every reconstructed column needs several unmasked original observations."""
+    unit, left = proof.unit, proof.left
+    right = left + len(candidate.bits) * unit
+    if not 1.4 <= unit <= 16 or right - left > 1800 or len(rows) < 5:
+        return None
+    start, end = math.floor(left - candidate.quiet_left), math.ceil(right + candidate.quiet_right)
+    if start < 0 or end > len(rows[0][1]):
+        return None
+    ideal = _ideal_row(candidate.bits, len(rows[0][1]), left, unit, proof.aperture)
+    guards = (_ideal_row('101' + '0' * 42 + '01010' + '0' * 42 + '101', len(rows[0][1]), left, unit, proof.aperture)
+              if candidate.family == 'EAN13' else None)
+    support, squared, count, damage = [0] * (end - start), 0, 0, 0
+    source_rows = []
+    outer_ink = False
+    for y, row in rows:
+        low, high = min(row[start:end]), max(row[start:end])
+        if high - low < 100:
+            return None
+        if any(value < high - 12 for value in row[:start]) or any(value < high - 12 for value in row[end:]):
+            outer_ink = True
+        # The EAN guard extensions below data bars are not data observations.
+        if guards and all(abs((row[x] - low) / (high - low) - guards[x]) <= .16 for x in range(start, end)):
+            continue
+        source_rows.append(y)
+        threshold, mask = (low + high) / 2, bytearray(end - start)
+        masked = regions = 0
+        x, limit = max(start, math.ceil(left)), min(end, math.floor(right))
+        while x < limit:
+            first, dark = x, row[x] < threshold
+            while x < limit and (row[x] < threshold) == dark:
+                x += 1
+            if x - first < 4.75 * unit:
+                continue
+            # Defect locations follow abnormally long flat source runs, not
+            # whichever pixels would disagree with a desirable checksum.
+            if first < left + 7 * unit or x > right - 7 * unit or x - first > (right - left) * .25:
+                return None
+            regions += 1
+            for column in range(max(start, first - 1), min(end, x + 1)):
+                if not mask[column - start]:
+                    mask[column - start] = 1
+                    masked += 1
+        if regions > 4 or masked > (right - left) * .35:
+            return None
+        row_squared = row_count = 0
+        for x in range(start, end):
+            error = (row[x] - low) / (high - low) - ideal[x]
+            if mask[x - start]:
+                damage += abs(error) > .3
+                continue
+            if abs(error) > .16:
+                return None
+            support[x - start] += 1
+            row_squared += error * error
+            row_count += 1
+        if not row_count or math.sqrt(row_squared / row_count) > .055:
+            return None
+        squared += row_squared
+        count += row_count
+    if not damage or len(source_rows) < 5 or min(support) < 3:
+        return None
+    return Proof(left, unit, math.sqrt(squared / count), proof.max_block, proof.aperture, tuple(source_rows), outer_ink)
+
+
+def _composite_candidates(raw, width, selected, allowed, deadline):
+    if len(selected) < 5 or width > 2048 or selected[-1] - selected[0] < 4:
+        return [], True
+    rows = [(y, raw[y * width:(y + 1) * width]) for y in selected]
+    output = {}
+    try:
+        for quantile in (.5, .15, .85):
+            _check_time(deadline)
+            rank = math.floor((len(rows) - 1) * quantile)
+            profile = bytes(sorted(row[x] for _, row in rows)[rank] for x in range(width))
+            low, high = min(profile), max(profile)
+            if high - low < 100:
+                continue
+            binary = bytes(0 if value < (low + high) / 2 else 255 for value in profile)
+            candidates = _code128_lines(binary) if 'Code128' in allowed else []
+            if 'EAN13' in allowed:
+                candidate = _ean_line(binary)
+                if candidate:
+                    candidates.append(candidate)
+            for candidate in candidates:
+                _check_time(deadline)
+                unit = (candidate.right - candidate.left) / len(candidate.bits)
+                fitted = _fit(profile, candidate, candidate.left, unit, 1)
+                if not fitted or fitted.rmse > .045 or fitted.max_block > .095:
+                    fitted = _best_fit(profile, candidate, 1, deadline)
+                if not fitted:
+                    continue
+                proof = _composite_proof(rows, candidate, fitted)
+                if not proof:
+                    continue
+                key = (candidate.family, candidate.payload, candidate.gs1, candidate.left, candidate.right)
+                if key not in output or proof.rmse < output[key][1].rmse:
+                    output[key] = (candidate, proof)
+                if len(output) > 8:
+                    return list(output.values())[:8], False
+    except _Deadline:
+        # A profile fit is not a source proof: only completed original-row
+        # validations survive this interruption as withheld evidence.
+        return list(output.values()), False
+    return list(output.values()), monotonic() < deadline and not any(proof.outer_ink for _, proof in output.values())
+
+
 def recover(image, *, deadline, formats=('EAN13', 'Code128')):
     """Return native canonical observations only after complete source checks."""
     if not isinstance(image, Image.Image) or image.mode != 'L' or min(image.size) < 1 or image.width > 8192 or image.width * image.height > MAX_PIXELS:
@@ -590,6 +704,19 @@ def recover(image, *, deadline, formats=('EAN13', 'Code128')):
                 complete = False; break
         if not complete:
             break
+    if complete:
+        for band in sorted({band for band, _ in rows}):
+            if any(group.band == band for group in groups):
+                continue
+            selected = [y for row_band, y in rows if row_band == band]
+            reconstructed, completed = _composite_candidates(raw, image.width, selected, allowed, deadline)
+            for candidate, proof in reconstructed:
+                group = Group(candidate, proof, band)
+                group.rows.update(proof.source_rows)
+                groups.append(group)
+            if not completed or len(groups) > 8:
+                complete = False
+                break
     observations, passes = [], 0
     for group in groups:
         if len(group.rows) < 3 or max(group.rows) - min(group.rows) < 2:

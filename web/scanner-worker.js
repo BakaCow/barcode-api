@@ -31,6 +31,7 @@ function initialize() {
     if (typeof QRRecovery === 'undefined') importScripts('./qr-recovery.js');
     if (typeof LinearSignal === 'undefined') importScripts('./linear-signal.js');
     if (typeof QRSignal === 'undefined') importScripts('./qr-signal.js');
+    if (typeof QRDamage === 'undefined') importScripts('./qr-damage.js');
     if (typeof IndependentReader === 'undefined') importScripts('./independent-reader.js');
     decoder = Promise.all([ZXingWASM.prepareZXingModule({
       overrides: { locateFile: (path) => new URL('./vendor/' + path, self.location.href).href },
@@ -267,6 +268,32 @@ async function corroborateRetailOverlap(results, image, options, permitted, star
   const original = { results, diagnostics: { passes: 1, strategy: 'original' } };
   const upce = results.find(result => result.format === 'UPCE');
   const ean = results.filter(result => ['EAN13', 'UPCA'].includes(result.format));
+  if (upce && results.length === 1 && typeof LinearSignal !== 'undefined' &&
+      (!options.formats || options.formats.includes('EAN13')) && performance.now() - started < budgetMs) {
+    try {
+      const checked = await LinearSignal.recover(image, { formats: ['EAN13'],
+        timeBudgetMs: Math.min(budgetMs === 350 ? 80 : 250, budgetMs - (performance.now() - started)),
+        readNative: async candidate => {
+          if (!Number.isInteger(candidate?.width) || !Number.isInteger(candidate?.height) || candidate.width < 1 || candidate.height < 1 ||
+              candidate.width * candidate.height > MAX_PIXELS || candidate.data?.byteLength !== candidate.width * candidate.height * 4) return [];
+          return ZXingWASM.readBarcodes(new ImageData(candidate.data instanceof ArrayBuffer ? new Uint8ClampedArray(candidate.data) : candidate.data,
+            candidate.width, candidate.height), { ...options, formats: ['EAN13'], returnErrors: false, maxNumberOfSymbols: 12 });
+        } });
+      const span = position => position && Math.hypot(position.topRight.x - position.topLeft.x, position.topRight.y - position.topLeft.y);
+      const alternative = (checked.results || []).some(result => result?.isValid === true && !result.error && result.format === 'EAN13' &&
+        result.bytes?.length === 13 && Array.from(result.bytes).every(value => Number.isInteger(value) && value >= 48 && value <= 57) &&
+        result.position && ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].every(key => {
+          const point = result.position[key];
+          return point && Number.isFinite(point.x) && Number.isFinite(point.y) && point.x >= 0 && point.x <= image.width && point.y >= 0 && point.y <= image.height;
+        }) && sameSymbolSegment(upce.position, result.position) && span(result.position) > span(upce.position) * 1.35);
+      if (alternative || checked.incompleteEvidence === true) {
+        // A damaged EAN can supply a plausible shorter UPC-E first-pass read.
+        // Conflicting source evidence is an abstention, never permission to
+        // replace native data with a reconstructed product identifier.
+        return { results: [], diagnostics: { passes: 1 + (checked.passes || 0), strategy: 'retail-source-conflict', incompleteEvidence: true } };
+      }
+    } catch { /* Optional corroboration failure preserves original evidence. */ }
+  }
   if (!upce || !ean.length || performance.now() - started >= budgetMs) return original;
   const gray = luminance(image), tensor = sourceTensor(upce.position, gray, image.width, image.height);
   if (!tensor || !tensor.energy || tensor.anisotropy / tensor.energy < 0.7) return original;
@@ -475,6 +502,7 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
     const helpers = [
       { helper: typeof LinearSignal === 'undefined' ? null : LinearSignal, formats: ['EAN13', 'Code128'], name: 'linear-signal' },
       { helper: typeof QRSignal === 'undefined' ? null : QRSignal, formats: ['QRCode'], name: 'qr-signal' },
+      { helper: typeof QRDamage === 'undefined' ? null : QRDamage, formats: ['QRCode'], name: 'qr-damage' },
     ];
     const signalResults = [], signalKeys = new Set();
     let signalComplete = analysis?.regionsComplete !== false, signalStrategy = 'signal-recovery';
@@ -606,7 +634,7 @@ function prepareCapture(message) {
     }
     if (typeof CaptureGeometry === 'undefined') importScripts('./capture-geometry.js');
     loadFrameAnalysis();
-    const { regionPlan, sourceRegions, validateTarget } = CaptureGeometry;
+    const { regionPlan, sourceRegions, validateTarget, expandSourceRegion } = CaptureGeometry;
     const detail = captureMode === 'detail', target = validateTarget(targetRegion);
     const scale = { x: bitmap.width / width, y: bitmap.height / height };
     const canvas = new OffscreenCanvas(1, 1), context = canvas.getContext('2d', { willReadFrequently: true });
@@ -625,7 +653,7 @@ function prepareCapture(message) {
       const proposals = sourceRegions(analysis, sample.plan, width, height), recovery = [];
       if (detail && !target && cropBarcodes && sample.plan.width < bitmap.width) {
         for (const region of proposals.slice(0, 2)) {
-          const { kind, ...rectangle } = region;
+          const rectangle = expandSourceRegion(region, width, height);
           const crop = capture(rectangle, 1_000_000, 3840);
           if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
         }

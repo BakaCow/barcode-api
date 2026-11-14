@@ -74,6 +74,8 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
         ("qr-recovery.js", "application/javascript"),
         ("linear-signal.js", "application/javascript"),
         ("qr-signal.js", "application/javascript"),
+        ("qr-damage.js", "application/javascript"),
+        ("frame-fusion.js", "application/javascript"),
         ("capture-selection.js", "application/javascript"),
         ("capture-geometry.js", "application/javascript"),
         ("camera-constraints.js", "application/javascript"),

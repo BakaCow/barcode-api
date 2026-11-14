@@ -1,0 +1,129 @@
+{
+  "limits": "All earlier fixtures are development evidence; fixed-image tests, not camera/phone measurements. Before-native unexpected readings keep nonzero exit codes.",
+  "commands": {
+    "browser-before": {
+      "exitCode": 1,
+      "summary": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 148,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 33.04,
+        "p95Ms": 495.91
+      }
+    },
+    "browser-after": {
+      "exitCode": 0,
+      "summary": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 151,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 0,
+        "errors": 0,
+        "medianMs": 33.96,
+        "p95Ms": 519.26
+      }
+    },
+    "api-before": {
+      "exitCode": 1,
+      "summary": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 149,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 1,
+        "errors": 0,
+        "medianMs": 8.286,
+        "p95Ms": 546.042
+      }
+    },
+    "api-after": {
+      "exitCode": 0,
+      "summary": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 152,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 0,
+        "errors": 0,
+        "medianMs": 8.417,
+        "p95Ms": 572.283
+      }
+    },
+    "ci-code128": {
+      "exitCode": 0,
+      "summary": null,
+      "report": "ci-code128.json"
+    },
+    "ci-damage-browser": {
+      "exitCode": 0,
+      "summary": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 156,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 0,
+        "errors": 0,
+        "medianMs": 24.4,
+        "p95Ms": 514.55
+      }
+    },
+    "ci-damage-api": {
+      "exitCode": 0,
+      "summary": {
+        "total": 219,
+        "positives": 171,
+        "exactPositiveReads": 157,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 0,
+        "errors": 0,
+        "medianMs": 6.954,
+        "p95Ms": 586.495
+      }
+    },
+    "ci-damage-custom": {
+      "exitCode": 0,
+      "summary": {
+        "total": 105,
+        "positives": 57,
+        "exactPositiveReads": 44,
+        "negatives": 48,
+        "negativesCorrectlyRejected": 48,
+        "unexpectedResults": 0,
+        "errors": 0,
+        "medianMs": 7.795,
+        "p95Ms": 16.495
+      }
+    }
+  },
+  "comparisons": {
+    "browser": {
+      "improvedCases": [
+        "qr/signal-upgrade-qr-label-1/missing-patch-1",
+        "qr/signal-upgrade-qr-label-2/missing-patch-1",
+        "qr/signal-upgrade-qr-label-3/missing-patch-1"
+      ],
+      "regressedCases": [],
+      "unexpectedAfter": []
+    },
+    "api": {
+      "improvedCases": [
+        "qr/signal-upgrade-qr-label-1/missing-patch-1",
+        "qr/signal-upgrade-qr-label-2/missing-patch-1",
+        "qr/signal-upgrade-qr-label-3/missing-patch-1"
+      ],
+      "regressedCases": [],
+      "unexpectedAfter": []
+    }
+  },
+  "developmentFix": "A too-short Python QR geometry subdeadline vetoed a complete tiny linear result. Increased locator allowance within unchanged total/caller budgets; final API profiles rerun after regression tests. No fresh evaluation data used."
+}

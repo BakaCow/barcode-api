@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
+import { inflateSync, deflateSync } from 'node:zlib';
 
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -72,6 +73,16 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
         },
         getImageData() {
           const data = new Uint8ClampedArray(node.width * node.height * 4).fill(255);
+          if (captured.fixture) {
+            const fixture = captured.fixture, original = inflateSync(Buffer.from(fixture.rgba_zlib_base64, 'base64'));
+            for (let y = 0; y < node.height; y++) for (let x = 0; x < node.width; x++) {
+              const sx = Math.min(fixture.width - 1, Math.floor((x + .5) * fixture.width / node.width));
+              const sy = Math.min(fixture.height - 1, Math.floor((y + .5) * fixture.height / node.height));
+              const p = (sy * fixture.width + sx) * 4;
+              data.set(original.subarray(p, p + 4), (y * node.width + x) * 4);
+            }
+            return { width: node.width, height: node.height, data };
+          }
           for (let y = 0; y < node.height; y++) for (let x = 0; x < node.width; x++) {
             const within = x > node.width * 0.2 && x < node.width * 0.8 && y > node.height * 0.3 && y < node.height * 0.7;
             let value = 245;
@@ -161,7 +172,7 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
     isSecureContext: true,
   };
   const context = vm.createContext(globals); context.window = context;
-  for (const file of ['scan-policy.js', 'pos-policy.js', 'capture-geometry.js', 'qr-geometry.js', 'frame-analysis.js', 'capture-selection.js', 'camera-constraints.js', 'app.js']) {
+  for (const file of ['scan-policy.js', 'pos-policy.js', 'capture-geometry.js', 'qr-geometry.js', 'frame-analysis.js', 'capture-selection.js', 'frame-fusion.js', 'camera-constraints.js', 'app.js']) {
     vm.runInContext(readFileSync(new URL(`../web/${file}`, import.meta.url), 'utf8'), context, { filename: file });
   }
   const evaluate = code => vm.runInContext(code, context);
@@ -205,6 +216,74 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
     async close() { evaluate('stopCamera()'); await flush(); },
   };
 }
+
+const fusionFixture = JSON.parse(readFileSync(new URL('fixtures/camera-fusion-development.json', import.meta.url)));
+const fusionItem = { text: fusionFixture.text, format: 'QRCode', bytes: [...Buffer.from(fusionFixture.text)] };
+async function fusionFrame(app, index, exposure = 0) {
+  const source = fusionFixture.frames[index % 3], pixels = inflateSync(Buffer.from(source.rgba_zlib_base64, 'base64'));
+  if (exposure) for (let p = 0; p < pixels.length; p += 4) if (pixels[p] < 128) pixels[p] = pixels[p + 1] = pixels[p + 2] = exposure;
+  app.state.fixture = { ...source, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+  await app.tick({ now: app.state.now + 150 }); await app.reply([]);
+}
+
+test('standalone POS and general camera require disjoint fused bursts, not reused source frames', async () => {
+  for (const pos of [true, false]) {
+    const app = cameraHarness({ pos, crops: true, width: 164, height: 164 });
+    app.get('pos-confirmation').value = '1';
+    try {
+      await app.open(); await app.reply([]);
+      for (let i = 0; i < 3; i++) await fusionFrame(app, i);
+      assert.equal(app.awaiting.length, 1); await app.reply([fusionItem]); assert.equal(app.history.length, 0);
+      for (let i = 0; i < 3; i++) { await fusionFrame(app, i); assert.equal(app.awaiting.length, 0); }
+      for (let i = 0; i < 3; i++) await fusionFrame(app, i, 2);
+      assert.equal(app.awaiting.length, 1); await app.reply([fusionItem]);
+      assert.equal(app.history.length, 1); assert.equal(app.history[0].text, fusionFixture.text);
+    } finally { await app.close(); }
+  }
+});
+
+test('standalone incomplete fused conflicts remain ambiguous after later singleton bursts', async () => {
+  const app = cameraHarness({ crops: true, width: 164, height: 164 });
+  app.get('pos-confirmation').value = '1';
+  try {
+    await app.open(); await app.reply([]); for (let i = 0; i < 3; i++) await fusionFrame(app, i);
+    await app.reply([fusionItem, { ...fusionItem, text: fusionFixture.alternateText, bytes: [...Buffer.from(fusionFixture.alternateText)] }],
+      { diagnostics: { incompleteEvidence: true } });
+    assert.equal(app.history.length, 0); assert.equal(app.get('pos-status').getAttribute('data-state'), 'ambiguous');
+    for (let burst = 1; burst <= 2; burst++) {
+      for (let i = 0; i < 3; i++) await fusionFrame(app, i, burst * 2);
+      await app.reply([fusionItem]); assert.equal(app.history.length, 0); assert.equal(app.get('pos-status').getAttribute('data-state'), 'ambiguous');
+    }
+  } finally { await app.close(); }
+});
+
+test('standalone recovery cannot mix native votes or hide a later unsupported-format conflict', async () => {
+  for (const pos of [true, false]) {
+    const app = cameraHarness({ pos, crops: true, width: 164, height: 164 });
+    try {
+      await app.open(); await app.reply([]); for (let i = 0; i < 3; i++) await fusionFrame(app, i);
+      await app.reply([fusionItem]); assert.equal(app.history.length, 0);
+      app.state.fixture = fusionFixture.clean; await app.tick();
+      await app.reply(pos ? [fusionItem] : [{ text: 'OTHER', format: 'Code39', bytes: [...Buffer.from('OTHER')] }]);
+      assert.equal(app.history.length, 0, 'native and fused votes cannot combine');
+      for (let burst = 1; burst <= 2; burst++) {
+        for (let i = 0; i < 3; i++) await fusionFrame(app, i, burst * 2);
+        await app.reply([fusionItem]);
+      }
+      assert.equal(app.history.length, pos ? 1 : 0);
+      if (!pos) assert.match(app.hint, /Conflicting/);
+    } finally { await app.close(); }
+  }
+});
+
+test('standalone fused reply cannot outlive its oldest contributing exposure', async () => {
+  const app = cameraHarness({ crops: true, width: 164, height: 164 });
+  try {
+    await app.open(); await app.reply([]); for (let i = 0; i < 3; i++) await fusionFrame(app, i);
+    app.state.now += 1001; await app.reply([fusionItem]);
+    assert.equal(app.history.length, 0); assert.match(app.get('pos-status').textContent, /too old/);
+  } finally { await app.close(); }
+});
 
 test('cancelling unresolved permission unlocks import and a late stream cannot finish a newer startup', async t => {
   const app = cameraHarness(); t.after(() => app.close());

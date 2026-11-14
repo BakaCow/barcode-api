@@ -1,6 +1,8 @@
 # Barcode API
 
-The latest [motion-blur and tiny-code update](MOTION-TINY-UPDATE.md) adds original-pixel signal recovery for QR, Code 128 and EAN-13 to the browser scanner and server API. Recognition results and remaining failures are measured separately from software tests. The earlier [QR update](QR-UPDATE.md) adds finder-aware crops, grid sampling and configurable QR generation.
+The latest [damaged-code update](DAMAGE-RECOVERY-UPDATE.md) adds QR erasure recovery, reconstruction across surviving barcode rows, and guarded recovery from separate camera exposures. See its paired evaluation for measured gains and limits.
+
+The [motion-blur and tiny-code update](MOTION-TINY-UPDATE.md) adds original-pixel signal recovery for QR, Code 128 and EAN-13 to the browser scanner and server API. Recognition results and remaining failures are measured separately from software tests. The earlier [QR update](QR-UPDATE.md) adds finder-aware crops, grid sampling and configurable QR generation.
 
 Version **0.9.0** includes optional camera controls, detailed source-pixel capture, an aiming area and tap targeting, and adaptive frame selection in the reusable [camera SDK](SDK.md) and [JavaScript/POS/React examples](INTEGRATION.md). The [recovery update](RECOVERY-UPDATE.md) adds automatic detail retries, scratched-QR recovery and a guarded retail-format reread, with a fresh synthetic evaluation. The [comparison benchmark](COMPARISON.md) records controlled trials with the bundled reader or an optional, separately licensed Scanbot SDK. Start the server and open `/scan/examples/` (or `/examples/` when serving `web/` statically).
 

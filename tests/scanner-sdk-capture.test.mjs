@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateTarget, regionPlan, sourceRegions, clearFrame, cameraCapabilities, boundedZoom } from '../web/sdk/capture-tools.js';
+import { validateTarget, regionPlan, sourceRegions, expandSourceRegion, clearFrame, cameraCapabilities, boundedZoom } from '../web/sdk/capture-tools.js';
 
 test('normalized targets reject empty, outside-image and malformed rectangles', () => {
   for (const region of [{x:-0.1,y:0,width:1,height:1}, {x:0.9,y:0,width:0.2,height:1}, {x:0,y:0,width:0,height:1},
@@ -31,6 +31,18 @@ test('early decode requires a clear unique useful-sized proposal', () => {
   for (const bad of [{...good,score:60},{...good,hint:'glare'},{...good,regions:[]},
     {...good,regionsComplete:false}, {...good,qr:{complete:false}},
     {...good,regions:[...good.regions,...good.regions]}, {...good,regions:[{width:2,height:2}]}]) assert.equal(clearFrame(bad,1000,500),false);
+});
+
+test('automatic source crops retain real surrounding margins and never change explicit target plans', () => {
+  const region = {x:.2,y:.3,width:.4,height:.2};
+  const exact = regionPlan(1000,500,region,1_000_000);
+  const expanded = regionPlan(1000,500,expandSourceRegion(region,1000,500),1_000_000);
+  assert.ok(expanded.x < exact.x && expanded.y < exact.y);
+  assert.ok(expanded.x + expanded.cropWidth > exact.x + exact.cropWidth);
+  assert.ok(expanded.y + expanded.cropHeight > exact.y + exact.cropHeight);
+  assert.deepEqual(regionPlan(1000,500,region,1_000_000),exact);
+  assert.deepEqual(expandSourceRegion({x:0,y:0,width:1,height:1},1000,500),{x:0,y:0,width:1,height:1});
+  for (const invalid of [{x:-1,y:0,width:1,height:1},{x:0,y:0,width:2,height:1}]) assert.throws(()=>expandSourceRegion(invalid,1000,500));
 });
 
 test('capability probes tolerate browser exceptions and reject invalid zoom ranges', () => {

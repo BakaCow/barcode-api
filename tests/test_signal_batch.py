@@ -84,3 +84,23 @@ def test_exact_native_control_bytes_are_not_rebuilt_from_text(reader, monkeypatc
     found = run(reader)
     assert found[0].text == '<NUL><GS>ÿ'
     assert found[0].bytes == b'\x00\x1d\xff'
+
+
+def test_damage_search_cannot_hide_conflicts_or_finish_an_incomplete_batch(reader, monkeypatch):
+    monkeypatch.setattr(reader.linear_signal, 'recover', lambda *a, **k: result())
+    monkeypatch.setattr(reader.qr_signal, 'recover', lambda *a, **k: result(observation(b'A', 'QRCode')))
+    monkeypatch.setattr(reader.qr_damage, 'recover', lambda *a, **k: result(complete=False, observed=1))
+    assert run(reader) == []
+    monkeypatch.setattr(reader.qr_damage, 'recover', lambda *a, **k: result(observation(b'B', 'QRCode'), complete=False))
+    assert [record.bytes for record in run(reader)] == [b'A', b'B']
+
+
+def test_same_symbol_from_two_methods_is_one_record_but_separate_labels_survive(reader, monkeypatch):
+    first = observation(b'A', 'QRCode', points=((1, 1), (4, 1), (4, 4), (1, 4)))
+    second = observation(b'A', 'QRCode', points=((6, 1), (9, 1), (9, 4), (6, 4)))
+    monkeypatch.setattr(reader.linear_signal, 'recover', lambda *a, **k: result())
+    monkeypatch.setattr(reader.qr_signal, 'recover', lambda *a, **k: result(first))
+    monkeypatch.setattr(reader.qr_damage, 'recover', lambda *a, **k: result(first, second))
+    found = run(reader)
+    assert len(found) == 2
+    assert found[0].points != found[1].points

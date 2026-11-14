@@ -63,7 +63,7 @@ form.addEventListener('submit', async event => {
     if (!isSecureContext || !navigator.mediaDevices?.getUserMedia) throw new Error('Camera trials require HTTPS or localhost.');
     if (!$('negative').checked && !$('truth').value) throw new Error('Enter the known exact barcode text before preparing a trial.');
     // Validate labels/formats before asking for camera access or loading vendor code.
-    readMetadata({ id: $('engine').value, version: 'pending', configuration: $('engine').value === 'scanbot' ? 'scanbot-single-shot' : 'worker-image-signal-v1' }, { width: 1, height: 1 });
+    readMetadata({ id: $('engine').value, version: 'pending', configuration: $('engine').value === 'scanbot' ? 'scanbot-single-shot' : 'worker-image-damage-v1' }, { width: 1, height: 1 });
     if ($('engine').value === 'scanbot') {
       if (!$('vendor-module').value || !$('vendor-engine').value) throw new Error('Scanbot is unconfigured. Supply your own locally hosted SDK module and engine directory.');
       const moduleUrl = localUrl($('vendor-module').value, location.href), engineUrl = localUrl($('vendor-engine').value, location.href);
@@ -88,7 +88,7 @@ form.addEventListener('submit', async event => {
     canvas.width = plan.width; canvas.height = plan.height;
     prepared = { adapter, metadata, sourceWidth: video.videoWidth, sourceHeight: video.videoHeight };
     $('camera-empty').hidden = true; $('begin').disabled = false;
-    message(`Ready at ${plan.width} × ${plan.height}. Place the labelled case in view, then begin the ${metadata.protocol.trialMs / 1000}-second trial.`);
+    message(`Ready at ${plan.width} Ã— ${plan.height}. Place the labelled case in view, then begin the ${metadata.protocol.trialMs / 1000}-second trial.`);
   } catch (failure) {
     adapter?.dispose();
     if (token !== epoch) return;
@@ -103,13 +103,13 @@ function render() {
     const metric = trialMetrics(trial), row = document.createElement('tr');
     const outcome = trial.outcome.status !== 'completed' ? trial.outcome.status : metric.anyWrong ? (metric.wrongFirst ? 'Wrong first' : 'Wrong confirmation') : metric.cleanCorrect ? 'Correct' : metric.correctNegative ? 'Correct negative' : 'Missed';
     for (const text of [`${trial.caseId} / ${trial.repeat}`, trial.engine.id, outcome,
-      metric.firstCorrectMs === null ? '—' : `${Math.round(metric.firstCorrectMs)} ms`, String(metric.wrongConfirmations)]) {
+      metric.firstCorrectMs === null ? 'â€”' : `${Math.round(metric.firstCorrectMs)} ms`, String(metric.wrongConfirmations)]) {
       const cell = document.createElement('td'); cell.textContent = text; row.append(cell);
     }
     $('results').append(row);
   }
   const summary = summarize(report(trials));
-  $('summary').textContent = `${summary.completed} completed · ${summary.cleanCorrect} clean correct · ${summary.missed} missed · ${summary.trialsWithWrongConfirmation} with wrong confirmations · ${summary.cancelled} cancelled · ${summary.errors} errors (${summary.interruptedWithWrongConfirmation} interrupted trials also had wrong confirmations). Sources: ${summary.real} real, ${summary.synthetic} synthetic. Counts above combine engines; JSON downloads are separate.`;
+  $('summary').textContent = `${summary.completed} completed Â· ${summary.cleanCorrect} clean correct Â· ${summary.missed} missed Â· ${summary.trialsWithWrongConfirmation} with wrong confirmations Â· ${summary.cancelled} cancelled Â· ${summary.errors} errors (${summary.interruptedWithWrongConfirmation} interrupted trials also had wrong confirmations). Sources: ${summary.real} real, ${summary.synthetic} synthetic. Counts above combine engines; JSON downloads are separate.`;
   const selected = $('export-engine').value; $('export-engine').replaceChildren();
   for (const engine of new Set(trials.map(trial => trial.engine.id))) {
     const option = document.createElement('option'); option.value = engine; option.textContent = engine; $('export-engine').append(option);

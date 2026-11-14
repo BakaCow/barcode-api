@@ -1,0 +1,31 @@
+{
+  "baselineCommit": "ddfacf0d8465ca5020a5efe13b5ca79cf62d9980",
+  "fixtures": {
+    "damage-stress-damage-upgrade.json": {
+      "sha256": "a7e43033813ed77a3f67da2b50c45e360717ae71f6001e43d752a7d85aa83cb0",
+      "byteIdenticalRegeneration": true
+    },
+    "damage-byte-safety.json": {
+      "sha256": "e2064cbb97701594ef9c138250302802cc74a99f75a7539de7ddcd6e03ac2fcf",
+      "byteIdenticalRegeneration": true
+    }
+  },
+  "generatorSha256": {
+    "generate-damage-verification.py": "75056efed2eb70ae235bf6c7858730e4bb53e274fdb302b59c2b5cc1b69dc9f7",
+    "generate-damage-byte-safety.py": "e3b6bb34b568fd849ec7a303f53202f8001a88af151ac7f89df71ec32fa11a90",
+    "generate-damage-stress.py": "c805ff52d4cbb0001245f6d6735aae17079e4432766d103cc5cbdcc4ec0b1b84"
+  },
+  "generatorHashMethod": "SHA256 UTF-8 source with CRLF normalized to LF",
+  "method": "Known encoder input truth, no decoder calls or outcome filtering; new positive payloads disjoint from prior fixtures.",
+  "freezeTiming": "Generated before any decoder outcomes on these fixtures; algorithms may use all older datasets. Updated outputs and per-case baseline outcomes stay hidden until production freeze.",
+  "updatedAlgorithmOutcomesInspected": false,
+  "perCaseBaselineOutcomesInspected": false,
+  "fixtureRevisions": [
+    {
+      "timing": "Before any baseline/current decoder runs or outcomes on this fresh set",
+      "reason": "Replace copied signal-* case/group identifiers with distinct damage-* names; pixels and truth byte-identical",
+      "previousSha256": "1bd6381297ec63208f0b95dbb52adc5f3a78fdd00460ef2c03166a566eb956ca",
+      "sha256": "e2064cbb97701594ef9c138250302802cc74a99f75a7539de7ddcd6e03ac2fcf"
+    }
+  ]
+}

@@ -122,3 +122,88 @@ test('leading-zero EAN and UPC aliases are not reassigned by this EAN13 helper',
     const result=await recover(pixels(fixture));assert.deepEqual(result.results,[],fixture.name);
   }
 });
+
+function staggeredDamage(input, color=255, fullHeight=false) {
+  const output={...input,data:new Uint8ClampedArray(input.data)};
+  let left=input.width,right=0;
+  for(let y=0;y<input.height;y++)for(let x=0;x<input.width;x++)if(input.data[(y*input.width+x)*4]<100){left=Math.min(left,x);right=Math.max(right,x+1);}
+  const span=right-left,patch=Math.max(18,Math.round(span*.075));
+  for(let y=0;y<input.height;y++){
+    const part=fullHeight?1:Math.floor(y*9/input.height)%3,center=Math.round(left+span*(.25+.25*part));
+    for(let x=center-Math.floor(patch/2);x<center+Math.ceil(patch/2);x++){
+      const p=(y*input.width+x)*4;output.data[p]=output.data[p+1]=output.data[p+2]=color;
+    }
+  }
+  return output;
+}
+for(const family of ['ean13','code128'])for(const color of [0,255])test(`cross-row source reconstruction recovers ${family} with staggered ${color?'white':'black'} patches`,async()=>{
+  const fixture=fixtures.find(f=>f.name.startsWith(family+'/')&&f.name.endsWith('/clean-0'));
+  const damaged=staggeredDamage(pixels(fixture),color),before=Buffer.from(damaged.data);
+  assert.equal((await readNative(damaged)).length,0,'The whole native image must actually need the new recovery.');
+  const result=await recover(damaged);
+  assert.equal(result.complete,true);assert.equal(result.results.length,1);
+  assert.equal(result.results[0].text,fixture.expected[0].text);
+  assert.deepEqual(Array.from(result.results[0].bytes),Array.from(new TextEncoder().encode(fixture.expected[0].text)));
+  assert.equal(result.results[0].signalProof.strategy,'cross-row-source');
+  assert.ok(result.results[0].signalProof.rows>=5);assert.deepEqual(Buffer.from(damaged.data),before);
+});
+test('source-supported full EAN is recovered from the known native false-UPC-E development image',async()=>{
+  const cases=JSON.parse(readFileSync(new URL('tests/fixtures/damage-stress-signal-upgrade.json',root))).cases;
+  const fixture=cases.find(f=>f.name==='ean13/signal-upgrade-ean13-label-1/missing-patch-1');
+  const result=await recover(pixels(fixture));
+  assert.equal(result.complete,true);assert.equal(result.results.length,1);
+  assert.equal(result.results[0].format,'EAN13');assert.equal(result.results[0].text,fixture.expected[0].text);
+  assert.equal(result.results[0].signalProof.strategy,'cross-row-source');
+});
+test('a missing full-height stripe cannot be supplied by row reconstruction',async()=>{
+  for(const family of ['ean13','code128'])for(const color of [0,255]){
+    const fixture=fixtures.find(f=>f.name.startsWith(family+'/')&&f.name.endsWith('/clean-0'));
+    const result=await recover(staggeredDamage(pixels(fixture),color,true));
+    assert.deepEqual(result.results,[],family+' '+color);
+  }
+});
+test('cross-row reconstruction preserves native control and shifted Code128 bytes',async()=>{
+  const cases=JSON.parse(readFileSync(new URL('tests/fixtures/independent-code128-safety.json',root))).cases;
+  for(const group of [1,5]){
+    const fixture=cases.find(f=>f.name===`code128/independent-code128-${group}/clean`);
+    const result=await recover(staggeredDamage(pixels(fixture)));
+    assert.equal(result.complete,true);assert.equal(result.results.length,1);
+    assert.deepEqual(Array.from(result.results[0].bytes),fixture.expected[0].bytes);
+    assert.equal(result.results[0].signalProof.strategy,'cross-row-source');
+  }
+});
+test('cross-row reconstruction keeps separate equal and conflicting labels',async()=>{
+  const labels=fixtures.filter(f=>f.name.startsWith('ean13/')&&f.name.endsWith('/clean-0')).slice(0,2);
+  for(const same of [true,false]){
+    const chosen=[labels[0],labels[same?0:1]];
+    const result=await recover(stacked(...chosen.map(f=>staggeredDamage(pixels(f)))));
+    assert.equal(result.complete,true);assert.equal(result.results.length,2);
+    assert.deepEqual(result.results.map(r=>r.text).sort(),chosen.map(f=>f.expected[0].text).sort());
+    assert.ok(result.results[0].position.bottomLeft.y<result.results[1].position.topLeft.y);
+  }
+});
+test('different valid bar structures in one activity band cannot be voted away as damage',async()=>{
+  const labels=fixtures.filter(f=>f.name.startsWith('ean13/')&&f.name.endsWith('/clean-0')).slice(0,2).map(f=>staggeredDamage(pixels(f)));
+  for(const fraction of [.2,.4]){
+    const mixed={...labels[0],data:new Uint8ClampedArray(labels[0].data)};
+    mixed.data.set(labels[1].data.subarray(Math.floor(mixed.height*(1-fraction))*mixed.width*4),Math.floor(mixed.height*(1-fraction))*mixed.width*4);
+    const result=await recover(mixed);assert.deepEqual(result.results,[]);
+  }
+});
+test('uninspected content beside a reconstructed Code128 cannot disappear behind a singleton',async()=>{
+  const fixture=fixtures.find(f=>f.name.startsWith('code128/')&&f.name.endsWith('/clean-0'));
+  const label=staggeredDamage(pixels(fixture)),width=label.width*2+40,data=new Uint8ClampedArray(width*label.height*4).fill(255);
+  for(let y=0;y<label.height;y++)for(const x of [0,label.width+40])data.set(label.data.subarray(y*label.width*4,(y+1)*label.width*4),(y*width+x)*4);
+  const result=await recover({width,height:label.height,data});
+  assert.equal(result.complete,false);assert.equal(result.incompleteEvidence,true);assert.deepEqual(result.results,[]);
+});
+test('a native call overrunning the deadline with reconstructed evidence cannot publish it',async()=>{
+  let time=0;
+  const context=vm.createContext({ArrayBuffer,Uint8Array,Uint8ClampedArray,Float64Array,performance:{now:()=>time}});
+  vm.runInContext(readFileSync(new URL('web/linear-signal.js',root),'utf8'),context);
+  const fixture=fixtures.find(f=>f.name.startsWith('ean13/')&&f.name.endsWith('/clean-0'));
+  const result=await context.LinearSignal.recover(staggeredDamage(pixels(fixture)),{formats:['EAN13'],timeBudgetMs:100,readNative:async image=>{
+    const found=await readNative(image);time=101;return found;
+  }});
+  assert.equal(result.complete,false);assert.equal(result.incompleteEvidence,true);assert.equal(result.results.length,0);
+});

@@ -28,7 +28,7 @@ function decoderHarness(base = 'https://offline.test/scan/') {
     location: { href: new URL('scanner-worker.js', base).href },
     importScripts(path) {
       assert.ok(['./vendor/zxing-reader.js', './vendor/zbar/index.js', './independent-reader.js',
-        './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js',
+        './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js', './qr-damage.js',
         './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
       vm.runInContext(readFileSync(new URL('web/' + path.slice(2), project), 'utf8'), context, { filename: path });
     },

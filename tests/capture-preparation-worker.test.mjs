@@ -44,7 +44,7 @@ function harness({ offscreen = true, regions } = {}) {
     IndependentReader: { initialize: async () => {} },
     importScripts(path) {
       if (path === './vendor/zxing-reader.js') return;
-      assert.ok(['./capture-geometry.js', './frame-analysis.js', './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js'].includes(path));
+      assert.ok(['./capture-geometry.js', './frame-analysis.js', './qr-geometry.js', './qr-recovery.js', './linear-signal.js', './qr-signal.js', './qr-damage.js'].includes(path));
       vm.runInContext(readFileSync(new URL(`../web/${path.slice(2)}`, import.meta.url), 'utf8'), context);
       if (regions && path === './frame-analysis.js') {
         const analyze = context.FrameAnalysis.analyze;
@@ -95,6 +95,10 @@ test('detail preparation retains at most two bounded crops from the one supplied
   assert.equal(transfer.length, 3); assert.equal(bitmap.closed, 1);
   assert.ok(h.draws.every(draw => draw[0] === bitmap));
   assert.ok(message.sample.recovery.every(crop => crop.image.width * crop.image.height <= 1_000_000));
+  const expanded = message.sample.recovery[0].plan;
+  assert.ok(expanded.x < 200 && expanded.y < 400, 'automatic crop includes actual source margins beyond the detector box');
+  assert.ok(expanded.x + expanded.cropWidth > 800 && expanded.y + expanded.cropHeight > 600);
+  assert.ok(expanded.x >= 0 && expanded.y >= 0 && expanded.x + expanded.cropWidth <= 3840 && expanded.y + expanded.cropHeight <= 2160);
 });
 
 test('invalid or oversized preparation releases its bitmap and never returns candidate pixels', async () => {

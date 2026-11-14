@@ -83,7 +83,7 @@ The detector can miss regions or propose non-barcodes. A successful whole-image 
 
 ## Offline operation and POS integration
 
-The service worker caches the POS policy, QR geometry/recovery modules, linear/QR source-signal recovery, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.12.0. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
+The service worker caches the POS policy, QR geometry/recovery modules, linear/QR source-signal recovery, QR erasure recovery, camera frame fusion, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.13.0. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
 
 This browser mode does not call `POST /v1/pos/decode`; that remains a separate server-side option documented in [POS-DECODING.md](POS-DECODING.md). Neither path performs catalogue lookup, pricing or cart updates. Your POS should accept only a unique, exact catalogue match and prevent a retried scan attempt from adding an item twice. The scanner's history deduplicates values; it is not a cart or quantity counter.
 
@@ -92,3 +92,7 @@ This browser mode does not call `POST /v1/pos/decode`; that remains a separate s
 See [TESTING.md](TESTING.md) for the verified suites and [DAMAGE-TESTING.md](DAMAGE-TESTING.md) for historical synthetic decoding results. New checks exercise real bundled decoding, format restrictions, known false-reading cases, cropped-image coordinates, quality ranking, freshness and camera lifecycle behavior. A test that deliberately forces a full-frame miss to exercise crop routing is not evidence that the original image was unreadable.
 
 This update does not establish a higher real-phone recognition rate or Scanbot-equivalent performance. Further evaluation needs independently labelled phone captures, including reflective packaging, curved labels, motion and poor lighting, with separate evaluation products. Measure correct confirmations, wrong confirmations, missed scans and time to confirmation. The collection workflow is in [CODE128-LAB.md](CODE128-LAB.md).
+
+## Damaged labels across exposures
+
+[Damaged-code recovery](DAMAGE-RECOVERY-UPDATE.md) can combine three distinct recent camera exposures after ordinary decoding misses. Detected-area retries must be enabled. It requires one complete region, small translation, and moving bright damage/glare supported by independent masks in the original frames. One burst is one observation; at least two disjoint bursts must agree before acceptance, including in ordinary single-frame mode. Changing settings or cameras clears the evidence. Permanently missing content, switched labels, stale or reused captures, conflicts and incomplete searches cannot supply confirmation. A bounded 256-exposure limit disables fusion until a reset while ordinary decoding continues. Automatic detail crops retain original surrounding pixels, but explicit targets stay exact.
