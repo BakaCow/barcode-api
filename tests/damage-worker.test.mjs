@@ -24,7 +24,7 @@ context = vm.createContext({
   ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
   location: { href: 'https://offline.test/scan/scanner-worker.js' },
   importScripts(path) {
-    assert.ok(['./vendor/zxing-reader.js', './independent-reader.js', './vendor/zbar/index.js',
+    assert.ok(['./vendor/zxing-reader.js', './qr-geometry.js', './qr-recovery.js', './independent-reader.js', './vendor/zbar/index.js',
       './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
     vm.runInContext(path === './vendor/zxing-reader.js' ? reader : readFileSync(new URL('web/' + path.slice(2), project), 'utf8'), context);
   },
@@ -76,7 +76,7 @@ for (const name of [
         assert.ok(point.y >= 0 && point.y <= fixture.height);
       }
     }
-    assert.ok(response.diagnostics.passes <= 8);
+    assert.ok(response.diagnostics.passes <= (fixture.name.startsWith('qr/') ? 64 : 8));
   });
 }
 

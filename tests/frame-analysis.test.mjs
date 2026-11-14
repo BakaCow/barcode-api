@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import { createRequire } from 'node:module';
 import test from 'node:test';
+import vm from 'node:vm';
 
 const require = createRequire(import.meta.url);
 const analysis = require('../web/frame-analysis.js');
@@ -192,4 +193,39 @@ test('malformed dimensions, buffers, and out-of-frame crop padding fail before w
     assert.throws(() => analysis.crop(image, region));
   }
   for (const budget of [0, 4_000_001, 1.5, NaN]) assert.throws(() => analysis.crop(image, { x: 0, y: 0, width: 10, height: 10 }, budget));
+});
+
+test('real QR finder geometry isolates tiny cells without cropping away source ink', () => {
+  // Deterministic clock isolates geometry/quality assertions from test-runner
+  // contention; budget expiration is exercised separately below.
+  const context = vm.createContext({ Uint8Array, Uint8ClampedArray, Uint16Array, Uint32Array,
+    Float64Array, ArrayBuffer, performance: { now: () => 0 } });
+  for (const path of ['qr-geometry.js', 'frame-analysis.js']) {
+    vm.runInContext(readFileSync(new URL('../web/' + path, import.meta.url), 'utf8'), context);
+  }
+  // This development image retains three verifiable finder patterns after the
+  // bounded detection thumbnail. More heavily undersampled grids must abstain.
+  const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-recovery.json', import.meta.url))).cases;
+  const item = cases.find(entry => entry.name === 'qr/recovery-qr-label-2/small-in-frame-1');
+  const image = { width: item.width, height: item.height,
+    data: new Uint8ClampedArray(inflateSync(Buffer.from(item.rgba_zlib_base64, 'base64'))) };
+  const result = context.FrameAnalysis.analyze(image);
+  assert.equal(result.qr.count, 1); assert.equal(result.qr.complete, true);
+  assert.equal(result.qr.gridReliable, true); assert.equal(result.qr.clipped, false);
+  assert.ok(result.qr.moduleSize > 1 && result.qr.moduleSize < 2.5);
+  assert.equal(result.hint, 'small'); assert.equal(result.regions.length, 1);
+  assert.equal(result.regionsComplete, true);
+  const region = result.regions[0];
+  for (let y = 0; y < image.height; y++) for (let x = 0; x < image.width; x++) {
+    if (image.data[(y * image.width + x) * 4] < 30) assert.ok(contains(region, x, y), 'source ink stays in the crop');
+  }
+});
+
+test('an unfinished QR search cannot label generic source-region coverage complete', () => {
+  const context = vm.createContext({ Uint8Array, Uint8ClampedArray, Uint16Array, Uint32Array,
+    Float64Array, ArrayBuffer, QRGeometry: { analyze: () => ({ regions: [], complete: false }) } });
+  vm.runInContext(readFileSync(new URL('../web/frame-analysis.js', import.meta.url), 'utf8'), context);
+  const result = context.FrameAnalysis.analyze(fixture('QR code'));
+  assert.equal(result.regionsComplete, false);
+  assert.equal(result.results, undefined);
 });

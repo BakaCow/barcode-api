@@ -44,7 +44,7 @@ function harness({ offscreen = true, regions } = {}) {
     IndependentReader: { initialize: async () => {} },
     importScripts(path) {
       if (path === './vendor/zxing-reader.js') return;
-      assert.ok(['./capture-geometry.js', './frame-analysis.js'].includes(path));
+      assert.ok(['./capture-geometry.js', './frame-analysis.js', './qr-geometry.js', './qr-recovery.js'].includes(path));
       vm.runInContext(readFileSync(new URL(`../web/${path.slice(2)}`, import.meta.url), 'utf8'), context);
       if (regions && path === './frame-analysis.js') {
         const analyze = context.FrameAnalysis.analyze;
@@ -91,6 +91,7 @@ test('detail preparation retains at most two bounded crops from the one supplied
   const { message, transfer } = await h.send({ bitmap, sourceWidth: 3840, sourceHeight: 2160, captureMode: 'detail' });
   assert.equal(message.type, 'prepared');
   assert.equal(message.sample.image.width, 1920); assert.equal(message.sample.recovery.length, 2);
+  assert.equal(message.sample.recoveryComplete, false, 'the third planned source region remains unchecked');
   assert.equal(transfer.length, 3); assert.equal(bitmap.closed, 1);
   assert.ok(h.draws.every(draw => draw[0] === bitmap));
   assert.ok(message.sample.recovery.every(crop => crop.image.width * crop.image.height <= 1_000_000));

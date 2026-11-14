@@ -497,6 +497,7 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
         },
         importScripts: path => {
           assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js',
+            './qr-geometry.js', './qr-recovery.js',
             './vendor/zbar/index.js', './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path));
           vm.runInContext(readFileSync(new URL(path, root), 'utf8'), context);
         },
@@ -591,6 +592,54 @@ test('SDK image path reads Code128 and QR with the real local WASM worker and re
     assert.equal(h.results[0].format, 'code128');
     assert.equal(h.results[0].bytesBase64, Buffer.from(fixture.expected[0].text, 'utf8').toString('base64'));
     h.scanner.destroy();
+  });
+  await t.test('new QR grid recovery reads the two formerly missed blurred images through the SDK', async () => {
+    const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-recovery.json', import.meta.url))).cases;
+    for (const label of [2, 3]) {
+      const fixture = cases.find(entry => entry.name === `qr/recovery-qr-label-${label}/blur-2`);
+      const h = harness({ confirmationFrames: 1 }); h.state.fixture = fixture; h.env.Worker = NativeWorker;
+      try {
+        const result = await h.scanner.scanImage(new Blob(['fixture'], { type: 'image/png' }));
+        assert.equal(result?.text, fixture.expected[0].text);
+        assert.equal(result.format, 'qr');
+        assert.equal(result.bytesBase64, Buffer.from(fixture.expected[0].text, 'utf8').toString('base64'));
+      } finally { h.scanner.destroy(); }
+    }
+  });
+  await t.test('early live QR grid recovery still requires two distinct frames before the POS callback', async () => {
+    const cases = JSON.parse(readFileSync(new URL('fixtures/damage-stress-recovery.json', import.meta.url))).cases;
+    const fixture = cases.find(entry => entry.name === 'qr/recovery-qr-label-1/blur-2');
+    const pixels = inflateSync(Buffer.from(fixture.rgba_zlib_base64, 'base64'));
+    const h = harness(), strategies = [], retries = [];
+    h.video.videoWidth = fixture.width; h.video.videoHeight = fixture.height;
+    h.env.Worker = class extends NativeWorker {
+      constructor(url) {
+        super(url); const send = this.context.postMessage;
+        this.context.postMessage = data => { if (data.type === 'result') strategies.push(data.diagnostics?.strategy); send(data); };
+      }
+      postMessage(data) { if (data.type === 'decode') retries.push(data.retryIndex); super.postMessage(data); }
+    };
+    try {
+      await h.scanner.start();
+      for (let frame = 0; frame < 2; frame++) {
+        // Change a small background corner only; QR pixels stay untouched.
+        for (let y = 0; y < 12; y++) for (let x = 0; x < 12; x++) {
+          const offset = (y * fixture.width + x) * 4;
+          pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = 250 + frame;
+        }
+        h.state.fixture = { ...fixture, rgba_zlib_base64: deflateSync(pixels).toString('base64') };
+        await h.tick();
+        for (let wait = 0; wait < 100 && !h.results.length && !h.errors.length &&
+          ![...h.timers.values()].some(timer => timer.ms <= 180); wait++) await flush();
+        assert.equal(h.errors.length, 0);
+        if (!frame) { assert.equal(h.results.length, 0); assert.equal(h.statuses.at(-1).reason, 'insufficient_confirmation'); }
+      }
+      assert.deepEqual(retries, [0, 0]);
+      assert.ok(strategies.every(strategy => strategy === 'qr-grid-deblur'));
+      assert.equal(h.results.length, 1); assert.equal(h.results[0].text, fixture.expected[0].text);
+      assert.equal(h.results[0].format, 'qr');
+      assert.equal(h.results[0].bytesBase64, Buffer.from(fixture.expected[0].text, 'utf8').toString('base64'));
+    } finally { h.scanner.destroy(); }
   });
   await t.test('detail recovery decodes preserved source pixels after a forced broad-pass miss',async()=>{
     const label = fixtures.find(f=>f.name==='Code 128'), pixels=inflateSync(Buffer.from(label.rgba_zlib_base64,'base64'));
@@ -767,6 +816,26 @@ test('offscreen capture submits one bounded bitmap with only a tiny main-thread 
   h.scanner.destroy();
 });
 
+test('offscreen source crops cannot confirm a unique value while a third region remains unchecked', async () => {
+  for (const second of [[], [other]]) {
+    const h = harness({ confirmationFrames: 1, captureMode: 'detail' }); h.state.offscreen = true;
+    await h.scanner.start(); await h.tick();
+    const pending = h.waiting.shift(); assert.equal(pending.message.type, 'prepare');
+    const image = () => ({ width: 64, height: 48, data: new Uint8Array(64 * 48 * 4).fill(255).buffer });
+    const plan = { x: 0, y: 0, cropWidth: 64, cropHeight: 48, width: 64, height: 48 };
+    const analysis = { score: 90, hint: null, fingerprint: 'controlled-source-exposure', regionsComplete: true,
+      regions: [0, 20, 40].map(x => ({ x, y: 8, width: 16, height: 30, kind: 'matrix' })) };
+    pending.worker.onmessage({ data: { id: pending.message.id, type: 'prepared', sample: {
+      image: image(), plan, analysis, proposals: analysis.regions, recoveryComplete: false,
+      recovery: [{ image: image(), plan }, { image: image(), plan }], sourceWidth: 64, sourceHeight: 48,
+    } } });
+    await flush(); await h.reply([]); await h.reply([item]); await h.reply(second);
+    assert.equal(h.waiting.length, 0); assert.equal(h.results.length, 0);
+    assert.equal(h.statuses.at(-1).reason, second.length ? 'conflicting_values' : 'no_code');
+    h.scanner.destroy();
+  }
+});
+
 test('cancelled bitmap creation closes its late result and cannot submit a stale worker request', async () => {
   const h = harness(); h.state.offscreen = true; h.state.bitmapRequest = deferred();
   await h.scanner.start(); await h.tick();
@@ -775,6 +844,35 @@ test('cancelled bitmap creation closes its late result and cannot submit a stale
   h.state.bitmapRequest.resolve(bitmap); await flush();
   assert.equal(bitmap.closed, 1); assert.equal(h.waiting.length, 0); assert.equal(h.results.length, 0);
   assert.equal(h.errors.length, 0); h.scanner.destroy();
+});
+
+test('withheld worker evidence cannot be forgotten before another source crop is accepted', async () => {
+  for (const phase of ['broad', 'crop', 'conflict']) {
+    const h = harness({ confirmationFrames: 1, captureMode: 'detail' }); h.state.offscreen = true;
+    await h.scanner.start(); await h.tick();
+    const pending = h.waiting.shift(); assert.equal(pending.message.type, 'prepare');
+    const image = () => ({ width: 64, height: 48, data: new Uint8Array(64 * 48 * 4).fill(255).buffer });
+    const plan = { x: 0, y: 0, cropWidth: 64, cropHeight: 48, width: 64, height: 48 };
+    const analysis = { score: 90, hint: null, fingerprint: 'partial-qr-evidence', regionsComplete: true,
+      regions: [0, 32].map(x => ({ x, y: 8, width: 20, height: 30, kind: 'matrix' })) };
+    pending.worker.onmessage({ data: { id: pending.message.id, type: 'prepared', sample: {
+      image: image(), plan, analysis, proposals: analysis.regions, recoveryComplete: true,
+      recovery: [{ image: image(), plan }, { image: image(), plan }], sourceWidth: 64, sourceHeight: 48,
+    } } });
+    await flush();
+    const incomplete = { diagnostics: { incompleteEvidence: true } };
+    if (phase === 'broad') await h.reply([], incomplete);
+    else {
+      await h.reply([]);
+      await h.reply(phase === 'conflict' ? [item, other] : [], incomplete);
+      await h.reply([item]);
+    }
+    assert.equal(h.waiting.length, 0);
+    assert.equal(h.results.length, 0, 'no partial observation may reach the POS callback');
+    assert.equal(h.statuses.at(-1).reason, phase === 'conflict' ? 'conflicting_values' : 'no_code');
+    assert.equal(h.messages.filter(message => message.type === 'decode').length, phase === 'broad' ? 1 : 3);
+    h.scanner.destroy();
+  }
 });
 
 

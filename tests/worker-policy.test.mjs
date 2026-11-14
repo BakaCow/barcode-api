@@ -50,6 +50,50 @@ test('clean images return immediately without enhancement work', async () => {
   assert.equal(worker.calls.length, 1);
 });
 
+test('QR candidates use only the requested QR reader and retain exact raw bytes', async () => {
+  const worker = harness((_image, _options, count) => count === 1 ? [] : [{ ...valid, format: 'QRCode', text: '\u00e9', bytes: [233] }]);
+  worker.context.QRGeometry = { analyze: () => ({ complete: true, regions: [{}] }) };
+  worker.context.QRRecovery = { *candidates(input) { yield { image: input, mapPoint: p => p, strategy: 'qr-grid-sample', options: { isPure: true } }; } };
+  const result = await worker.send({ image: image() });
+  assert.deepEqual(result.results[0].bytes, [233]); assert.equal(result.results[0].text, '\u00e9');
+  assert.deepEqual(Array.from(worker.calls[1].options.formats), ['QRCode']);
+  assert.equal(worker.calls[1].options.isPure, true);
+});
+
+test('an incomplete QR scan cannot forget a credible read and accept another retry alone', async () => {
+  const worker = harness((_image, _options, count) => count === 1 ? [] : [{ ...valid, format: 'QRCode', text: count === 2 ? 'first' : 'second' }]);
+  worker.context.QRGeometry = { analyze: () => ({ complete: false, regions: [{}] }) };
+  worker.context.QRRecovery = { *candidates(input) { yield { image: input, mapPoint: p => p, strategy: 'qr-grid-sample' }; } };
+  const result = await worker.send({ image: image() });
+  assert.deepEqual(result.results, []); assert.equal(result.diagnostics.qrComplete, false);
+  assert.equal(result.diagnostics.incompleteEvidence, true);
+  assert.equal(worker.calls.length, 2, 'no later single value can hide the observed partial value');
+});
+
+test('an unreadable reliable QR proposal prevents publishing another region as a unique value', async () => {
+  const worker = harness((_image, _options, count) => count === 2 ? [{ ...valid, format: 'QRCode', text: 'first' }] : []);
+  worker.context.QRGeometry = { analyze: () => ({ complete: true, regions: [{}, {}] }) };
+  worker.context.QRRecovery = { *candidates(input) { yield { image: input, mapPoint: p => p, strategy: 'qr-finder-crop' }; } };
+  const reply = await worker.send({ image: image() });
+  assert.deepEqual(reply.results, []); assert.equal(reply.diagnostics.incompleteEvidence, true);
+  assert.equal(worker.calls.length, 3);
+});
+
+test('QR deadline truncation preserves multiple observed values but rejects a lone partial observation', async () => {
+  for (const values of [['first'], ['first', 'second']]) {
+    let now = 0;
+    const worker = harness((_image, _options, count) => {
+      if (count === 1) return [];
+      now = 101; return values.map(text => ({ ...valid, format: 'QRCode', text }));
+    }, { now: () => now });
+    worker.context.QRGeometry = { analyze: () => ({ complete: true, regions: [{}, {}] }) };
+    worker.context.QRRecovery = { *candidates(input) { yield { image: input, mapPoint: p => p, strategy: 'qr-finder-crop' }; } };
+    const reply = await worker.send({ image: image(), mode: 'live' });
+    assert.deepEqual(reply.results.map(item => item.text), values.length > 1 ? values : []);
+    assert.equal(reply.diagnostics.qrComplete, false); assert.equal(worker.calls.length, 2);
+  }
+});
+
 const box = (left, top, right, bottom) => ({ topLeft: { x: left, y: top }, topRight: { x: right, y: top },
   bottomRight: { x: right, y: bottom }, bottomLeft: { x: left, y: bottom } });
 const code = (text, position, extra = {}) => ({ ...valid, text, bytes: Array.from(text, value => value.charCodeAt(0)), position, ...extra });

@@ -93,6 +93,32 @@
             "title": "Output",
             "type": "string"
           },
+          "qr_error_correction": {
+            "anyOf": [
+              {
+                "enum": [
+                  "L",
+                  "M",
+                  "Q",
+                  "H"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "QR only. Omit to retain the existing encoder default (L).",
+            "title": "Qr Error Correction"
+          },
+          "qr_quiet_zone": {
+            "default": 4,
+            "description": "QR only. White border in modules on every side; minimum four.",
+            "maximum": 16.0,
+            "minimum": 4.0,
+            "title": "Qr Quiet Zone",
+            "type": "integer"
+          },
           "scale": {
             "default": 4,
             "maximum": 8.0,

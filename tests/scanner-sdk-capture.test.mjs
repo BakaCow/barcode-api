@@ -29,6 +29,7 @@ test('early decode requires a clear unique useful-sized proposal', () => {
   const good = {score:90,hint:null,regions:[{width:300,height:100}]};
   assert.equal(clearFrame(good,1000,500),true);
   for (const bad of [{...good,score:60},{...good,hint:'glare'},{...good,regions:[]},
+    {...good,regionsComplete:false}, {...good,qr:{complete:false}},
     {...good,regions:[...good.regions,...good.regions]}, {...good,regions:[{width:2,height:2}]}]) assert.equal(clearFrame(bad,1000,500),false);
 });
 

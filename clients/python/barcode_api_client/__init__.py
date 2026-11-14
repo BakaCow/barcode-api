@@ -102,8 +102,13 @@ class BarcodeClient:
     def formats(self):
         return self._request("v1/formats")
 
-    def generate(self, *, format, text, output="png", scale=4):
-        body = json.dumps({"format": format, "text": text, "output": output, "scale": scale}).encode()
+    def generate(self, *, format, text, output="png", scale=4, qr_error_correction=None, qr_quiet_zone=None):
+        payload = {"format": format, "text": text, "output": output, "scale": scale}
+        if qr_error_correction is not None:
+            payload['qr_error_correction'] = qr_error_correction
+        if qr_quiet_zone is not None:
+            payload['qr_quiet_zone'] = qr_quiet_zone
+        body = json.dumps(payload).encode()
         return self._request("v1/barcodes/generate", body=body, content_type="application/json", binary=True)
 
     def read(self, image: ImageUpload):

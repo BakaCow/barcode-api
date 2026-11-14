@@ -1,0 +1,23 @@
+{
+  "reason": "Replace leading-zero EAN13 with a nonzero prefix because its physical bars admit UPC-A representation; preserve unambiguous format/byte truth, without changing scorer normalization.",
+  "initialFixtureSha256": "a9dbefc4a518f5e6c9a40ea62f6fa2b26aab46f0bbf413845a031d6261eab393",
+  "initialBaselineAggregatesObserved": {
+    "browser": {
+      "positives": 54,
+      "exact": 54,
+      "negatives": 8,
+      "rejected": 8
+    },
+    "api": {
+      "positives": 54,
+      "exact": 54,
+      "negatives": 8,
+      "rejected": 8
+    }
+  },
+  "perCaseOutcomesInspected": false,
+  "updatedAlgorithmOutcomesInspected": false,
+  "authorization": "Parent approved spec-driven fixture correction before inspecting per-case outcomes. The initial baseline aggregate was observed; this was not motivated by a failing case.",
+  "finalFixtureSha256": "abfba6371019bb16938817f8eff9c0add43bb7701f67757bd4fcb49c254f0c9a",
+  "byteIdenticalRegeneration": true
+}

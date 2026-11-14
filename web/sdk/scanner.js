@@ -242,7 +242,9 @@ export function createScanner(configuration = {}) {
           if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
         }
       }
-      return { ...sample, analysis, proposals, recovery, sourceWidth: width, sourceHeight: height };
+      return { ...sample, analysis, proposals, recovery,
+        recoveryComplete: proposals.length <= 2 && analysis.regionsComplete !== false,
+        sourceWidth: width, sourceHeight: height };
     } finally {
       if (token === generation) snapshot.width = snapshot.height = 0;
     }
@@ -266,6 +268,8 @@ export function createScanner(configuration = {}) {
       retainMethod();
       return results; // Observed full-view conflicts are never hidden by a crop.
     }
+    if (first.diagnostics?.incompleteEvidence) return [];
+    let coverageComplete = sample.recoveryComplete !== false;
     const identities = new Set();
     for (const crop of sample.recovery) {
       // A timed-out remaining region may contain a conflicting label. Do not
@@ -274,11 +278,13 @@ export function createScanner(configuration = {}) {
       const response = await call('decode', { image: crop.image, mode, retryIndex, enhanceLive: false,
         posOptions: policyOptions() }, [crop.image.data]);
       if (!valid()) throw aborted();
+      if (response.diagnostics?.incompleteEvidence) coverageComplete = false;
       for (const result of Capture.remapResults(response.results, crop.plan)) {
         const key = JSON.stringify([result.format, result.text, result.bytes]);
         if (!identities.has(key)) { identities.add(key); results.push(result); }
       }
     }
+    if (identities.size === 1 && !coverageComplete) return [];
     if (results.length) retainMethod();
     return results;
   }

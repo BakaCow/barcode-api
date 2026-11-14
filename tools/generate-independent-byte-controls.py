@@ -20,7 +20,11 @@ def main():
                ("fnc4-mixed", "Code128", b"A\x80B\xffC"),
                ("leading-zero-ean", "EAN13", "0042100005264"),
                ("upce-system-0", "UPCE", "04252614"),
-               ("upce-system-1", "UPCE", "15766746")]
+               ("upce-system-1", "UPCE", "15766746"),
+               ("qr-controls", "QRCode", b"QR-\x00\x1d\x7f"),
+               ("qr-latin1", "QRCode", b"QR-\xe9"),
+               ("qr-utf8", "QRCode", "QR-\u00e9".encode("utf-8")),
+               ("qr-binary", "QRCode", b"\x00\x80\xff\x01\xfe\x7f")]
     cases = []
     for name, format_name, payload in samples:
         barcode = zxingcpp.create_barcode(payload, getattr(zxingcpp.BarcodeFormat, format_name))

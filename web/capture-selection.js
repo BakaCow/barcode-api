@@ -43,10 +43,17 @@
         lastNow = now; lastFrame = frameId;
         if (stale) { detailUntil = 0; cooldownUntil = now + 10000; misses = 0; firstMiss = null; return false; }
         if (blocked || now < cooldownUntil) return false;
-        const useful = analysis?.regions?.length === 1 && ['small', 'blurred', 'low-detail'].includes(analysis.hint);
+        const useful = analysis?.regions?.length === 1 && analysis.regionsComplete !== false &&
+          ['small', 'blurred', 'low-detail'].includes(analysis.hint);
         if (!useful) { misses = 0; firstMiss = null; return false; }
         firstMiss ??= now; misses++;
-        if (misses < 3 || now - firstMiss < 400) return false;
+        // A complete finder-pattern proposal estimates QR cell size. Spend
+        // source detail sooner for undersampled cells; this is not a decoded
+        // value or an additional camera-confirmation vote.
+        const tinyQr = analysis.qr?.complete === true && analysis.qr.gridReliable === true &&
+          analysis.qr.clipped === false && analysis.qr.count === 1 &&
+          Number.isFinite(analysis.qr.moduleSize) && analysis.qr.moduleSize > 0 && analysis.qr.moduleSize < 2.5;
+        if (misses < (tinyQr ? 2 : 3) || now - firstMiss < (tinyQr ? 150 : 400)) return false;
         detailUntil = now + 3000; cooldownUntil = now + 10000;
         misses = 0; firstMiss = null;
         return true;

@@ -4,6 +4,8 @@ const $ = (id) => document.getElementById(id);
 const video = $('video');
 const frame = document.createElement('canvas');
 const context = frame.getContext('2d', { willReadFrequently: true });
+const snapshot = document.createElement('canvas');
+const snapshotContext = snapshot.getContext('2d');
 const HISTORY_KEY = 'barcode-camera.history.v1';
 const REMEMBER_KEY = 'barcode-camera.remember.v1';
 let stream = null, active = false, starting = false, generation = 0, torchOn = false;
@@ -245,12 +247,40 @@ async function listCameras(selected, token = generation) {
 }
 
 function capture(source, width, height, options = {}) {
-  const plan = ScanPolicy.capturePlan(width, height, options);
+  const plan = options.region ? CaptureGeometry.regionPlan(width, height, options.region, options.maxPixels, options.maxSide)
+    : ScanPolicy.capturePlan(width, height, options);
+  const scale = options.sourceScale || { x: 1, y: 1 };
   frame.width = plan.width; frame.height = plan.height;
   context.fillStyle = '#ffffff'; context.fillRect(0, 0, frame.width, frame.height);
-  context.drawImage(source, plan.x, plan.y, plan.cropWidth, plan.cropHeight, 0, 0, frame.width, frame.height);
+  context.drawImage(source, plan.x * scale.x, plan.y * scale.y, plan.cropWidth * scale.x, plan.cropHeight * scale.y, 0, 0, frame.width, frame.height);
   const image = context.getImageData(0, 0, frame.width, frame.height);
   return { image: { width: image.width, height: image.height, data: image.data.buffer }, plan };
+}
+
+function captureLive(width, height, fraction, detail, analyze) {
+  let source = video, sourceScale = { x: 1, y: 1 };
+  if (detail && snapshotContext) {
+    const sizing = CaptureGeometry.regionPlan(width, height, null, 8_294_400, 3840);
+    snapshot.width = sizing.width; snapshot.height = sizing.height;
+    // One bounded exposure supplies both the broad image and every detail crop.
+    snapshotContext.drawImage(video, 0, 0, width, height, 0, 0, sizing.width, sizing.height);
+    source = snapshot; sourceScale = { x: sizing.width / width, y: sizing.height / height };
+  }
+  try {
+    const sample = capture(source, width, height, { fraction, sourceScale,
+      maxPixels: detail ? 4_000_000 : 2_100_000, maxSide: detail ? 3840 : 1920 });
+    const analysis = analyze ? FrameAnalysis.analyze(sample.image) : null;
+    const proposals = analysis ? CaptureGeometry.sourceRegions(analysis, sample.plan, width, height) : [];
+    const recovery = [];
+    if (detail && source === snapshot && sample.plan.width < snapshot.width) {
+      for (const proposal of proposals.slice(0, 2)) {
+        const { kind, ...region } = proposal;
+        const crop = capture(source, width, height, { region, sourceScale, maxPixels: 1_000_000, maxSide: 3840 });
+        if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
+      }
+    }
+    return { ...sample, analysis, recovery, recoveryComplete: proposals.length <= 2 && analysis?.regionsComplete !== false };
+  } finally { snapshot.width = snapshot.height = 0; }
 }
 
 async function scanFrame(token) {
@@ -270,12 +300,11 @@ async function scanFrame(token) {
       // POS and region retries always see the full image before any crop.
       const fraction = options || better || crops ? 1 : candidateCrop ?? ScanPolicy.cropFraction(misses);
       const detail = crops && cameraRecovery.detailed(capturedAt);
-      const { image, plan } = capture(video, width, height, { fraction,
-        maxPixels: detail ? 4_000_000 : 2_100_000, maxSide: detail ? 3840 : 1920 });
       // Analysis bounds its internal thumbnail but measures source-image detail
       // and fingerprints all captured pixels. Never analyze a later video frame.
-      const analysis = better || options || crops ? FrameAnalysis.analyze(image) : null;
-      const candidate = { image, plan, width, height, frameId, capturedAt, analysis, revision, cameraFingerprint };
+      const sample = captureLive(width, height, fraction, detail, better || options || crops);
+      const { analysis } = sample;
+      const candidate = { ...sample, width, height, frameId, capturedAt, revision, cameraFingerprint };
       if (better) {
         frameSelection ||= CaptureSelection.create();
         selected = frameSelection.push(candidate);
@@ -284,13 +313,30 @@ async function scanFrame(token) {
     } else if (better) selected = frameSelection?.flush(performance.now());
     if (selected) {
       const { image, plan, width, height, frameId, capturedAt, analysis } = selected;
+      const decodeStarted = performance.now();
       const reply = await workerCall('decode', { image, mode: 'live', retryIndex,
         enhanceLive: crops, ...(options ? { posOptions: options } : {}) }, [image.data]);
-      const { results } = reply;
       if (!active || token !== generation) return;
+      let mapped = ScanPolicy.remapResults(reply.results, plan);
+      if (!mapped.length && !reply.diagnostics?.incompleteEvidence && revision === scanRevision && selected.revision === scanRevision) {
+        const identities = new Set(); let complete = selected.recoveryComplete;
+        for (const crop of selected.recovery) {
+          if (performance.now() - decodeStarted > 350 || performance.now() - capturedAt > 1200) { complete = false; break; }
+          const recovered = await workerCall('decode', { image: crop.image, mode: 'live', retryIndex,
+            enhanceLive: false, ...(options ? { posOptions: options } : {}) }, [crop.image.data]);
+          if (!active || token !== generation) return;
+          if (revision !== scanRevision || selected.revision !== scanRevision) break;
+          if (recovered.diagnostics?.incompleteEvidence) complete = false;
+          for (const result of ScanPolicy.remapResults(recovered.results, crop.plan)) {
+            const key = keyFor(result);
+            if (!identities.has(key)) { identities.add(key); mapped.push(result); }
+          }
+        }
+        if (identities.size === 1 && !complete) mapped = [];
+      }
+      const results = mapped;
       // Discard captures from before settings changes, including buffered frames.
       if (revision === scanRevision && selected.revision === scanRevision) {
-        const mapped = ScanPolicy.remapResults(results, plan);
         const stale = performance.now() - capturedAt > 1200;
         const moreDetail = crops && cameraRecovery.observe({ now: performance.now(), frameId,
           analysis: reply.analysis || analysis, hasResults: results.length > 0, stale });

@@ -1,5 +1,9 @@
 # Independent barcode decoding — 14 November 2026
 
+This records the previous linear-decoder update. The subsequent
+[QR capture and recovery update](QR-UPDATE.md) has its own paired evaluation;
+the measurements below remain the historical results of this release.
+
 The scanner now combines different decoding implementations to address a known
 wrong Code 128 reading and some small or difficult linear barcodes. The browser
 uses ZXing, ZBar and the project's Code 128 matcher. The API uses ZXing and

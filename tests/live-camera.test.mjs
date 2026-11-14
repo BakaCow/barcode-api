@@ -16,7 +16,7 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
   width = 320, height = 180, exposureModes = [] } = {}) {
   const html = readFileSync(new URL('../web/index.html', import.meta.url), 'utf8');
   const nodes = new Map(), timers = new Map(), frameCallbacks = new Map(), windowEvents = new Map();
-  const messages = [], awaiting = [], streams = [], constraints = [], pixels = [], cameraRequests = [];
+  const messages = [], awaiting = [], streams = [], constraints = [], pixels = [], cameraRequests = [], draws = [];
   const objectUrls = new Map(), revokedUrls = [];
   const state = { now: 1000, frame: 1, scene: 'sharp', frozen, drawCalls: 0 };
   let nextId = 0;
@@ -66,7 +66,10 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
       let captured = { ...state };
       node.getContext = () => ({
         fillRect() {},
-        drawImage() { captured = { ...state }; state.drawCalls++; },
+        drawImage(source, ...args) {
+          captured = { ...(source.captured || state) }; node.captured = captured; state.drawCalls++;
+          draws.push({ source: source.id === 'video' ? 'video' : 'canvas', frame: captured.frame, width: node.width, height: node.height, args });
+        },
         getImageData() {
           const data = new Uint8ClampedArray(node.width * node.height * 4).fill(255);
           for (let y = 0; y < node.height; y++) for (let x = 0; x < node.width; x++) {
@@ -158,14 +161,14 @@ function cameraHarness({ frames = 'decoded', pos = true, better = false, crops =
     isSecureContext: true,
   };
   const context = vm.createContext(globals); context.window = context;
-  for (const file of ['scan-policy.js', 'pos-policy.js', 'frame-analysis.js', 'capture-selection.js', 'camera-constraints.js', 'app.js']) {
+  for (const file of ['scan-policy.js', 'pos-policy.js', 'capture-geometry.js', 'qr-geometry.js', 'frame-analysis.js', 'capture-selection.js', 'camera-constraints.js', 'app.js']) {
     vm.runInContext(readFileSync(new URL(`../web/${file}`, import.meta.url), 'utf8'), context, { filename: file });
   }
   const evaluate = code => vm.runInContext(code, context);
   let importing = null;
 
   return {
-    context, state, nodes, get, messages, awaiting, streams, constraints, pixels, timers, objectUrls, revokedUrls, cameraRequests,
+    context, state, nodes, get, messages, awaiting, streams, constraints, pixels, draws, timers, objectUrls, revokedUrls, cameraRequests,
     evaluate,
     get history() { return plain(evaluate('history')); },
     get hint() { return get('scan-hint').textContent; },
@@ -727,4 +730,73 @@ test('detail expiration cannot turn a frozen image into a second POS observation
   assert.ok(imagePixels(app.awaiting[0].message) <= 2_100_000);
   await app.reply([item]);
   assert.equal(app.history.length, 0, 'resampling a frozen scene cannot supply the missing independent observation');
+});
+
+function detailRegions(app, count = 2) {
+  const analyze = app.context.FrameAnalysis.analyze;
+  app.context.FrameAnalysis.analyze = image => ({ ...analyze(image), regionsComplete: true,
+    regions: Array.from({ length: count }, (_, index) => ({ x: Math.floor(image.width * (0.1 + index * 0.25)),
+      y: Math.floor(image.height * 0.3), width: Math.floor(image.width * 0.1), height: Math.floor(image.height * 0.15), kind: 'matrix', qr: true })) });
+  app.evaluate('cameraRecovery.detailed = () => true');
+}
+
+test('standalone detail captures freeze one UHD exposure, inspect the full view first and remap both source crops', async t => {
+  const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+  detailRegions(app);
+  await app.open();
+  const broad = app.awaiting[0].message;
+  assert.ok(imagePixels(broad) <= 4_000_000 && imagePixels(broad) > 2_100_000);
+  const snapshotDraw = app.draws.find(draw => draw.source === 'video' && draw.width === 3840);
+  assert.ok(snapshotDraw); assert.ok(snapshotDraw.width * snapshotDraw.height <= 8_294_400);
+  const captureDraws = app.draws.filter(draw => draw.source === 'canvas');
+  assert.equal(captureDraws.length, 3, 'broad image and two detail crops all use the frozen canvas');
+  assert.ok(captureDraws.every(draw => draw.frame === 1));
+  app.state.frame = 9; // A later video frame must never supply another crop.
+  const drawCount = app.state.drawCalls;
+  await app.reply([]);
+  assert.equal(app.awaiting.length, 1); assert.equal(app.awaiting[0].message.enhanceLive, false);
+  assert.ok(imagePixels(app.awaiting[0].message) <= 1_000_000);
+  await app.reply([item]);
+  assert.equal(app.history.length, 0, 'one crop does not publish before the second proposal is checked');
+  await app.reply([other]);
+  assert.equal(app.state.drawCalls, drawCount, 'decoding never recaptures moving video');
+  assert.equal(app.get('pos-status').getAttribute('data-state'), 'ambiguous');
+  assert.equal(app.history.length, 0);
+});
+
+test('standalone source crops from one exposure count as one POS confirmation observation', async t => {
+  const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+  detailRegions(app);
+  await app.open(); await app.reply([]); await app.reply([item]); await app.reply([item]);
+  assert.equal(app.history.length, 0); assert.match(app.get('pos-status').textContent, /1 of 2/);
+  await app.tick({ frame: 2, now: 1200 }); await app.reply([]); await app.reply([item]); await app.reply([item]);
+  assert.equal(app.history.length, 1);
+  assert.ok(app.history[0].position.topLeft.x > item.position.topLeft.x + 300, 'crop coordinates return to the original video');
+});
+
+test('standalone source crop truncation and decode deadlines cannot publish a partial unique result', async t => {
+  for (const reason of ['count', 'deadline', 'settings']) {
+    const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+    app.get('pos-confirmation').value = '1'; detailRegions(app, reason === 'count' ? 3 : 2);
+    await app.open(); await app.reply([]);
+    if (reason === 'deadline') app.state.now = 1351;
+    if (reason === 'settings') await app.change('pos-confirmation', '2');
+    await app.reply([item]);
+    if (reason === 'count') await app.reply([item]);
+    assert.equal(app.history.length, 0, reason);
+    assert.equal(app.awaiting.length, 0, 'no remaining crop starts after the task becomes invalid');
+  }
+});
+
+test('standalone source retries cannot erase a partial value withheld by the worker', async t => {
+  for (const phase of ['broad', 'crop']) {
+    const app = cameraHarness({ crops: true, width: 3840, height: 2160 }); t.after(() => app.close());
+    app.get('pos-confirmation').value = '1'; detailRegions(app);
+    await app.open();
+    if (phase === 'broad') await app.reply([], { diagnostics: { incompleteEvidence: true } });
+    else {
+      await app.reply([]); await app.reply([], { diagnostics: { incompleteEvidence: true } }); await app.reply([item]);
+    }
+    assert.equal(app.history.length, 0); assert.equal(app.awaiting.length, 0);
+  }
 });

@@ -1,6 +1,6 @@
 # Barcode API
 
-The latest [independent-decoder update](INDEPENDENT-DECODER.md) combines ZXing with ZBar and the project's own Code 128 matcher to correct a demonstrated wrong reading and recover more difficult labels. It preserves POS ambiguity and separate-frame confirmation and reports accuracy on a new frozen synthetic evaluation set.
+The latest [QR recovery update](QR-UPDATE.md) adds finder-aware source crops, QR grid sampling, bounded blur/scratch recovery and earlier detailed camera capture for tiny QR cells. It also adds configurable error correction and blank borders to QR generation. Recognition results and remaining failures are measured separately from software tests.
 
 Version **0.9.0** includes optional camera controls, detailed source-pixel capture, an aiming area and tap targeting, and adaptive frame selection in the reusable [camera SDK](SDK.md) and [JavaScript/POS/React examples](INTEGRATION.md). The [recovery update](RECOVERY-UPDATE.md) adds automatic detail retries, scratched-QR recovery and a guarded retail-format reread, with a fresh synthetic evaluation. The [comparison benchmark](COMPARISON.md) records controlled trials with the bundled reader or an optional, separately licensed Scanbot SDK. Start the server and open `/scan/examples/` (or `/examples/` when serving `web/` statically).
 
@@ -32,7 +32,7 @@ The scanner is a separate browser app. It does not need your API key. The existi
 
 **Prefer clearer camera frames** compares a short burst and selects the best-scoring fresh image. Quality hints can suggest holding still, improving lighting, reducing possible glare or keeping the whole code visible. The scanner also requests continuous autofocus when the camera supports it. These are bounded heuristics; they cannot recover detail the camera never captured.
 
-**Retry detected barcode areas** keeps the full-image read first, then retries likely regions when that read fails. It can search away from the centre, retains real surrounding margins, and maps returned corners back to the source. These are heuristic rectangular crops from captured pixels, not exact perspective correction. Live scanning retries at most two regions and one enhancement strategy within its retry-start budget.
+**Retry detected barcode areas** keeps the full-image read first, then retries likely regions when that read fails. It can search away from the centre, retains real surrounding margins, and maps returned corners back to the source. These are heuristic rectangular crops from captured pixels, not exact perspective correction. Live scanning uses bounded region and QR-specific recovery passes within its retry-start budget. QR proposals use observed finder patterns and cell size; incomplete crop searches cannot publish a unique result.
 
 Existing enhancement strategies include contrast normalization, sharpening, diagonal rotation, light/dark inversion, local illumination correction and bounded 2× resampling. Recovery only accepts formats with mandatory checksums or error correction, and linear results must agree with visible source-bar direction. Unchecked formats remain available on the original pass when POS mode is off. These checks reduce specific false readings; they do not eliminate every native decoder error.
 
@@ -74,13 +74,13 @@ Then open <http://127.0.0.1:8000/>. Keep the server running during the first com
 | --- | --- | --- |
 | `GET /scan/` | None | Live camera app; no API key needed |
 | `GET /scan/lab/` | None | Experimental Code 128 collection and comparison lab; no API key needed |
-| `POST /v1/barcodes/generate` | JSON with `format`, `text`, optional `output` and `scale` | PNG or SVG image |
+| `POST /v1/barcodes/generate` | JSON with `format`, `text`, optional `output`, `scale`, and QR-specific settings | PNG or SVG image |
 | `POST /v1/barcodes/read` | Multipart upload in the `file` field | JSON with decoded values, formats, raw bytes, and four corner positions |
 | `POST /v1/pos/decode` | Repeated `frames` image fields and an optional `options` JSON string | POS decision, candidates, confirmation counts and per-frame decoding details |
 | `GET /v1/formats` | None | Generation formats, reading support, and POS formats, defaults and limits |
 | `GET /health` | None | Public health check |
 
-Generation supports `qr`, `code128`, `ean13`, and `upca`. Reading uses ZXing-C++'s supported formats, including QR and common retail barcodes. Each `/v1` endpoint requires an `X-API-Key` header.
+Generation supports `qr`, `code128`, `ean13`, and `upca`. QR requests optionally accept `qr_error_correction` (`L`, `M`, `Q`, `H`) and `qr_quiet_zone` (4–16 cells); omitted settings preserve the previous defaults. These options are rejected for other formats. See [QR generation examples](QR-UPDATE.md#qr-generation). Reading uses ZXing-C++'s supported formats, including QR and common retail barcodes. Each `/v1` endpoint requires an `X-API-Key` header.
 
 The project does not include user accounts, billing, a production product database, or a hosting subscription. The POS example includes a small demonstration catalogue and session cart. Real product names, prices and business actions require your own data source and authenticated backend. Backend API keys can now be configured per customer; usage counts are operational, in-memory metrics rather than billing records.
 

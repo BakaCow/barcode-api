@@ -7,6 +7,7 @@ import hashlib
 from io import BytesIO
 from pathlib import Path
 import time
+from xml.etree import ElementTree
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
@@ -116,9 +117,15 @@ class GenerateRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2048)
     output: Literal["png", "svg"] = "png"
     scale: int = Field(default=4, ge=1, le=8, strict=True)
+    qr_error_correction: Literal['L', 'M', 'Q', 'H'] | None = Field(
+        default=None, description='QR only. Omit to retain the existing encoder default (L).')
+    qr_quiet_zone: int = Field(default=4, ge=4, le=16, strict=True,
+                               description='QR only. White border in modules on every side; minimum four.')
 
     @model_validator(mode="after")
     def validate_content(self):
+        if self.format != 'qr' and self.model_fields_set & {'qr_error_correction', 'qr_quiet_zone'}:
+            raise ValueError('QR error correction and quiet-zone options apply only to QR codes.')
         if self.format in ("ean13", "upca"):
             length = 13 if self.format == "ean13" else 12
             if len(self.text) != length or not self.text.isascii() or not self.text.isdigit():
@@ -186,23 +193,52 @@ def formats():
     }
 
 
+def _qr_svg_with_border(code, scale, modules):
+    """Pad only the trusted native SVG output; user content is never markup."""
+    namespace = 'http://www.w3.org/2000/svg'
+    ElementTree.register_namespace('', namespace)
+    inner = ElementTree.fromstring(code.to_svg(scale=scale, add_quiet_zones=False))
+    margin = scale * modules
+    width, height = int(inner.attrib['width']), int(inner.attrib['height'])
+    outer = ElementTree.Element(f'{{{namespace}}}svg', {
+        'width': str(width + 2 * margin), 'height': str(height + 2 * margin),
+        'viewBox': f'0 0 {width + 2 * margin} {height + 2 * margin}',
+        'version': '1.1',
+    })
+    ElementTree.SubElement(outer, f'{{{namespace}}}rect', {
+        'width': '100%', 'height': '100%', 'fill': '#FFFFFF'})
+    inner.set('x', str(margin)); inner.set('y', str(margin))
+    outer.append(inner)
+    return ElementTree.tostring(outer, encoding='unicode')
+
+
 @router.post("/barcodes/generate", response_class=Response, responses={
     200: {"content": {"image/png": {}, "image/svg+xml": {}}},
 })
 def generate(payload: GenerateRequest):
     """Generate an image. EAN-13 and UPC-A require a valid, complete check digit."""
     try:
-        code = zxingcpp.create_barcode(payload.text, FORMATS[payload.format])
+        creator_options = {'ec_level': payload.qr_error_correction} if payload.qr_error_correction is not None else {}
+        code = zxingcpp.create_barcode(payload.text, FORMATS[payload.format], **creator_options)
         if payload.output == "svg":
+            svg = (_qr_svg_with_border(code, payload.scale, payload.qr_quiet_zone)
+                   if payload.format == 'qr' and payload.qr_quiet_zone != 4
+                   else code.to_svg(scale=payload.scale, add_quiet_zones=True))
             return Response(
-                code.to_svg(scale=payload.scale, add_quiet_zones=True),
+                svg,
                 media_type="image/svg+xml",
                 headers={"Content-Disposition": 'attachment; filename="barcode.svg"',
                          "Cache-Control": "no-store"},
             )
-        pixels = code.to_image(scale=payload.scale, add_quiet_zones=True)
+        custom_border = payload.format == 'qr' and payload.qr_quiet_zone != 4
+        pixels = code.to_image(scale=payload.scale, add_quiet_zones=not custom_border)
         buffer = BytesIO()
-        Image.fromarray(pixels).save(buffer, format="PNG")
+        with Image.fromarray(pixels) as rendered:
+            if custom_border:
+                with ImageOps.expand(rendered, border=payload.scale * payload.qr_quiet_zone, fill=255) as bordered:
+                    bordered.save(buffer, format='PNG')
+            else:
+                rendered.save(buffer, format='PNG')
         return Response(buffer.getvalue(), media_type="image/png", headers={
             "Content-Disposition": 'attachment; filename="barcode.png"',
             "Cache-Control": "no-store",

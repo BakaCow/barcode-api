@@ -70,6 +70,8 @@ def test_camera_app_is_public_while_api_still_requires_a_key(client):
         ("independent-reader.js", "application/javascript"),
         ("pos-policy.js", "application/javascript"),
         ("frame-analysis.js", "application/javascript"),
+        ("qr-geometry.js", "application/javascript"),
+        ("qr-recovery.js", "application/javascript"),
         ("capture-selection.js", "application/javascript"),
         ("capture-geometry.js", "application/javascript"),
         ("camera-constraints.js", "application/javascript"),

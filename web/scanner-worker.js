@@ -27,6 +27,8 @@ const LINEAR_RECOVERY = new Set([
 ]);
 function initialize() {
   if (!decoder) {
+    if (typeof QRGeometry === 'undefined') importScripts('./qr-geometry.js');
+    if (typeof QRRecovery === 'undefined') importScripts('./qr-recovery.js');
     if (typeof IndependentReader === 'undefined') importScripts('./independent-reader.js');
     decoder = Promise.all([ZXingWASM.prepareZXingModule({
       overrides: { locateFile: (path) => new URL('./vendor/' + path, self.location.href).href },
@@ -41,6 +43,7 @@ function loadPosPolicy() {
 }
 
 function loadFrameAnalysis() {
+  if (typeof QRGeometry === 'undefined') importScripts('./qr-geometry.js');
   if (typeof FrameAnalysis === 'undefined') importScripts('./frame-analysis.js');
 }
 
@@ -371,6 +374,41 @@ async function independentRecovery(image, formats, started, budgetMs) {
     strategy: checked.complete ? 'independent-recovery' : 'independent-incomplete' } };
 }
 
+async function qrRecovery(image, recoveryOptions, mode, retryIndex, started, budgetMs, analysis) {
+  if (!recoveryOptions.formats.includes('QRCode') || typeof QRGeometry === 'undefined' || typeof QRRecovery === 'undefined') return null;
+  const available = budgetMs - (performance.now() - started);
+  if (available <= 0) return null;
+  const begun = performance.now(), limit = Math.min(mode === 'live' ? 100 : 400, available);
+  const geometry = QRGeometry.analyze(image, { maxScanDimension: 2048, maxRegions: mode === 'live' ? 2 : 4,
+    timeBudgetMs: Math.min(mode === 'live' ? 35 : 80, limit) });
+  if (!geometry.regions.length) return null;
+  const results = [], seen = new Set();
+  let passes = 0, strategy = 'qr-finder-crop', complete = geometry.complete && analysis?.regionsComplete !== false;
+  for (let index = 0; index < geometry.regions.length; index++) {
+    const region = geometry.regions[index]; let checked = false, resolved = false;
+    for (const candidate of QRRecovery.candidates(image, region, { mode, retryIndex })) {
+      if (performance.now() - begun > limit || performance.now() - started > budgetMs) { complete = false; break; }
+      const prepared = new ImageData(candidate.image.data, candidate.image.width, candidate.image.height);
+      const options = { ...recoveryOptions, formats: ['QRCode'], ...candidate.options };
+      const found = validResults(await ZXingWASM.readBarcodes(prepared, options), candidate.mapPoint,
+        image.width, image.height, true).filter(result => ['QRCode', 'QRCodeModel1', 'QRCodeModel2'].includes(result.format));
+      passes++; checked = true; strategy = candidate.strategy;
+      for (const result of found) {
+        const key = resultIdentity(result); seen.add(key);
+        if (!results.some(existing => resultIdentity(existing) === key &&
+          (sameSymbolSegment(existing.position, result.position) || sameSymbolSegment(result.position, existing.position)))) results.push(result);
+      }
+      if (found.length) { resolved = true; break; }
+    }
+    if (!checked || !resolved || (index < geometry.regions.length - 1 && performance.now() - begun > limit)) complete = false;
+    if (performance.now() - begun > limit) break;
+  }
+  // All known QR regions must be inspected. A deadline or truncated locator
+  // cannot turn a partial observation into a confident unique POS identity.
+  return { results: complete || seen.size > 1 ? results : [], observed: results.length,
+    diagnostics: { passes, strategy, qrComplete: complete, incompleteEvidence: !complete && seen.size === 1 } };
+}
+
 async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   const started = performance.now();
   const budgetMs = mode === 'live' ? 350 : 2500;
@@ -400,7 +438,7 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
     // contain a different label. Keep conflicts already observed, but do not
     // let the recovery deadline turn this into first-crop-wins acceptance.
     const incomplete = () => ({ results: seen.size > 1 ? croppedResults : [], ...details,
-      diagnostics: { passes, strategy } });
+      diagnostics: { passes, strategy, incompleteEvidence: seen.size === 1 } });
     for (const region of analysis.regions.slice(0, mode === 'live' ? 2 : 3)) {
       if (performance.now() - started > budgetMs) return incomplete();
       const crop = FrameAnalysis.crop(image, region, MAX_PIXELS);
@@ -416,7 +454,16 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
         if (!seen.has(key)) { seen.add(key); croppedResults.push(result); }
       }
     }
-    if (croppedResults.length) return { results: croppedResults, ...details, diagnostics: { passes, strategy } };
+    if (croppedResults.length) {
+      const complete = analysis.regionsComplete !== false && analysis.regions.length <= (mode === 'live' ? 2 : 3);
+      return { results: complete || seen.size > 1 ? croppedResults : [], ...details,
+        diagnostics: { passes, strategy, incompleteEvidence: !complete && seen.size === 1 } };
+    }
+  }
+  const qr = await qrRecovery(image, recoveryOptions, mode, retryIndex, started, budgetMs, analysis);
+  if (qr) {
+    passes += qr.diagnostics.passes;
+    if (qr.results.length || (qr.observed && !qr.diagnostics.qrComplete)) return { results: permitted(qr.results), ...details, diagnostics: { ...qr.diagnostics, passes } };
   }
   // Live mode spreads expensive retries over different camera frames. Imported
   // images have no next frame, so they may use all seven bounded fallback passes.
@@ -511,7 +558,8 @@ function prepareCapture(message) {
           if (crop.plan.width / crop.plan.cropWidth > sample.plan.width / sample.plan.cropWidth * 1.05) recovery.push(crop);
         }
       }
-      return { ...sample, analysis, proposals, recovery, sourceWidth: width, sourceHeight: height };
+      return { ...sample, analysis, proposals, recovery, recoveryComplete: proposals.length <= 2 && analysis.regionsComplete !== false,
+        sourceWidth: width, sourceHeight: height };
     } finally { canvas.width = canvas.height = 0; }
   } finally { bitmap?.close?.(); }
 }

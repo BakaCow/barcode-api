@@ -83,7 +83,8 @@ test('missing cached assets remove offline-ready status', async () => {
   assert.equal((await app.message('OFFLINE_STATUS')).ready, false);
 });
 
-for (const path of ['./independent-reader.js', './vendor/zbar/index.js', './vendor/zbar/zbar.wasm', './engine/code128-engine.js']) {
+for (const path of ['./independent-reader.js', './vendor/zbar/index.js', './vendor/zbar/zbar.wasm', './engine/code128-engine.js',
+  './qr-geometry.js', './qr-recovery.js']) {
   test(`independent decoder assets are required for offline readiness: ${path}`, async () => {
     const app = harness();
     app.state.failURL = new URL(path, 'https://example.test/scan/').href;

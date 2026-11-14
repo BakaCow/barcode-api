@@ -14,6 +14,7 @@ from typing import Callable
 from PIL import Image, ImageChops, ImageFilter, ImageOps
 import zxingcpp
 from independent_zbar import observations as zbar_observations
+import qr_recovery
 
 
 MAX_RETRY_PIXELS = 4_000_000
@@ -401,6 +402,48 @@ def _independent_agreement(records, observed, working, mapping, original_size, s
     return [record for record in observed if record.format.name == 'EAN13'] + supported
 
 
+def _recover_qr(working, mapping, original_size, requested, started):
+    """Read complete, source-derived QR regions after full-view passes miss.
+
+    A successful crop never hides an unchecked or unreadable second proposal.
+    Exhaustion of the region/time budget abstains instead of publishing a
+    misleading unique label. Native payload bytes and formats are unchanged.
+    """
+    if requested is not None and 'qr' not in requested:
+        return []
+    deadline = started + RETRY_SECONDS
+    if monotonic() >= deadline:
+        return []
+    search = qr_recovery.find_proposals(working, deadline)
+    if not search.complete:
+        return []
+    results = []
+    for proposal in search.proposals:
+        observed = {}
+        candidates = qr_recovery.variants(working, proposal)
+        try:
+            for candidate, to_working, _strategy, pure in candidates:
+                with candidate:
+                    if monotonic() >= deadline:
+                        return []
+                    def to_source(x, y):
+                        return mapping(*to_working(x, y))
+                    codes = zxingcpp.read_barcodes(candidate, formats=zxingcpp.BarcodeFormat.QRCode,
+                                                  is_pure=pure)
+                    codes = [code for code in codes if code.valid and not code.error and proposal.contains_symbol([
+                        to_working(point.x, point.y) for point in (code.position.top_left, code.position.top_right,
+                                                                  code.position.bottom_right, code.position.bottom_left)])]
+                    records = _records(codes, original_size, to_source, recovery=True, allowed_names=['qr'])
+                for record in records:
+                    observed[(record.format.name, record.bytes)] = record
+            if monotonic() >= deadline or not observed:
+                return []
+            results.extend(observed.values())
+        finally:
+            candidates.close()
+    return results
+
+
 def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None = None) -> list[DecodedBarcode]:
     """Read the requested families on every pass, or retain legacy behavior for None."""
     requested = _requested_formats(allowed_formats)
@@ -498,4 +541,5 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
                     records = [record for record in records if _source_bars_agree(record, working, image.size)]
                 if records:
                     return _independent_agreement(records, observed, working, to_original, image.size, started, proof_cache)
+        return _recover_qr(working, to_original, image.size, requested, started)
     return []

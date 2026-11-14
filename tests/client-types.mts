@@ -7,6 +7,9 @@ const api = new BarcodeClient({ baseUrl: 'https://example.com', apiKey: 'develop
 const decision: Promise<PosResult> = api.decodePos([new Blob(['image'])], { allowed_formats: ['code128'], confirmation_frames: 1 });
 void decision;
 api.generate({ format: 'qr', text: '000123' });
+api.generate({ format: 'qr', text: 'QR-control', qr_error_correction: 'H', qr_quiet_zone: 8 });
+// @ts-expect-error QR error correction is one of the four supported levels.
+api.generate({ format: 'qr', text: 'QR-control', qr_error_correction: 'highest' });
 // @ts-expect-error unsupported generation format
 api.generate({ format: 'pdf417', text: 'value' });
 // @ts-expect-error frame threshold is deliberately bounded

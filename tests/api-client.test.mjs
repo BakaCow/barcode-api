@@ -30,8 +30,9 @@ test('client preserves deployment prefix and authenticates only API requests', a
 test('generation preserves Unicode text, zeros and binary response', async t => {
   const bytes = Buffer.from([0, 137, 80, 255]);
   const { client, requests } = await server(t, (_, res) => { res.writeHead(200, { 'Content-Type': 'image/png', 'X-Request-ID': 'req-1' }); res.end(bytes); });
-  const result = await client.generate({ format: 'qr', text: '0000123 日本語' });
-  assert.equal(JSON.parse(requests[0].body).text, '0000123 日本語');
+  const payload = { format: 'qr', text: '0000123 日本語', qr_error_correction: 'H', qr_quiet_zone: 8 };
+  const result = await client.generate(payload);
+  assert.deepEqual(JSON.parse(requests[0].body), payload);
   assert.deepEqual(Buffer.from(result.data), bytes); assert.equal(result.requestId, 'req-1');
 });
 

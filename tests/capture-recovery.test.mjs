@@ -63,3 +63,33 @@ test('stale results end the detail window and reset clears all recovery state', 
   assert.equal(miss(recovery, 3500, 'h'), true);
   assert.equal(recovery.detailed(NaN), false);
 });
+
+test('reliable tiny QR geometry requests source detail after two distinct timed misses', () => {
+  const recovery = createRecovery(), analysis = { ...small, regionsComplete: true,
+    qr: { complete: true, gridReliable: true, clipped: false, count: 1, moduleSize: 1.8 } };
+  assert.equal(miss(recovery, 1000, 'first', { analysis }), false);
+  assert.equal(miss(recovery, 1200, 'first', { analysis }), false, 'same exposure cannot accelerate recovery');
+  assert.equal(miss(recovery, 1200, 'second', { analysis }), true);
+  assert.equal(recovery.detailed(1200), true);
+  assert.equal(recovery.detailed(4200), false);
+  assert.equal(miss(recovery, 4300, 'third', { analysis }), false, 'normal cooldown still applies');
+});
+
+test('partial, clipped, multiple or large-cell QR hints cannot trigger early detail', () => {
+  const qr = { complete: true, gridReliable: true, clipped: false, count: 1, moduleSize: 1.8 };
+  for (const changed of [{ complete: false }, { gridReliable: false }, { clipped: true },
+    { count: 2 }, { moduleSize: 4 }, { moduleSize: NaN }, { moduleSize: 0 }]) {
+    const recovery = createRecovery(), analysis = { ...small, qr: { ...qr, ...changed } };
+    assert.equal(miss(recovery, 1000, 'first', { analysis }), false);
+    assert.equal(miss(recovery, 1200, 'second', { analysis }), false);
+  }
+  const recovery = createRecovery(), analysis = { ...small, regionsComplete: false, qr };
+  for (let i = 0; i < 5; i++) assert.equal(miss(recovery, 1000 + i * 250, i, { analysis }), false);
+});
+
+test('a result blocks QR-triggered detail while an incomplete view supplies no escalation evidence', () => {
+  const recovery = createRecovery(), analysis = { ...small, regionsComplete: true,
+    qr: { complete: true, gridReliable: true, clipped: false, count: 1, moduleSize: 1.8 } };
+  assert.equal(miss(recovery, 1000, 'first', { analysis, hasResults: true }), false);
+  for (let i = 0; i < 5; i++) assert.equal(miss(recovery, 1200 + i * 250, i, { analysis }), false);
+});

@@ -13,7 +13,7 @@ export interface PosResult {
   allowed_formats: PosFormat[];
   frames: {index: number; image: ImageSize; duplicate_of: number | null; barcodes: Barcode[]}[];
 }
-export interface GenerateOptions { format: 'qr' | 'code128' | 'ean13' | 'upca'; text: string; output?: 'png' | 'svg'; scale?: number }
+export interface GenerateOptions { format: 'qr' | 'code128' | 'ean13' | 'upca'; text: string; output?: 'png' | 'svg'; scale?: number; qr_error_correction?: 'L' | 'M' | 'Q' | 'H'; qr_quiet_zone?: number }
 export interface RequestOptions { signal?: AbortSignal }
 export class BarcodeApiError extends Error { status: number; requestId: string | null; retryAfter: string | null; details: unknown }
 export class BarcodeClient {

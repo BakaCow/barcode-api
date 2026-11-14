@@ -6,6 +6,7 @@
   // Cache intrinsics: repeated global lookups are costly in worker/VM realms.
   const { min, max, floor, ceil, round, sqrt, hypot, abs, imul } = Math;
   const clamp = (value, low, high) => max(low, min(high, value));
+  const qrGeometry = typeof module !== 'undefined' && module.exports ? require('./qr-geometry.js') : null;
 
   function pixelsFor(image) {
     if (!image || !Number.isInteger(image.width) || !Number.isInteger(image.height) ||
@@ -164,7 +165,37 @@
   function analyze(image) {
     const data = pixelsFor(image), { width, height } = image;
     const small = thumbnail(data, width, height);
-    const proposals = locate(small.gray, small.width, small.height, width, height);
+    const generic = locate(small.gray, small.width, small.height, width, height);
+    // Finder patterns identify the QR's own pixels, so a sharp background
+    // cannot dominate its focus/size decision. These remain search hints.
+    const geometry = qrGeometry || root.QRGeometry;
+    const qr = geometry?.analyze({ width, height, data }, { maxScanDimension: 640, maxRegions: 3, timeBudgetMs: 40 });
+    const found = qr?.regions || [];
+    const proposals = found.map(region => ({ ...region, kind: 'matrix' }));
+    for (const region of generic) {
+      const overlaps = proposals.filter(candidate => {
+        const a = candidate.content, b = region.content;
+        const overlap = max(0, min(a.x + a.width, b.x + b.width) - max(a.x, b.x)) *
+          max(0, min(a.y + a.height, b.y + b.height) - max(a.y, b.y));
+        const smaller = min(a.width * a.height, b.width * b.height);
+        // Coarse texture tiles can expand a small QR's content box by several
+        // cells. Match centred overlap, then union crops rather than trimming.
+        return overlap > smaller * 0.75 && max(a.width * a.height, b.width * b.height) < smaller * 4.5 &&
+          abs(a.x + a.width / 2 - b.x - b.width / 2) < max(a.width, b.width) * 0.35 &&
+          abs(a.y + a.height / 2 - b.y - b.height / 2) < max(a.height, b.height) * 0.35;
+      });
+      if (overlaps.length === 1) {
+        // Preserve every source pixel/margin from the old crop when replacing
+        // a matching proposal. Larger merged scenes remain separate proposals.
+        const match = overlaps[0], right = max(match.x + match.width, region.x + region.width);
+        const bottom = max(match.y + match.height, region.y + region.height);
+        match.x = min(match.x, region.x); match.y = min(match.y, region.y);
+        match.width = right - match.x; match.height = bottom - match.y;
+        match.clipped ||= region.clipped;
+      } else proposals.push(region);
+    }
+    const regionsComplete = proposals.length <= 3 && qr?.complete !== false;
+    proposals.length = min(3, proposals.length);
     const region = proposals[0];
     const stats = quality(data, width, height, region?.content || { x: 0, y: 0, width, height });
     let hint = null;
@@ -172,12 +203,15 @@
     else if (region?.clipped) hint = 'clipped';
     else if (region && stats.centralHighlight) hint = 'glare';
     else if (stats.contrast >= 7 && stats.edgeMean >= 2 && stats.sharpness < 0.55) hint = 'blurred';
-    else if (region && (region.kind === 'linear' ? max(region.content.width, region.content.height) < 160 : min(region.content.width, region.content.height) < 85)) hint = 'small';
+    else if (region && (region.qr && region.moduleSize < 3 || (region.kind === 'linear' ? max(region.content.width, region.content.height) < 160 : min(region.content.width, region.content.height) < 85))) hint = 'small';
     else if (stats.contrast < 7 || stats.detailMean < 2) hint = 'low-detail';
     return {
       score: round(stats.score * (region ? 1 : 0.7) * 100) / 100,
       hint,
       regions: proposals.map(({ x, y, width: w, height: h, score, kind }) => ({ x, y, width: w, height: h, score, kind })),
+      regionsComplete,
+      ...(found.length ? { qr: { count: found.length, complete: qr.complete,
+        moduleSize: found[0].moduleSize, gridReliable: found[0].gridReliable, clipped: found[0].clipped } } : {}),
       fingerprint: fingerprint(data, width, height),
     };
   }

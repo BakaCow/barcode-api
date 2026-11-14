@@ -47,7 +47,7 @@ def client(monkeypatch):
 
 
 def test_generation_and_read_roundtrip(client):
-    image = client.generate(format="qr", text="0000123 日本語")
+    image = client.generate(format="qr", text="0000123 日本語", qr_error_correction="H", qr_quiet_zone=8)
     assert image.content_type == "image/png"
     result = client.read(ImageUpload(image.data))
     assert result["barcodes"][0]["text"] == "0000123 日本語"

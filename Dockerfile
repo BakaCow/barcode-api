@@ -3,7 +3,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends libzbar0 && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY app.py barcode_reader.py independent_zbar.py pos_decoding.py hosting.py ./
+COPY app.py barcode_reader.py independent_zbar.py qr_recovery.py pos_decoding.py hosting.py ./
 COPY web/ ./web/
 USER 10001:10001
 EXPOSE 8000

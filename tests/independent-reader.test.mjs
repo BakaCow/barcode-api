@@ -47,6 +47,49 @@ function worker() {
 const actual = worker();
 await actual.send({ type: 'init' });
 
+for (const fixture of fixtures.filter(item => item.format === 'QRCode')) {
+  test(`QR source crop and grid recovery preserve native raw bytes and presentation: ${fixture.name}`, async () => {
+    const image = imageFor(fixture), isolated = worker();
+    await isolated.send({ type: 'init' });
+    const read = isolated.context.ZXingWASM.readBarcodes, native = (await read(image, nativeOptions))[0];
+    assert.ok(native); assert.deepEqual(Array.from(native.bytes), fixture.encoderBytes);
+    // Force both the full-view read and first source-crop read to miss so the
+    // actual sampled-grid path, rather than ordinary QR decoding, is exercised.
+    let calls = 0;
+    isolated.context.ZXingWASM.readBarcodes = async (...args) => ++calls <= 2 ? [] : read(...args);
+    const result = await isolated.send({ image, mode: 'image', posOptions: { allowedFormats: ['qr'] } });
+    assert.equal(result.type, 'result', result.message);
+    assert.equal(result.results.length, 1);
+    assert.equal(result.results[0].text, native.text);
+    assert.deepEqual(result.results[0].bytes, fixture.encoderBytes);
+    assert.match(result.diagnostics.strategy, /^qr-grid/);
+  });
+}
+
+for (const number of [1, 2, 3]) test(`source grid inverse filtering recovers severe development QR blur: ${number}`, async () => {
+  const fixture = older.find(item => item.name === `qr/recovery-qr-label-${number}/blur-2`), image = imageFor(fixture);
+  const before = Buffer.from(image.data);
+  assert.equal((await actual.context.ZXingWASM.readBarcodes(image, nativeOptions)).length, 0);
+  const result = await actual.send({ image, mode: 'image', posOptions: { allowedFormats: ['qr'] } });
+  assert.deepEqual(result.results.map(item => item.text), [fixture.expected[0].text]);
+  assert.deepEqual(result.results[0].bytes, Array.from(new TextEncoder().encode(fixture.expected[0].text)));
+  assert.equal(result.diagnostics.strategy, 'qr-grid-deblur');
+  assert.deepEqual(Buffer.from(image.data), before);
+});
+
+test('QR recovery inspects separate blurred labels and retains their conflicting values', async () => {
+  const first = older.find(item => item.name === 'qr/recovery-qr-label-1/blur-2');
+  const second = older.find(item => item.name === 'qr/recovery-qr-label-2/blur-2');
+  const a = imageFor(first), b = imageFor(second), width = a.width + b.width + 40, height = Math.max(a.height, b.height);
+  const data = new Uint8ClampedArray(width * height * 4).fill(255);
+  for (let y = 0; y < a.height; y++) data.set(a.data.subarray(y * a.width * 4, (y + 1) * a.width * 4), y * width * 4);
+  for (let y = 0; y < b.height; y++) data.set(b.data.subarray(y * b.width * 4, (y + 1) * b.width * 4), (y * width + a.width + 40) * 4);
+  const result = await actual.send({ image: { data, width, height }, mode: 'image', posOptions: { allowedFormats: ['qr'] } });
+  assert.deepEqual(result.results.map(item => item.text).sort(), [first.expected[0].text, second.expected[0].text].sort());
+  assert.equal(result.diagnostics.qrComplete, true);
+  assert.ok(result.results[0].position.topLeft.x < result.results[1].position.topLeft.x);
+});
+
 test('known incorrect Code128 first pass is corrected by actual independent byte and spatial agreement', async () => {
   const fixture = older.find(item => item.name === 'code128/recovery-code128-label-3/small-in-frame-1');
   const image = imageFor(fixture), expected = fixture.expected[0].text;

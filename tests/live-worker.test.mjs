@@ -35,7 +35,7 @@ function harness({ read, frameAnalysis, clock = performance } = {}) {
     ImageData: class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } },
     location: { href: 'https://offline.test/nested/scanner-worker.js' },
     importScripts(path) {
-      assert.ok(['./vendor/zxing-reader.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js', './vendor/zbar/index.js',
+      assert.ok(['./vendor/zxing-reader.js', './qr-geometry.js', './qr-recovery.js', './pos-policy.js', './frame-analysis.js', './independent-reader.js', './vendor/zbar/index.js',
         './engine/code128-decoder.js', './engine/code128-detector.js', './engine/code128-engine.js'].includes(path), path);
       imports.push(path);
       if (path === './vendor/zxing-reader.js' && read) {
@@ -103,7 +103,7 @@ test('quality analysis loads only local analysis code and never initializes or c
   assert.ok(response.analysis.fingerprint.length > 0);
   assert.equal(worker.initialized, 0);
   assert.equal(worker.calls.length, 0);
-  assert.deepEqual(worker.imports, ['./vendor/zxing-reader.js', './frame-analysis.js']);
+  assert.deepEqual(worker.imports, ['./vendor/zxing-reader.js', './qr-geometry.js', './frame-analysis.js']);
 });
 
 test('POS options are checked before native initialization and decoding', async () => {
@@ -152,7 +152,7 @@ test('live crop retries stay bounded, preserve all distinct candidates and map s
 });
 
 test('overlapping crops cannot duplicate the same candidate identity', async () => {
-  const worker = harness({ read: (_image, _options, count) => count === 1 ? [] : [valid('same')], frameAnalysis: proposedRegions() });
+  const worker = harness({ read: (_image, _options, count) => count === 1 ? [] : [valid('same')], frameAnalysis: proposedRegions(2) });
   const response = await worker.send({ image: blank(), mode: 'live', enhanceLive: true });
   assert.equal(worker.calls.length, 3);
   assert.equal(response.results.length, 1);
@@ -230,6 +230,12 @@ test('a deadline after the last planned crop does not discard a fully checked un
   const response = await worker.send({ image: blank(), mode: 'live', enhanceLive: true });
   assert.deepEqual(response.results.map(item => item.text), ['only-label']);
   assert.equal(worker.calls.length, 2);
+});
+
+test('a live crop count cap cannot hide a third proposed label', async () => {
+  const worker = harness({ frameAnalysis: proposedRegions(3), read: (_image, _options, count) => count === 1 ? [] : [valid('first-label')] });
+  const response = await worker.send({ image: blank(), mode: 'live', enhanceLive: true });
+  assert.deepEqual(response.results, []); assert.equal(worker.calls.length, 3);
 });
 
 test('malformed enhancement settings and analysis buffers fail without native decoding', async () => {

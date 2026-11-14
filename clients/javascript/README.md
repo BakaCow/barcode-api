@@ -31,6 +31,8 @@ if (decision.status === 'confirmed') {
 
 Methods: `health()`, `formats()`, `generate(payload)`, `read(Blob)`, `decodePos(Blob[], options)`.
 
+QR generation accepts `qr_error_correction: 'L' | 'M' | 'Q' | 'H'` and `qr_quiet_zone: 4` through `16` (modules on every side), for example `client.generate({ format: 'qr', text: 'ORDER-000123', qr_error_correction: 'H', qr_quiet_zone: 8 })`. Omitted options preserve the existing `L` level and four-module border. Higher correction can help damage but can also increase density, so keep printed modules large enough for your camera. These options are rejected for other formats.
+
 Each method accepts a final `{signal}` option for caller cancellation (`decodePos` takes it as the third argument). The timeout covers the complete fetch and response consumption. HTTP errors throw `BarcodeApiError` with `status`, `requestId`, `retryAfter` (the header string), and optional `details`. Network errors and cancellation remain native fetch errors. Errors are never retried automatically. In particular, avoid turning a repeated successful scan into a repeated business transaction.
 
 Use an HTTPS URL in production. HTTP is accepted only for localhost/loopback development. Base paths such as `https://example.com/barcodes/` are preserved. Redirects are refused to avoid forwarding authentication to an unintended endpoint. POS inputs retain leading zeros and raw bytes. The server validates barcode content, image types and decoded pixel limits; client-side size checks do not replace that validation.

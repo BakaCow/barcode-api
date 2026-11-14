@@ -1,5 +1,47 @@
 # Verification
 
+## QR capture and recovery update (14 November 2026)
+
+The [QR update](QR-UPDATE.md) passes **604 JavaScript tests**, **431 Python tests**
+(one existing Windows platform skip), TypeScript declaration checks, OpenAPI
+validation and the React production build. The copied and built React decoder
+assets match the final source files. The Python suite retains its upstream
+Starlette/HTTPX deprecation warning.
+
+New checks cover measured finder geometry, grid sampling, source margins, native
+raw bytes and presentation, new blur recoveries through the actual local WASM,
+separate-frame SDK confirmation, allowed formats, equal-value neighbouring
+labels, and capped or unfinished crop searches. The app and SDK propagate
+withheld evidence so an incomplete earlier read cannot be forgotten before
+accepting another source crop. Source crops from one exposure supply only one
+confirmation observation. QR generation tests check all correction levels,
+PNG/SVG borders, invalid requests and compatibility with earlier defaults.
+
+The **37 mobile capability/lifecycle simulations** pass for Android Chrome-like
+and iPhone Safari-like profiles. These execute simulated browser capabilities,
+not Android Chrome, iPhone Safari or physical cameras. Docker/Linux execution,
+physical phones and a licensed Scanbot comparison were unavailable. The new
+offline cache is **1.11.0** and requires both QR geometry and recovery modules;
+automated cache tests cover missing assets, without a new real-phone offline
+installation check.
+
+Software test counts are separate from recognition accuracy. The
+[paired QR evaluation](benchmark-results/qr-upgrade/README.md) uses the complete
+baseline runtime at `1821c9324b492af5f42024a1e7efb7345e7942ac` and the same scorer
+on both sides. It reports fresh synthetic exact reads, incorrect values,
+retained failures, per-format changes, raw-byte checks and host timings. The
+live retry-zero profile is one worker request per still image; the source-crop
+and confirmation simulations above are separate evidence. Earlier fixture
+sets are development evidence for this update.
+
+All four existing CI benchmark commands pass on the frozen sources: the original
+development corpus gives browser **138/171**, API **138/171**, and experimental
+Code 128 **44/57** exact positives, each with **48/48** negatives rejected and
+zero unexpected values or runtime errors. The eight-image Code 128 demo gives
+the experimental engine **6/6** positives and **2/2** negative rejections; its
+standalone ZXing comparison retains one missed positive. These old development
+fixtures are separate from the fresh paired results.
+
 ## Independent decoding update (14 November 2026)
 
 The [independent-decoder update](INDEPENDENT-DECODER.md) passes **568 JavaScript tests**, **383 Python tests** (one existing Windows platform skip), TypeScript declarations, OpenAPI validation and the React production build. New tests use the actual local WASM engines and API reader to check the known wrong Code 128 image, tiny-label recovery, raw bytes, GS1/control/FNC4 preservation, neighbouring labels, format restrictions, source-bar agreement, bounded work, missing assets and the offline cache. The SDK regression confirms the corrected result only after a second distinct simulated frame. The comparison tool preserves historical reports and distinguishes the new decoder configuration.

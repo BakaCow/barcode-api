@@ -4,7 +4,8 @@ const Geometry = globalThis.CaptureGeometry || geometryModule.default;
 export const { validateTarget, regionPlan, sourceRegions } = Geometry;
 
 export function clearFrame(analysis, width, height) {
-  if (!analysis || analysis.hint !== null || analysis.score < 72 || analysis.regions?.length !== 1) return false;
+  if (!analysis || analysis.regionsComplete === false || analysis.qr?.complete === false ||
+      analysis.hint !== null || analysis.score < 72 || analysis.regions?.length !== 1) return false;
   const region = analysis.regions[0], area = region.width * region.height / (width * height);
   // A unique strong proposal avoids immediately decoding arbitrary sharp scene texture.
   return Number.isFinite(area) && area >= 0.015 && area <= 0.75;
