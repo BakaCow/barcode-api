@@ -1,5 +1,27 @@
 # Verification
 
+## CI deadline regression fix (14 November 2026)
+
+GitHub's Python job for `f7bccbc` missed
+`ean13/qr-upgrade-ean13-label-3/small-in-frame-2`. The linear decoder had a
+valid result, but a later QR search could exhaust its separate 100 ms locator
+slice on a slower CPU and veto that result. The two bounded tiny-source QR
+geometry phases now share the existing 1.2-second helper deadline, still capped
+by the 2.5-second request deadline. Incomplete searches still withhold unique
+results; exact payload, format, byte and source-coordinate checks are unchanged.
+
+Three new production-upload regressions verify a complete 200 ms locator and
+continued rejection when the helper or request budget expires. The positive
+regression failed on the committed code and passes with the fix. The full local
+Python suite passes **569 tests**, with one existing Windows skip. A separate
+full-reader reproduction reads the exact EAN bytes at normal, 1.5x and 2x
+simulated processing time; the committed code misses at both slower settings.
+Rerunning the published damage corpus preserves **153/171** exact API reads,
+48/48 negative rejections, zero wrong outputs and zero lost correct cases.
+This is Windows validation with controlled clocks, not a new Linux CI result.
+The published damage-recovery benchmark below remains a historical snapshot
+of the earlier frozen decoder sources.
+
 ## Damaged-code recovery (14 November 2026)
 
 The [damage recovery update](DAMAGE-RECOVERY-UPDATE.md) passes **729 JavaScript

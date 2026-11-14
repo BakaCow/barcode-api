@@ -289,13 +289,16 @@ def recover(image, *, deadline):
                    max(abs(a - b) for p, q in zip(entry.points, mapped) for a, b in zip(p, q)) < 4 for entry in observations):
             observations.append(Observation(code, mapped))
     if input_.width <= 128 and input_.height <= 128 and monotonic() < deadline:
+        # Both bounded sampling phases share the existing helper/caller budget.
+        # A separate 100 ms locator slice can expire on a slower CPU despite
+        # ample time remaining, vetoing an already proved linear barcode.
         with enlarge(input_) as enlarged:
-            search = qr_recovery.find_proposals(enlarged, min(deadline, monotonic() + .1))
+            search = qr_recovery.find_proposals(enlarged, deadline)
         if search.complete and not search.proposals and monotonic() < deadline:
             # A second sampling phase can expose a subpixel finder missed at
             # 4x. All geometry maps back before fitting the untouched source.
             with enlarge(input_, 6) as enlarged:
-                alternate = qr_recovery.find_proposals(enlarged, min(deadline, monotonic() + .1))
+                alternate = qr_recovery.find_proposals(enlarged, deadline)
             def map_finder(finder):
                 return replace(finder, x=(finder.x + .5) * 4 / 6 - .5,
                                y=(finder.y + .5) * 4 / 6 - .5, module=finder.module * 4 / 6)
