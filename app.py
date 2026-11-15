@@ -35,6 +35,9 @@ FORMATS = {
     "ean13": zxingcpp.BarcodeFormat.EAN13,
     "upca": zxingcpp.BarcodeFormat.UPCA,
 }
+# File-type brands of HEIC, the default photo format on iPhones. Pillow cannot
+# open it without an extra codec package, so these uploads get a clear answer.
+HEIC_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis", b"hevm", b"hevs"}
 
 
 class RequestSizeLimit:
@@ -219,6 +222,11 @@ def generate(payload: GenerateRequest):
     """Generate an image. EAN-13 and UPC-A require a valid, complete check digit."""
     try:
         creator_options = {'ec_level': payload.qr_error_correction} if payload.qr_error_correction is not None else {}
+        if payload.format == 'qr' and not payload.text.isascii():
+            # Mark the text as UTF-8 inside the symbol. Unmarked, the encoder stores
+            # some text as Latin-1 or Shift-JIS and readers have to guess which:
+            # "©" and "£" were read back as Japanese half-width characters.
+            creator_options['eci'] = 'UTF8'
         code = zxingcpp.create_barcode(payload.text, FORMATS[payload.format], **creator_options)
         if payload.output == "svg":
             svg = (_qr_svg_with_border(code, payload.scale, payload.qr_quiet_zone)
@@ -249,13 +257,17 @@ def generate(payload: GenerateRequest):
 
 def load_image(content: bytes, *, pixel_limit: int) -> Image.Image:
     """Validate before allocating decoded pixels; caller owns the returned RGB image."""
+    if content[4:8] == b"ftyp" and content[8:12] in HEIC_BRANDS:
+        raise HTTPException(415, "HEIC photos are not supported. Convert the photo to JPEG first.")
     try:
         with Image.open(BytesIO(content)) as source:
-            if source.format not in {"PNG", "JPEG", "WEBP"}:
+            # Pillow reports a JPEG that carries extra pictures, such as a phone's
+            # depth map, as MPO. Its first frame is the photograph; only that is read.
+            if source.format not in {"PNG", "JPEG", "MPO", "WEBP"}:
                 raise HTTPException(415, "Upload a PNG, JPEG, or WebP image.")
             if source.width * source.height > pixel_limit:
                 raise HTTPException(413, "Images exceed the available decoded pixel budget (20 megapixels per request).")
-            if getattr(source, "n_frames", 1) != 1:
+            if source.format != "MPO" and getattr(source, "n_frames", 1) != 1:
                 raise HTTPException(415, "Animated and multi-frame images are not supported.")
             with ImageOps.exif_transpose(source) as oriented, oriented.convert("RGBA") as normalized:
                 # Composite transparency on white so transparent backgrounds remain readable.

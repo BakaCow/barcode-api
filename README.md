@@ -134,11 +134,11 @@ curl.exe --fail-with-body -X POST "http://127.0.0.1:8000/v1/barcodes/generate" -
 curl.exe --fail-with-body -X POST "http://127.0.0.1:8000/v1/barcodes/read" -H "X-API-Key: $env:BARCODE_API_KEY" -F "file=@barcode.png"
 ```
 
-EAN-13 requires 13 digits, including a correct check digit; UPC-A requires 12. Example test values are `5901234123457` and `036000291452`. Generating an image does not assign ownership of a retail product identifier. Code 128 accepts up to 128 printable ASCII characters. QR accepts text up to 2,048 characters, subject to the encoder's byte capacity.
+EAN-13 requires 13 digits, including a correct check digit; UPC-A requires 12. Example test values are `5901234123457` and `036000291452`. Generating an image does not assign ownership of a retail product identifier. Code 128 accepts up to 128 printable ASCII characters, subject to the encoder's symbol capacity: 101 characters of general text, and all 128 only when the text is digits. Longer text returns 422. QR accepts text up to 2,048 characters, subject to the encoder's byte capacity. QR text with any character beyond ASCII is stored as UTF-8 with a character-set marker (ECI), so readers do not have to guess the encoding; unmarked, symbols such as `©`, `£` and `°` were read back as other characters. Marked text holds up to 2,953 UTF-8 bytes, which is fewer characters than before for very long non-Latin text: 984 Japanese characters instead of 1,817. ASCII-only QR output is unchanged.
 
 ## Read an image
 
-Upload one PNG, JPEG, or WebP image as the multipart field `file`. The file limit is 10 MiB; the decoded image limit is 20 million pixels. Animated images are rejected. PDF and SVG input are not supported.
+Upload one PNG, JPEG, or WebP image as the multipart field `file`. The file limit is 10 MiB; the decoded image limit is 20 million pixels. Animated images are rejected. A JPEG that carries extra embedded pictures, as phones add for depth maps, is read as an ordinary photo. HEIC photos, the iPhone camera default, are not supported and return 415 with a message saying so; convert them to JPEG first. PDF and SVG input are not supported.
 
 The JSON response contains:
 
@@ -150,6 +150,8 @@ The JSON response contains:
 - `image`: the image's width and height after applying EXIF orientation.
 
 Corner positions use the EXIF-normalized image's pixel coordinates. UPC-A may be returned as the equivalent leading-zero EAN-13 representation by the decoder.
+
+On a tilted EAN-13, the decoder can cross only the left half and report those bars as a checksum-valid but wrong UPC-E. With generated labels this happened for about one EAN-13 number in ten, at 30° to 60° of tilt. The reader rereads such a result upright and returns the complete EAN-13 when that reread spells the same left half. A real UPC-E label is unaffected. If EAN-13 is excluded from a POS format allowlist, the UPC-E is returned as before.
 
 Invalid images return 400, missing or wrong keys return 401, oversized inputs return 413, unsupported image types return 415, and invalid generation parameters return 422. Requests are bounded before multipart parsing. Uploaded images are processed for the request; the application does not archive them. The framework may spool multipart uploads to temporary disk storage during processing.
 

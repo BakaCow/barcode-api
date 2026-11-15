@@ -112,3 +112,64 @@ def test_corroboration_requires_an_oriented_footprint_covering_the_same_scan_seg
     degenerate = reader.DecodedBarcode('y', zxingcpp.BarcodeFormat.EAN13, b'y', ((0, 0), (50, 0), (50, 0), (0, 0)))
     assert not reader._same_symbol_segment(record, distant)
     assert not reader._same_symbol_segment(record, degenerate)
+
+
+# EAN-13 values whose left half is, bar for bar, a checksum-valid number-system-1
+# UPC-E, with that UPC-E as the native decoder reports it. One value for each
+# UPC-E expansion rule (sixth digit 0-2, 3, 4 and 5-9).
+LEFT_HALF_ALIASES = [('5067751808601', '0106100007755'), ('4001753562476', '0100100000754'),
+                     ('4019984607026', '0101990000084'), ('9364168251423', '0136416000089')]
+
+
+@pytest.mark.parametrize('angle', [-45, 30, 45, 60])
+@pytest.mark.parametrize('value,alias', LEFT_HALF_ALIASES)
+def test_oblique_ean_reported_only_as_its_left_half_upce_returns_the_whole_ean(reader, angle, value, alias):
+    with encoded(zxingcpp.BarcodeFormat.EAN13, value, angle) as image:
+        native = {(code.format.name, code.text) for code in zxingcpp.read_barcodes(image)}
+        assert native == {('UPCE', alias)}, 'The native wrong reading is real and arrives without the EAN-13.'
+        for allowed in (None, ['ean13', 'upce']):
+            found = reader.read_barcodes(image, allowed_formats=allowed)
+            assert [(code.format.name, code.text, code.bytes) for code in found] == [('EAN13', value, value.encode())]
+            assert all(0 <= x <= image.width and 0 <= y <= image.height for x, y in found[0].points)
+        # The caller excluded EAN-13, so there is nothing to compare the UPC-E against.
+        assert {code.format.name for code in reader.read_barcodes(image, allowed_formats=['upce'])} == {'UPCE'}
+
+
+@pytest.mark.parametrize('angle', [-60, -45, -30, 0, 30, 45, 60])
+def test_real_number_system_one_upce_is_not_taken_for_an_ean_left_half(reader, angle):
+    with encoded(zxingcpp.BarcodeFormat.UPCE, '15766746', angle) as image:
+        for allowed in (None, ['ean13', 'upce']):
+            found = reader.read_barcodes(image, allowed_formats=allowed)
+            assert {(code.format.name, code.text, code.bytes) for code in found} == {
+                ('UPCE', '0157660000076', b'0157660000076')}
+
+
+def test_left_half_replacement_needs_a_reread_that_spells_the_same_upce(reader, monkeypatch):
+    value, alias = LEFT_HALF_ALIASES[0]
+    other = '4006381333931'  # A readable EAN-13 whose left half spells no UPC-E.
+    native = zxingcpp.read_barcodes
+    with encoded(zxingcpp.BarcodeFormat.EAN13, value, 45) as image, \
+         encoded(zxingcpp.BarcodeFormat.EAN13, other) as unrelated:
+        original = native(image)
+        for reread in ([], native(unrelated)):
+            calls = []
+
+            def observed(candidate, **options):
+                calls.append(options)
+                return original if len(calls) == 1 else reread
+
+            monkeypatch.setattr(zxingcpp, 'read_barcodes', observed)
+            found = reader.read_barcodes(image)
+            # Unconfirmed evidence is kept or withheld by the existing checks; it is never exchanged.
+            assert all((code.format.name, code.text) == ('UPCE', alias) for code in found)
+            assert calls[1] == {'formats': zxingcpp.BarcodeFormat.EAN13}, 'One EAN-13 reread of the deskewed source.'
+
+
+@pytest.mark.parametrize('value,alias', LEFT_HALF_ALIASES + [
+    ('9300633000196', '0130000000639'),
+    ('4006381333931', None), ('5901234123457', None),  # check sums that do not work out
+    ('0036000291452', None),  # a UPC-A: its left half has no UPC-E parity pattern
+    ('506775180860', None), ('50677518086O1', None),
+])
+def test_left_half_alias_follows_the_upce_expansion_rules(reader, value, alias):
+    assert reader._ean_left_half_alias(value.encode()) == (alias.encode() if alias else None)

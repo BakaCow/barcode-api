@@ -70,3 +70,14 @@ def test_invalid_qr_options_are_rejected_before_encoding(options):
 def test_qr_options_are_not_silently_ignored_for_other_formats(format_, options):
     with pytest.raises(ValidationError, match='only to QR'):
         GenerateRequest(format=format_, text='123456', **options)
+
+
+@pytest.mark.parametrize('text', ['©2026 Jye', '25°C', 'ÄÖÜ', '£5 ¥500', '価格: ¥1,200',
+                                  'Café crème brûlée', '你好\n世界', '🐨 Koala'])
+def test_text_beyond_ascii_is_marked_as_utf8_and_reads_back_unchanged(text):
+    # Unmarked, the first five were stored as Latin-1 or Shift-JIS, and readers
+    # guessing the character set returned other characters ('ｩ2026 Jye').
+    response = generate(GenerateRequest(text=text))
+    with Image.open(BytesIO(response.body)) as image:
+        found = zxingcpp.read_barcodes(image, formats=zxingcpp.BarcodeFormat.QRCode)
+    assert [(code.text, code.bytes) for code in found] == [(text, text.encode('utf-8'))]

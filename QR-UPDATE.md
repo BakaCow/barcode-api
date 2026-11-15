@@ -118,6 +118,10 @@ For example, send this JSON with your existing server API authentication:
 
 Both PNG and SVG generation retain the requested border. Existing requests keep
 their previous output; explicit QR options on other formats are rejected.
+One later exception: QR text with any character beyond ASCII is now stored as
+UTF-8 with a character-set marker (ECI 26), so those requests produce a
+different symbol. Unmarked, readers guessed the encoding and returned other
+characters for symbols such as `©`, `£` and `°`.
 JavaScript/TypeScript and Python clients expose these fields, and the committed
 OpenAPI document describes their validation.
 

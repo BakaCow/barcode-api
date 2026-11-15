@@ -272,6 +272,78 @@ def _same_symbol_segment(record: DecodedBarcode, footprint: DecodedBarcode) -> b
                for fraction in (0.25, 0.5, 0.75))
 
 
+def _ean_left_half_alias(ean: bytes) -> bytes | None:
+    """The UPC-E value spelled by the left half of an EAN-13, as ZXing reports it.
+
+    A scanline that leaves an EAN-13 through its top or bottom edge at the
+    centre guard has crossed a start guard, six digits and what passes for a
+    UPC-E end guard. Those bars are a number-system-1 UPC-E whose check digit
+    is the EAN's first digit, so about one EAN-13 in ten gives a checksum-valid
+    wrong value. None when this EAN-13 cannot be read that way.
+    """
+    if len(ean) != 13 or not all(48 <= byte <= 57 for byte in ean) or ean[0] == 48:
+        return None
+    a, b, c, d, e, f = (ean[index:index + 1] for index in range(1, 7))
+    if f in (b'0', b'1', b'2'):
+        body = b'1' + a + b + f + b'0000' + c + d + e
+    elif f == b'3':
+        body = b'1' + a + b + c + b'00000' + d + e
+    elif f == b'4':
+        body = b'1' + a + b + c + d + b'00000' + e
+    else:
+        body = b'1' + a + b + c + d + e + b'0000' + f
+    total = sum((byte - 48) * (3 if index % 2 == 0 else 1) for index, byte in enumerate(reversed(body)))
+    return b'0' + body + ean[:1] if (10 - total % 10) % 10 == ean[0] - 48 else None
+
+
+def _replace_left_half_alias(records, image, requested, started):
+    """Replace an oblique UPC-E that is only the left half of an EAN-13.
+
+    The first pass can cross a tilted EAN-13 from its start guard to its centre
+    guard and report those bars alone, never seeing the whole symbol. One
+    bounded, source-aligned reread decides. It must read an EAN-13 whose own
+    left half spells exactly the reported UPC-E, over a footprint that contains
+    the UPC-E's scan segment and agrees with the source bars. Both decodes then
+    agree on seven digits of one symbol, so the complete value is returned.
+    A genuine UPC-E has no such EAN-13 around it and is never replaced; an
+    unreadable or unmatched reread leaves the evidence for the checks below.
+    Returns None when nothing was replaced.
+    """
+    upce = [record for record in records if record.format.name == 'UPCE']
+    if (not upce or any(record.format.name in {'EAN13', 'UPCA'} for record in records) or
+            any((record.text, record.bytes) != (upce[0].text, upce[0].bytes) for record in upce) or
+            len(upce[0].bytes) != 13 or not upce[0].bytes.startswith(b'01') or
+            (requested is not None and 'ean13' not in requested) or
+            monotonic() - started >= RETRY_SECONDS):
+        return None
+    working, to_original = _working_image(image)
+    with working:
+        angle = _angle_near(upce[0], working, image.size)
+        if angle is None or monotonic() - started >= RETRY_SECONDS:
+            return None
+        transformed, to_working = _rotated(working, angle)
+        with transformed:
+            if monotonic() - started >= RETRY_SECONDS:
+                return None
+            try:
+                check = _records(zxingcpp.read_barcodes(transformed, formats=zxingcpp.BarcodeFormat.EAN13),
+                                 image.size, lambda x, y: to_original(*to_working(x, y)), allowed_names=['ean13'])
+            except (ValueError, RuntimeError):
+                return None
+        sources = [record for record in check if _ean_left_half_alias(record.bytes) == upce[0].bytes and
+                   all(_same_symbol_segment(alias, record) for alias in upce) and
+                   _source_bars_agree(record, working, image.size)]
+    if len({(record.text, record.bytes) for record in sources}) != 1:
+        return None
+    replaced = []
+    for record in records:
+        if record.format.name != 'UPCE':
+            replaced.append(record)
+        elif sources[0] not in replaced:
+            replaced.append(sources[0])
+    return replaced
+
+
 def _corroborate_retail_overlap(records, image, first_options, requested, started):
     """Resolve a narrow UPC-E/EAN alias only with a second source-aligned read.
 
@@ -280,7 +352,12 @@ def _corroborate_retail_overlap(records, image, first_options, requested, starte
     Keep all candidates unless a bounded deskew re-observes the exact EAN and
     places the UPC-E's central scan segment inside its oriented footprint, while
     failing to reproduce that UPC-E identity. Separate labels remain separate.
+    A UPC-E reported without its EAN is first checked for being that EAN's
+    left half; see _replace_left_half_alias.
     """
+    replaced = _replace_left_half_alias(records, image, requested, started)
+    if replaced is not None:
+        return replaced
     upce = [record for record in records if record.format.name == 'UPCE']
     ean = [record for record in records if record.format.name in {'EAN13', 'UPCA'}]
     if len(records) == 1 and upce and (requested is None or 'ean13' in requested) and monotonic() - started < RETRY_SECONDS:

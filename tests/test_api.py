@@ -150,6 +150,41 @@ def test_blank_supported_images_have_no_barcodes(client):
         }
 
 
+def test_jpeg_carrying_a_second_picture_is_read_as_a_photo(client):
+    # Phones attach depth maps and similar pictures to a JPEG. Pillow reports
+    # such a file as MPO; its first frame is the photograph.
+    generated = client.post("/v1/barcodes/generate", json={"format": "ean13", "text": "5901234123457"})
+    assert generated.status_code == 200, generated.text
+    output = io.BytesIO()
+    with Image.open(io.BytesIO(generated.content)) as code, Image.new("RGB", (64, 48), "gray") as extra:
+        photo = Image.new("RGB", (code.width + 80, code.height + 80), "white")
+        photo.paste(code, (40, 40))
+        photo.save(output, format="MPO", save_all=True, append_images=[extra], quality=95)
+    with Image.open(io.BytesIO(output.getvalue())) as stored:
+        assert (stored.format, stored.n_frames) == ("MPO", 2)
+    response = read_image(client, output.getvalue(), filename="IMG_0001.jpg", mime="image/jpeg")
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["image"] == {"width": photo.width, "height": photo.height}
+    assert [(item["format"], item["text"]) for item in payload["barcodes"]] == [("ean13", "5901234123457")]
+
+
+def test_animated_image_is_rejected(client):
+    output = io.BytesIO()
+    with Image.new("RGB", (64, 64), "white") as first, Image.new("RGB", (64, 64), "black") as second:
+        first.save(output, format="WEBP", save_all=True, append_images=[second], duration=100, loop=0)
+    response = read_image(client, output.getvalue(), filename="animated.webp", mime="image/webp")
+    assert response.status_code == 415, response.text
+
+
+def test_heic_photo_is_named_as_an_unsupported_type(client):
+    # Only the leading file-type box is inspected. iPhone cameras save HEIC by default.
+    heic = b"\x00\x00\x00\x1cftypheic\x00\x00\x00\x00mif1heic" + bytes(64)
+    response = read_image(client, heic, filename="IMG_0001.HEIC", mime="image/heic")
+    assert response.status_code == 415, response.text
+    assert "HEIC" in response.json()["detail"]
+
+
 def test_invalid_image_is_a_client_error(client):
     response = read_image(client, b"this is not a PNG image")
     assert response.status_code in {400, 415, 422}, response.text
