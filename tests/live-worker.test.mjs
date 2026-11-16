@@ -300,28 +300,28 @@ for (const fixture of JSON.parse(readFileSync(new URL('fixtures/upce-controls.js
   });
 }
 
-// EAN-13 labels whose left half is, bar for bar, a checksum-valid UPC-E. At
-// these angles the native reader crosses only that half and reports the UPC-E
-// alone. A real number-system-1 UPC-E in the same set must stay a UPC-E.
+// EAN-13 labels whose left half is, bar for bar, a checksum-valid UPC-E: whole
+// and tilted, or with the right half covered, beside a real number-system-1
+// UPC-E, which holds the same bars as a covered EAN-13. The native reader
+// reports the UPC-E alone for every image here.
 for (const fixture of JSON.parse(readFileSync(new URL('fixtures/ean-left-half-alias.json', import.meta.url))).cases) {
   test(`left half of an EAN-13 read as UPC-E: ${fixture.name}`, async () => {
-    const [truth] = fixture.expected, alias = fixture.parameters.leftHalfUpce;
-    for (const posOptions of [undefined, { allowedFormats: ['ean13', 'upce'] }]) {
-      const response = await actual.send({ image: imageFor(fixture), mode: 'image', ...(posOptions && { posOptions }) });
+    const expected = fixture.expected.map(truth => ({ text: truth.text, format: truth.formats[0] }));
+    for (const mode of ['image', 'live']) for (const posOptions of [undefined, { allowedFormats: ['ean13', 'upce'] }]) {
+      const response = await actual.send({ image: imageFor(fixture), mode, ...(posOptions && { posOptions }) });
       assert.equal(response.type, 'result', response.message);
-      const found = response.results.map(({ text, format }) => ({ text, format }));
-      assert.ok(found.length > 0 && found.every(result => result.text === truth.text && truth.formats.includes(result.format)), JSON.stringify(found));
+      assert.deepEqual(response.results.map(({ text, format }) => ({ text, format })), expected, `${mode} ${JSON.stringify(posOptions)}`);
       for (const point of response.results.flatMap(result => Object.values(result.position))) {
         assert.ok(point.x >= 0 && point.x <= fixture.width && point.y >= 0 && point.y <= fixture.height);
       }
-      if (alias) assert.deepEqual([found.length, response.diagnostics], [1, { passes: 2, strategy: 'retail-left-half-reread' }]);
+      if (expected.length) assert.deepEqual(response.diagnostics, { passes: 2, strategy: 'retail-left-half-reread' });
+      else assert.deepEqual([response.diagnostics.strategy, response.diagnostics.incompleteEvidence], ['retail-upce-withheld', true]);
     }
-    if (alias) {
-      // With EAN-13 excluded there is nothing to compare the UPC-E against.
-      const only = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['upce'] } });
-      assert.equal(only.type, 'result', only.message);
-      assert.ok(only.results.length > 0 && only.results.every(result => result.format === 'UPCE' && result.text === alias));
-    }
+    // A caller that excludes EAN-13 has ruled that symbol out, and receives the UPC-E.
+    const only = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['upce'] } });
+    assert.equal(only.type, 'result', only.message);
+    assert.ok(only.results.length > 0 && only.results.every(result =>
+      result.format === 'UPCE' && result.text === fixture.parameters.upceWithoutEan13), JSON.stringify(only.results));
   });
 }
 

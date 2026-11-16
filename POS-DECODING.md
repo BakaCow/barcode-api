@@ -93,7 +93,7 @@ For example, these decision fields describe two distinct images agreeing on one 
 }
 ```
 
-Raw bytes are preserved as supplied by the native decoder. UPC-A may be reported as `ean13` with a leading-zero, thirteen-digit value; the default allowlist includes both formats. UPC-E values may be expanded by the native decoder. The API does not strip leading zeros arbitrarily or merge UPC-A and EAN-13 candidate identities. Define any retail-identifier conversion explicitly in your catalogue integration and retain the original value and format.
+Raw bytes are preserved as supplied by the native decoder. UPC-A may be reported as `ean13` with a leading-zero, thirteen-digit value; the default allowlist includes both formats. UPC-E values may be expanded by the native decoder. While `ean13` is allowed, `upce` reports number system 0 only: a number-system-1 UPC-E holds the same bars as an EAN-13 with its right half hidden, and is reported only when `ean13` is left out of `allowed_formats`. The API does not strip leading zeros arbitrarily or merge UPC-A and EAN-13 candidate identities. Define any retail-identifier conversion explicitly in your catalogue integration and retain the original value and format.
 
 ## Connect it to a POS
 

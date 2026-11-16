@@ -1,5 +1,76 @@
 # Verification
 
+## Number-system-1 UPC-E withheld (16 November 2026)
+
+The fix below returns the whole EAN-13 when a tilted label is crossed only
+through its left half. It could not help when the right half is covered or cut
+off: the image then holds a complete number-system-1 UPC-E symbol and nothing
+in it contradicts that reading. Both readers now stop reporting a
+number-system-1 UPC-E while EAN-13 is among the formats being read;
+[RECOVERY-UPDATE.md](RECOVERY-UPDATE.md) states the rule. The offline cache is
+**1.13.2**.
+
+This deliberately gives up real number-system-1 UPC-E labels in mixed-format
+reading, since no image evidence separates one from a covered EAN-13. A
+request that excludes EAN-13 still receives them. UPC-E in number system 0 is
+unaffected.
+
+`tests/fixtures/ean-left-half-alias.json` was regenerated for this rule. It now
+has 27 images: the 16 tilted labels, eight labels with the right half covered,
+squarely or by an edge slanted 30°, and three real number-system-1 UPC-E
+labels, which now expect no value. Its SHA256 is
+`2e83046d177b9f74c0148c9e9168299377eb16d457dc4e427a2ccec88aeb1e7e`; the hash in
+the section below belongs to the earlier 19-image file. On the previous code
+both readers returned a UPC-E for all eight covered images and for the three
+UPC-E labels. Both now match all 27, and with EAN-13 excluded both return the
+UPC-E named in each image's parameters. It is not held-out evidence.
+
+A larger covered set was run outside the repository: 140 generated images of
+twenty such EAN-13 numbers, and ten controls whose left half spells no UPC-E.
+It has square covers at two sizes, cover edges at six positions across 3.5
+modules, edges slanted 15° to 45°, labels turned 5° to 20° and a grey cover. Wrong UPC-E
+values before and after:
+
+| Reader | Before | After |
+| --- | ---: | ---: |
+| Browser, imported image | 112/140 | 0/140 |
+| Browser, live mode | 103/140 | 0/140 |
+| Browser, EAN-13 and UPC-E allowed | 112/140 | 0/140 |
+| API | 136/140 | 0/140 |
+
+No image in that set returned any value afterwards, the controls included. The
+checks from the section below were repeated. The 144 full-circle tilted reads
+and the number-system-0 UPC-E and EAN-13 controls are unchanged on both
+readers. Of the 384 rough tilted reads, the three that returned the correct
+EAN-13 together with a UPC-E now return the EAN-13 alone, on both readers. The
+real number-system-1 UPC-E label read in 24 of 24 rotations before and in none
+now; with EAN-13 excluded it still reads in all 24 on both readers.
+
+Across the 2,400 previously published corpus images the intended difference is
+confined to `recovery-format-safety.json`. Its 21 number-system-1 UPC-E truths
+are no longer reported, its other 35 expected values still are, and the one
+known wrong extra value in that set, itself a number-system-1 UPC-E, is gone.
+That set moves from 41/42 to 21/42 exact images on both readers. Totals:
+
+| Reader | Before | After |
+| --- | --- | --- |
+| API | 1,759/1,919 exact, 1 wrong extra | 1,738/1,919 exact, none |
+| Browser | 1,753/1,919 exact, 1 wrong extra | 1,735/1,919 exact, none |
+
+Negatives stayed at 481/481 throughout. Outside that set, three API and four
+browser cases differed between the paired runs, in both directions. All seven
+are `small-in-frame` Code 128, QR or EAN-13 images that the change does not
+touch. Rerun alone three times they read on both versions in most runs, with
+single misses on the old code as well as the new. The totals in the section
+below differ from these "before" figures by the same kind of timing variation.
+
+The full Python suite passes **629 tests** and the JavaScript suite **762
+tests**. TypeScript declarations, the OpenAPI export check, the React
+production build and the four workflow benchmark commands pass. This is
+validation in a two-core Linux sandbox on Python 3.14 and Node 22, not a GitHub
+Actions result. Physical phones, cameras, printed labels and real covered or
+glare-struck labels were not tested.
+
 ## Left-half UPC-E fix (16 November 2026)
 
 The native reader can cross a tilted EAN-13 from its start guard to its centre

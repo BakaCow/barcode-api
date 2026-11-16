@@ -70,7 +70,7 @@ Options and defaults are:
 
 | Option | Default | Behavior |
 | --- | --- | --- |
-| `formats` | `['ean13', 'upca', 'code128', 'qr']` | Allowed formats. Also supports `ean8`, `upce`, `datamatrix`, `aztec`, `pdf417` and `code93`. |
+| `formats` | `['ean13', 'upca', 'code128', 'qr']` | Allowed formats. Also supports `ean8`, `upce`, `datamatrix`, `aztec`, `pdf417` and `code93`. While `ean13` is included, `upce` reports number system 0 only. |
 | `confirmationFrames` | `2` | Requires 1–3 distinct agreeing frames. |
 | `preferClearFrames` | `true` | Selects a clearer frame from a bounded burst. |
 | `adaptiveFrameSelection` | `true` | With frame selection enabled, immediately decodes a sufficiently clear frame with one useful-sized proposal; weaker frames still use the burst. |

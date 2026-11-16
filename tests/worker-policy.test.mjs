@@ -607,7 +607,7 @@ test('a lone oblique UPC-E that is the left half of an EAN-13 is replaced after 
   }
 });
 
-test('an unconfirmed left-half reread keeps the UPC-E for the existing checks', async () => {
+test('an unconfirmed left-half reread reports nothing: no value is exchanged and the UPC-E is withheld', async () => {
   for (const scenario of ['nothing', 'other-number', 'separate-label', 'across-the-bars', 'two-numbers', 'exception']) {
     const { input, upce, ean, oriented, digits, placed } = leftHalfAlias();
     const worker = harness((candidate, options, call) => {
@@ -622,15 +622,19 @@ test('an unconfirmed left-half reread keeps the UPC-E for the existing checks', 
       const { topLeft, topRight, bottomRight, bottomLeft } = ean.position;
       return [placed({ ...ean, position: { topLeft: topRight, topRight: bottomRight, bottomRight: bottomLeft, bottomLeft: topLeft } }, candidate)];
     });
+    let sourceChecks = 0;
+    worker.context.LinearSignal = { async recover() { sourceChecks++; return { results: [], passes: 1 }; } };
     const response = await worker.send({ image: input, mode: 'live' });
     assert.equal(response.type, 'result', scenario);
-    assert.deepEqual(response.results.map(value => value.text), ['0106100007755'], scenario);
-    assert.equal(response.diagnostics.strategy, 'original', scenario);
+    assert.deepEqual(response.results, [], scenario);
+    assert.equal(response.diagnostics.strategy, 'retail-upce-withheld', scenario);
+    assert.equal(response.diagnostics.incompleteEvidence, true, `${scenario}: a symbol was seen, so this is not "no code"`);
     assert.equal(worker.calls.length, 2, scenario);
+    assert.equal(sourceChecks, 0, `${scenario}: a UPC-E that will be withheld needs no further source check`);
   }
 });
 
-test('left-half reread is not attempted without an oblique number-system-1 UPC-E on its own', async () => {
+test('a number-system-1 UPC-E is withheld without a reread when there is nothing oblique to reread', async () => {
   for (const scenario of ['number-system-0', 'two-values', 'level-bars', 'flat', 'tiny', 'deadline']) {
     const { input, upce, level, digits } = leftHalfAlias();
     let now = 0;
@@ -639,28 +643,54 @@ test('left-half reread is not attempted without an oblique number-system-1 UPC-E
         scenario === 'tiny' ? [{ ...upce, position: level(180, 220) }] : [upce];
     const worker = harness(() => { if (scenario === 'deadline') now = 350; return original; }, { now: () => now });
     const response = await worker.send({ image: scenario === 'flat' ? image(400, 400) : scenario === 'level-bars' ? verticalBars(400, 400) : input, mode: 'live' });
-    assert.deepEqual(response.results.map(value => value.text), original.map(value => value.text), scenario);
+    // Number system 0, the ordinary retail form, is never half of an EAN-13 and is reported as before.
+    assert.deepEqual(response.results.map(value => value.text), scenario === 'number-system-0' ? ['0042100005264'] : [], scenario);
+    assert.equal(response.diagnostics.strategy, scenario === 'number-system-0' ? 'original' : 'retail-upce-withheld', scenario);
+    assert.equal(response.diagnostics.incompleteEvidence, scenario === 'number-system-0' ? undefined : true, scenario);
     assert.equal(worker.calls.length, 1, scenario);
   }
 });
 
-test('a UPC-E reported with an EAN-13 still goes to the full-format corroboration', async () => {
+test('a number-system-1 UPC-E reported with an EAN-13 is withheld whatever the full-format corroboration shows', async () => {
   const { input, upce, ean } = leftHalfAlias();
   const worker = harness((candidate, options, call) => call === 1 ? [upce, ean] : []);
   const response = await worker.send({ image: input, mode: 'live' });
-  assert.deepEqual(response.results.map(value => value.text), [upce.text, ean.text]);
+  assert.deepEqual(response.results.map(value => value.text), [ean.text]);
   assert.equal(worker.calls.length, 2);
   assert.deepEqual(worker.calls[1].options, worker.calls[0].options);
-  assert.equal(response.diagnostics.strategy, 'retail-corroboration');
+  assert.equal(response.diagnostics.strategy, 'retail-upce-withheld');
+  assert.equal(response.diagnostics.incompleteEvidence, undefined, 'the EAN-13 stands, so nothing is left open');
 });
 
-test('time spent on an unconfirmed left-half reread is not taken from the source check that follows', async () => {
-  const { input, upce } = leftHalfAlias();
-  let now = 0;
-  const budgets = [];
-  const worker = harness((candidate, options, call) => { now += call === 1 ? 10 : 400; return call === 1 ? [upce] : []; }, { now: () => now });
-  worker.context.LinearSignal = { async recover(source, options) { budgets.push(options.timeBudgetMs); return { results: [], passes: 1 }; } };
-  const response = await worker.send({ image: input, mode: 'live' });
-  assert.deepEqual(response.results.map(value => value.text), ['0106100007755']);
-  assert.deepEqual(budgets, [80], 'the 350 ms live allowance is counted from the first pass, as before');
+test('recovery passes treat a number-system-1 UPC-E as not read while EAN-13 is being read', async () => {
+  const { input, upce, ean, oriented, digits } = leftHalfAlias();
+  // Recovery results must lie along the bars' normal to agree with the source.
+  const along = oriented(53, 20);
+  const systemOne = { ...upce, position: along }, systemZero = { ...systemOne, text: '0042100005264', bytes: digits('0042100005264') };
+  for (const [recoveredValue, expected] of [[systemOne, []], [systemZero, ['0042100005264']], [{ ...ean, position: oriented(140, 70) }, [ean.text]]]) {
+    const worker = harness((candidate, options, call) => call === 1 ? [] : [recoveredValue]);
+    const response = await worker.send({ image: input, mode: 'live', retryIndex: 0 });
+    assert.deepEqual(response.results.map(value => value.text), expected);
+    assert.equal(response.diagnostics.incompleteEvidence, recoveredValue === systemOne ? true : undefined);
+    assert.equal(worker.calls.length, 2, 'the first pass and one contrast retry');
+    assert.ok(worker.calls[1].options.formats.includes('UPCE') && worker.calls[1].options.formats.includes('EAN13'));
+  }
+});
+
+test('a caller that excludes EAN-13 still receives a number-system-1 UPC-E', async () => {
+  const policy = readFileSync(new URL('../web/pos-policy.js', import.meta.url), 'utf8');
+  const { input, upce, oriented } = leftHalfAlias();
+  for (const [allowedFormats, expected] of [[['upce'], [upce.text]], [['upca', 'upce', 'code128'], [upce.text]], [['ean13', 'upce'], []]]) {
+    // Reported by the first pass.
+    let worker = harness(() => [upce]);
+    vm.runInContext(policy, worker.context);
+    let response = await worker.send({ image: input, mode: 'live', posOptions: { allowedFormats } });
+    assert.equal(response.type, 'result', response.message);
+    assert.deepEqual(response.results.map(value => value.text), expected, allowedFormats.join());
+    // Reported by a recovery pass.
+    worker = harness((candidate, options, call) => call === 1 ? [] : [{ ...upce, position: oriented(53, 20) }]);
+    vm.runInContext(policy, worker.context);
+    response = await worker.send({ image: input, mode: 'live', retryIndex: 0, posOptions: { allowedFormats } });
+    assert.deepEqual(response.results.map(value => value.text), expected, allowedFormats.join());
+  }
 });

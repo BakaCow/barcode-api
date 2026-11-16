@@ -361,6 +361,23 @@ def test_known_invalid_checksum_negative_has_no_pos_candidate(client):
     assert payload["candidates"] == []
 
 
+@pytest.mark.parametrize("name,upce", [
+    ("covered/5067751808601/edge-0", "0106100007755"), ("covered/9364168251423/edge-30", "0136416000089"),
+    ("upce-system-1/15766746/angle-45", "0157660000076"),
+])
+def test_number_system_one_upce_is_a_pos_candidate_only_when_ean13_is_excluded(client, name, upce):
+    # An EAN-13 with its right half covered and a real number-system-1 UPC-E hold the same bars.
+    content, expected = fixture_png("ean-left-half-alias.json", name)
+    assert expected == []
+    for formats in (DEFAULT_FORMATS + ["upce"], ["ean13", "upce"]):
+        payload = result(upload(client, [content], {"allowed_formats": formats, "confirmation_frames": 1}))
+        assert (payload["status"], payload["reason"], payload["barcode"], payload["candidates"]) == (
+            "rescan", "no_code", None, [])
+    payload = result(upload(client, [content], {"allowed_formats": ["upce"], "confirmation_frames": 1}))
+    assert payload["status"] == "confirmed"
+    assert_candidate(payload["barcode"], upce, "upce", [0])
+
+
 def test_disallowed_format_is_not_a_pos_candidate(client):
     payload = result(upload(client, [encode(label())], {"allowed_formats": ["qr"], "confirmation_frames": 1}))
     assert payload["reason"] == "no_code"

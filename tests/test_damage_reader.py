@@ -26,11 +26,15 @@ def test_damaged_ean_is_not_published_as_the_known_wrong_upce():
 
 
 @pytest.mark.parametrize('payload', ['04252614', '15766746'])
-def test_genuine_upce_first_pass_preserves_native_bytes_when_ean_is_also_allowed(payload):
+def test_genuine_upce_first_pass_preserves_native_bytes_unless_it_could_be_half_an_ean13(payload):
     encoded = zxingcpp.create_barcode(payload, zxingcpp.BarcodeFormat.UPCE)
     with Image.fromarray(encoded.to_image(scale=3, add_quiet_zones=True)).convert('L') as image:
         original = zxingcpp.read_barcodes(image)
         assert len(original) == 1 and original[0].format.name == 'UPCE'
         for formats in (None, ['upce'], ['upce', 'ean13']):
             found = barcode_reader.read_barcodes(image, allowed_formats=formats)
-            assert [(code.format.name, code.bytes) for code in found] == [('UPCE', original[0].bytes)]
+            # Number system 1 is, bar for bar, what the left half of an EAN-13 looks like.
+            # It is reported only to a caller that has excluded EAN-13.
+            withheld = payload[0] == '1' and formats != ['upce']
+            assert [(code.format.name, code.bytes) for code in found] == (
+                [] if withheld else [('UPCE', original[0].bytes)])

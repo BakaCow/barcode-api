@@ -20,7 +20,7 @@ The defaults are:
 | Matching frames, in POS mode | 2 | Require agreement across distinct frame IDs and pixel fingerprints |
 | POS formats | EAN-13, UPC-A, Code 128, QR code | Restrict the native decoder before it reads the image |
 
-Additional POS formats are EAN-8, UPC-E, Data Matrix, Aztec, PDF417 and Code 93. At least one format must remain selected. These settings apply to the current page session; reloading returns them to their defaults. Camera selection, flashlight and zoom remain available where the browser and camera support them.
+Additional POS formats are EAN-8, UPC-E, Data Matrix, Aztec, PDF417 and Code 93. With EAN-13 selected, UPC-E reports number system 0 only, because a number-system-1 UPC-E holds the same bars as an EAN-13 with its right half hidden. At least one format must remain selected. These settings apply to the current page session; reloading returns them to their defaults. Camera selection, flashlight and zoom remain available where the browser and camera support them.
 
 ## What POS mode checks
 
@@ -83,7 +83,7 @@ The detector can miss regions or propose non-barcodes. A successful whole-image 
 
 ## Offline operation and POS integration
 
-The service worker caches the POS policy, QR geometry/recovery modules, linear/QR source-signal recovery, QR erasure recovery, camera frame fusion, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.13.1. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
+The service worker caches the POS policy, QR geometry/recovery modules, linear/QR source-signal recovery, QR erasure recovery, camera frame fusion, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.13.2. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
 
 This browser mode does not call `POST /v1/pos/decode`; that remains a separate server-side option documented in [POS-DECODING.md](POS-DECODING.md). Neither path performs catalogue lookup, pricing or cart updates. Your POS should accept only a unique, exact catalogue match and prevent a retried scan attempt from adding an item twice. The scanner's history deduplicates values; it is not a cart or quantity counter.
 

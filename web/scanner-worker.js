@@ -264,6 +264,18 @@ function sameSymbolSegment(position, footprint) {
   });
 }
 
+// A number-system-1 UPC-E cannot be told from the left half of an EAN-13. For
+// about one EAN-13 number in ten those bars are exactly such a symbol, and when
+// the right half is covered or cut off nothing in the image contradicts it.
+// Most UPC-E labels are in number system 0, and hardware scanners ship with the
+// number-system-1 form (UPC-E1) switched off. So while EAN-13 is among the
+// formats being read, that form is not reported. A caller that excludes EAN-13
+// has ruled that symbol out and still receives it.
+function withheldUpcE(result, formats) {
+  return result.format === 'UPCE' && (!formats || formats.includes('EAN13')) && Array.isArray(result.bytes) &&
+    result.bytes.length === 13 && result.bytes[0] === 48 && result.bytes[1] === 49;
+}
+
 // The UPC-E value spelled by the left half of an EAN-13, as ZXing reports it.
 // A scanline that leaves an EAN-13 through its top or bottom edge at the centre
 // guard has crossed a start guard, six digits and what passes for a UPC-E end
@@ -335,9 +347,9 @@ function deskewedRegion(image, center, angle, radius, scale) {
 // reported UPC-E, over a footprint that contains the UPC-E's scan segment and
 // agrees with the bars it was read from. Both decodes then agree on seven
 // digits of one symbol, so the complete value is returned. A genuine UPC-E has
-// no such EAN-13 around it and is never replaced; an unreadable or unmatched
-// reread leaves the evidence for the checks in corroborateRetailOverlap.
-// Returns null when nothing was replaced.
+// no such EAN-13 around it and is never replaced. After an unreadable or
+// unmatched reread nothing is exchanged, and decode withholds the UPC-E; see
+// withheldUpcE. Returns null when nothing was replaced.
 async function replaceLeftHalfAlias(results, image, options, permitted, started, budgetMs) {
   const upce = results.filter(result => result.format === 'UPCE');
   const identity = result => JSON.stringify([result.format, result.text, result.bytes]);
@@ -382,15 +394,12 @@ async function replaceLeftHalfAlias(results, image, options, permitted, started,
 }
 
 async function corroborateRetailOverlap(results, image, options, permitted, started, budgetMs) {
-  const rereadStarted = performance.now();
   const replaced = await replaceLeftHalfAlias(results, image, options, permitted, started, budgetMs);
   if (replaced) return replaced;
-  // That reread is extra work. The checks below keep the time they had before it existed.
-  started += performance.now() - rereadStarted;
   const original = { results, diagnostics: { passes: 1, strategy: 'original' } };
   const upce = results.find(result => result.format === 'UPCE');
   const ean = results.filter(result => ['EAN13', 'UPCA'].includes(result.format));
-  if (upce && results.length === 1 && typeof LinearSignal !== 'undefined' &&
+  if (upce && results.length === 1 && typeof LinearSignal !== 'undefined' && !withheldUpcE(upce, options.formats) &&
       (!options.formats || options.formats.includes('EAN13')) && performance.now() - started < budgetMs) {
     try {
       const checked = await LinearSignal.recover(image, { formats: ['EAN13'],
@@ -561,11 +570,26 @@ async function qrRecovery(image, recoveryOptions, mode, retryIndex, started, bud
 }
 
 async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
+  const withheld = { upce: false };
+  const outcome = await decodeEvidence(image, mode, retryIndex, posOptions, enhanceLive, withheld);
+  // A symbol was seen and not named. An empty result then means "not safely
+  // readable", never "no code here"; see withheldUpcE.
+  return withheld.upce && !outcome.results.length ?
+    { ...outcome, diagnostics: { ...outcome.diagnostics, incompleteEvidence: true } } : outcome;
+}
+
+async function decodeEvidence(image, mode, retryIndex, posOptions, enhanceLive, withheld) {
   const started = performance.now();
   const budgetMs = mode === 'live' ? 350 : 2500;
   const allowed = posOptions && new Set(posOptions.allowedFormats);
   const permitted = (results) => allowed ? results.filter((result) => allowed.has(PosPolicy.canonicalFormat(result.format))) : results;
   const firstOptions = posOptions ? { ...OPTIONS, formats: PosPolicy.nativeFormats(posOptions) } : OPTIONS;
+  // Recovery treats a withheld UPC-E as not read, so later crops and retries still get their turn.
+  const reportable = (results) => permitted(results).filter(result => {
+    const hold = withheldUpcE(result, firstOptions.formats);
+    withheld.upce ||= hold;
+    return !hold;
+  });
   const recoveryOptions = posOptions ? { ...RECOVERY_OPTIONS,
     formats: PosPolicy.nativeFormats(posOptions).filter((format) => RECOVERY_FORMATS.includes(format)) } : RECOVERY_OPTIONS;
   const analysis = enhanceLive ? FrameAnalysis.analyze(image) : undefined;
@@ -575,7 +599,12 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
   let results = permitted(validResults(await ZXingWASM.readBarcodes(image, firstOptions)));
   if (results.length) {
     const original = await corroborateRetailOverlap(results, image, firstOptions, permitted, started, budgetMs);
-    return { ...await corroborateCode128(original, image, started, budgetMs), ...details };
+    // The checks above may have exchanged a UPC-E for the EAN-13 it is half of.
+    // One still standing in number system 1 is withheld; see withheldUpcE.
+    const kept = original.results.filter(result => !withheldUpcE(result, firstOptions.formats));
+    withheld.upce = kept.length !== original.results.length;
+    const reported = withheld.upce ? { results: kept, diagnostics: { ...original.diagnostics, strategy: 'retail-upce-withheld' } } : original;
+    return { ...await corroborateCode128(reported, image, started, budgetMs), ...details };
   }
   // An empty native format list means all formats in some ZXing versions.
   if (!recoveryOptions.formats.length) return { results, ...details, diagnostics: { passes: 1, strategy: 'original' } };
@@ -595,7 +624,7 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
       const crop = FrameAnalysis.crop(image, region, MAX_PIXELS);
       if (performance.now() - started > budgetMs) return incomplete();
       const candidate = new ImageData(new Uint8ClampedArray(crop.image.data), crop.image.width, crop.image.height);
-      const found = permitted(validResults(await ZXingWASM.readBarcodes(candidate, recoveryOptions),
+      const found = reportable(validResults(await ZXingWASM.readBarcodes(candidate, recoveryOptions),
         crop.mapPoint, image.width, image.height, true, gray));
       passes++; strategy = 'barcode-crop';
       // Examine the remaining bounded crops even after a match. Different
@@ -727,7 +756,7 @@ async function decode(image, mode, retryIndex, posOptions, enhanceLive) {
       strategy = 'qr-denoise'; candidate = image;
       options = { ...recoveryOptions, formats, tryDenoise: true };
     }
-    results = permitted(validResults(await ZXingWASM.readBarcodes(candidate, options), inverse, image.width, image.height, true, gray));
+    results = reportable(validResults(await ZXingWASM.readBarcodes(candidate, options), inverse, image.width, image.height, true, gray));
     if (retry === 6) results = results.filter(result => QR_RECOVERY_RESULTS.has(result.format));
     passes++;
     if (results.length) break;

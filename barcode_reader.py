@@ -69,6 +69,21 @@ def canonical_format_name(format_) -> str | None:
     return _CANONICAL_FORMAT_NAMES.get(getattr(format_, "name", None))
 
 
+def _withheld_upce(format_name: str, payload: bytes, requested: Sequence[str] | None) -> bool:
+    """A number-system-1 UPC-E that cannot be told from the left half of an EAN-13.
+
+    The left half of an EAN-13 is, bar for bar, such a UPC-E for about one
+    number in ten. When the right half is covered or cut off, the image holds
+    a complete UPC-E symbol and nothing in it contradicts that reading. Most
+    UPC-E labels are in number system 0, and hardware scanners ship with the
+    number-system-1 form (UPC-E1) switched off. So while EAN-13 is among the
+    formats being read, that form is not reported. A caller that excludes
+    EAN-13 has ruled that symbol out and still receives it.
+    """
+    return (format_name == 'UPCE' and (requested is None or 'ean13' in requested) and
+            len(payload) == 13 and payload.startswith(b'01'))
+
+
 def _requested_formats(allowed_formats: Sequence[str] | None):
     if allowed_formats is None:
         return None
@@ -134,6 +149,8 @@ def _records(codes, size: tuple[int, int], mapping: PointMap | None = None, *, r
         if recovery and code.format.name not in RECOVERY_NAMES:
             continue
         if allowed_names is not None and canonical_format_name(code.format) not in allowed_names:
+            continue
+        if recovery and _withheld_upce(code.format.name, code.bytes, allowed_names):
             continue
         position = code.position
         points = []
@@ -305,9 +322,10 @@ def _replace_left_half_alias(records, image, requested, started):
     left half spells exactly the reported UPC-E, over a footprint that contains
     the UPC-E's scan segment and agrees with the source bars. Both decodes then
     agree on seven digits of one symbol, so the complete value is returned.
-    A genuine UPC-E has no such EAN-13 around it and is never replaced; an
-    unreadable or unmatched reread leaves the evidence for the checks below.
-    Returns None when nothing was replaced.
+    A genuine UPC-E has no such EAN-13 around it and is never replaced. After
+    an unreadable or unmatched reread nothing is exchanged, and read_barcodes
+    withholds the UPC-E; see _withheld_upce. Returns None when nothing was
+    replaced.
     """
     upce = [record for record in records if record.format.name == 'UPCE']
     if (not upce or any(record.format.name in {'EAN13', 'UPCA'} for record in records) or
@@ -360,7 +378,9 @@ def _corroborate_retail_overlap(records, image, first_options, requested, starte
         return replaced
     upce = [record for record in records if record.format.name == 'UPCE']
     ean = [record for record in records if record.format.name in {'EAN13', 'UPCA'}]
-    if len(records) == 1 and upce and (requested is None or 'ean13' in requested) and monotonic() - started < RETRY_SECONDS:
+    # A UPC-E that read_barcodes will withhold needs no further evidence against it.
+    if (len(records) == 1 and upce and (requested is None or 'ean13' in requested) and
+            not _withheld_upce('UPCE', upce[0].bytes, requested) and monotonic() - started < RETRY_SECONDS):
         working, to_original = _working_image(image)
         with working:
             try:
@@ -619,6 +639,10 @@ def read_barcodes(image: Image.Image, *, allowed_formats: Sequence[str] | None =
     records = _records(zxingcpp.read_barcodes(image, **first_options), image.size, allowed_names=requested)
     if records:
         records = _corroborate_retail_overlap(records, image, first_options, requested, started)
+        # The checks above may have exchanged a UPC-E for the EAN-13 it is half of.
+        # One still standing in number system 1 is withheld; see _withheld_upce.
+        records = [record for record in records
+                   if not _withheld_upce(record.format.name, record.bytes, requested)]
         if not any(record.format.name == 'Code128' for record in records) or monotonic() - started >= RETRY_SECONDS:
             return records
         working, to_original = _working_image(image)

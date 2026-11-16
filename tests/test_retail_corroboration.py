@@ -79,9 +79,32 @@ def test_separate_real_upce_and_ean_codes_keep_both_identities(reader, upce_angl
 
 
 def test_uncertain_or_failed_corroboration_keeps_original_conflicting_evidence(reader, monkeypatch):
-    image, _ = damaged('damage-stress-accuracy-next.json')
+    # A real number-system-0 UPC-E beside an EAN-13. An unreadable check proves
+    # nothing about either label, so both stay.
+    native = zxingcpp.read_barcodes
+    with encoded(zxingcpp.BarcodeFormat.UPCE, '04252614', -45) as upce, \
+         encoded(zxingcpp.BarcodeFormat.EAN13, '4006381333931') as ean, \
+         Image.new('L', (upce.width + ean.width + 100, max(upce.height, ean.height) + 60), 255) as scene:
+        scene.paste(upce, (20, 20)); scene.paste(ean, (upce.width + 70, 30))
+        original = native(scene)
+        calls = 0
+
+        def unreadable_check(candidate, **options):
+            nonlocal calls
+            calls += 1
+            return original if calls == 1 else []
+
+        monkeypatch.setattr(zxingcpp, 'read_barcodes', unreadable_check)
+        found = reader.read_barcodes(scene)
+    assert {(code.format.name, code.text) for code in found} == {('UPCE', '0042100005264'), ('EAN13', '4006381333931')}
+    assert calls == 2
+
+
+def test_uncertain_corroboration_keeps_the_ean_and_withholds_its_number_system_one_half(reader, monkeypatch):
+    image, expected = damaged('damage-stress-accuracy-next.json')
     native = zxingcpp.read_barcodes
     original = native(image)
+    assert {code.format.name for code in original} == {'EAN13', 'UPCE'}
     calls = 0
 
     def unreadable_check(candidate, **options):
@@ -92,7 +115,8 @@ def test_uncertain_or_failed_corroboration_keeps_original_conflicting_evidence(r
     monkeypatch.setattr(zxingcpp, 'read_barcodes', unreadable_check)
     with image:
         found = reader.read_barcodes(image)
-    assert {code.format.name for code in found} == {'EAN13', 'UPCE'}
+    # The UPC-E here is in number system 1. That reading is withheld whatever the check shows.
+    assert [(code.format.name, code.text) for code in found] == [('EAN13', expected)]
     assert calls == 2
 
 
@@ -103,7 +127,8 @@ def test_expired_first_pass_cannot_start_optional_corroboration(reader, monkeypa
     monkeypatch.setattr(reader, '_working_image', lambda _: pytest.fail('Expired evidence must not start another image allocation.'))
     with image:
         found = reader.read_barcodes(image)
-    assert {code.format.name for code in found} == {'EAN13', 'UPCE'}
+    # No check was started. The number-system-1 UPC-E is withheld without one.
+    assert {code.format.name for code in found} == {'EAN13'}
 
 
 def test_corroboration_requires_an_oriented_footprint_covering_the_same_scan_segment(reader):
@@ -136,9 +161,12 @@ def test_oblique_ean_reported_only_as_its_left_half_upce_returns_the_whole_ean(r
 
 
 @pytest.mark.parametrize('angle', [-60, -45, -30, 0, 30, 45, 60])
-def test_real_number_system_one_upce_is_not_taken_for_an_ean_left_half(reader, angle):
+def test_real_number_system_one_upce_is_reported_only_when_ean13_is_excluded(reader, angle):
     with encoded(zxingcpp.BarcodeFormat.UPCE, '15766746', angle) as image:
-        for allowed in (None, ['ean13', 'upce']):
+        # Nothing in such a label tells it from an EAN-13 with its right half hidden.
+        for allowed in (None, ['ean13', 'upce'], ['upce', 'code128', 'ean13']):
+            assert reader.read_barcodes(image, allowed_formats=allowed) == []
+        for allowed in (['upce'], ['upca', 'upce']):
             found = reader.read_barcodes(image, allowed_formats=allowed)
             assert {(code.format.name, code.text, code.bytes) for code in found} == {
                 ('UPCE', '0157660000076', b'0157660000076')}
@@ -160,9 +188,10 @@ def test_left_half_replacement_needs_a_reread_that_spells_the_same_upce(reader, 
 
             monkeypatch.setattr(zxingcpp, 'read_barcodes', observed)
             found = reader.read_barcodes(image)
-            # Unconfirmed evidence is kept or withheld by the existing checks; it is never exchanged.
-            assert all((code.format.name, code.text) == ('UPCE', alias) for code in found)
+            # Nothing is exchanged for an unconfirmed value, and the UPC-E itself is withheld.
+            assert found == []
             assert calls[1] == {'formats': zxingcpp.BarcodeFormat.EAN13}, 'One EAN-13 reread of the deskewed source.'
+            assert len(calls) == 2, 'A UPC-E that will be withheld needs no further source check.'
 
 
 @pytest.mark.parametrize('value,alias', LEFT_HALF_ALIASES + [
@@ -177,9 +206,26 @@ def test_left_half_alias_follows_the_upce_expansion_rules(reader, value, alias):
 
 def test_reader_reads_the_left_half_fixture_set_shared_with_the_camera_app(reader):
     document = json.loads((ROOT / 'tests/fixtures/ean-left-half-alias.json').read_text())
-    assert len(document['cases']) == 19
+    assert len(document['cases']) == 27
     for case in document['cases']:
         with Image.frombytes('RGBA', (case['width'], case['height']),
                              zlib.decompress(base64.b64decode(case['rgba_zlib_base64']))) as rgba, rgba.convert('RGB') as image:
-            found = {(code.format.name, code.text) for code in reader.read_barcodes(image)}
-        assert found == {(truth['formats'][0], truth['text']) for truth in case['expected']}, case['name']
+            upce = {('UPCE', case['parameters']['upceWithoutEan13'])}
+            assert {(code.format.name, code.text) for code in zxingcpp.read_barcodes(image)} == upce, case['name']
+            expected = {(truth['formats'][0], truth['text']) for truth in case['expected']}
+            for allowed in (None, ['ean13', 'upce']):
+                found = {(code.format.name, code.text) for code in reader.read_barcodes(image, allowed_formats=allowed)}
+                assert found == expected, case['name']
+            found = {(code.format.name, code.text) for code in reader.read_barcodes(image, allowed_formats=['upce'])}
+            assert found == upce, case['name']
+
+
+@pytest.mark.parametrize('payload,requested,withheld', [
+    (b'0157660000076', None, True), (b'0157660000076', ('ean13', 'upce'), True),
+    (b'0157660000076', ('upce',), False), (b'0157660000076', ('upca', 'upce'), False),
+    (b'0042100005264', None, False), (b'0042100005264', ('ean13', 'upce'), False),  # number system 0
+    (b'15766746', None, False), (b'', None, False),  # not an expanded 13-digit value
+])
+def test_only_expanded_number_system_one_upce_is_withheld_and_only_beside_ean13(reader, payload, requested, withheld):
+    assert reader._withheld_upce('UPCE', payload, requested) is withheld
+    assert reader._withheld_upce('EAN13', payload, requested) is False

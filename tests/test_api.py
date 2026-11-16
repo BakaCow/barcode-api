@@ -185,6 +185,24 @@ def test_heic_photo_is_named_as_an_unsupported_type(client):
     assert "HEIC" in response.json()["detail"]
 
 
+def test_ean13_with_its_right_half_covered_returns_no_value(client):
+    # The half left showing is, bar for bar, a complete number-system-1 UPC-E:
+    # start guard, six digits, and a centre guard that passes for an end guard.
+    generated = client.post("/v1/barcodes/generate", json={"format": "ean13", "text": "5067751808601", "scale": 4})
+    assert generated.status_code == 200, generated.text
+    whole, covered = io.BytesIO(), io.BytesIO()
+    with Image.open(io.BytesIO(generated.content)) as source, source.convert("L") as label:
+        label.save(whole, format="PNG")
+        first_bar = label.point(lambda value: 255 - value).getbbox()[0]
+        label.paste(255, (first_bar + 51 * 4, 0, label.width, label.height))
+        label.save(covered, format="PNG")
+    uncovered = read_image(client, whole.getvalue())
+    assert [(item["format"], item["text"]) for item in uncovered.json()["barcodes"]] == [("ean13", "5067751808601")]
+    response = read_image(client, covered.getvalue())
+    assert response.status_code == 200, response.text
+    assert response.json()["barcodes"] == [], "Neither the hidden EAN-13 nor the UPC-E its left half spells."
+
+
 def test_invalid_image_is_a_client_error(client):
     response = read_image(client, b"this is not a PNG image")
     assert response.status_code in {400, 415, 422}, response.text
