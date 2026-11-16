@@ -83,7 +83,7 @@ The detector can miss regions or propose non-barcodes. A successful whole-image 
 
 ## Offline operation and POS integration
 
-The service worker caches the POS policy, QR geometry/recovery modules, linear/QR source-signal recovery, QR erasure recovery, camera frame fusion, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.13.0. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
+The service worker caches the POS policy, QR geometry/recovery modules, linear/QR source-signal recovery, QR erasure recovery, camera frame fusion, frame analysis, frame selection and native decoder with the app. The current offline cache is 1.13.1. An older cache must not report these new capabilities as ready. Apply the available update and use **How to use it offline → Check offline readiness** if files are missing. Clearing browser data or storage eviction may require another online setup.
 
 This browser mode does not call `POST /v1/pos/decode`; that remains a separate server-side option documented in [POS-DECODING.md](POS-DECODING.md). Neither path performs catalogue lookup, pricing or cart updates. Your POS should accept only a unique, exact catalogue match and prevent a retried scan attempt from adding an item twice. The scanner's history deduplicates values; it is not a cart or quantity counter.
 

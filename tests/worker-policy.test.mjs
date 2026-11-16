@@ -557,3 +557,110 @@ test('retail corroboration skips lone UPC-E, featureless or invalid geometry, an
     assert.equal(worker.calls.length, 1, scenario);
   }
 });
+
+// A 45-degree striped source in which a level scan box crosses the bars
+// obliquely, as the native reader does on a tilted retail label.
+function leftHalfAlias() {
+  const width = 400, height = 400, input = image(width, height), pixels = new Uint8ClampedArray(input.data);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const offset = (y * width + x) * 4;
+    pixels[offset] = pixels[offset + 1] = pixels[offset + 2] = Math.floor((x + y) / 6) % 2 ? 0 : 255;
+  }
+  const digits = text => new Uint8Array(Array.from(text, character => character.charCodeAt(0)));
+  const c = Math.SQRT1_2, center = { x: 200, y: 200 };
+  // `along` follows the bars' normal (down and to the right); `across` follows the bars.
+  const oriented = (along, across, middle = center) => Object.fromEntries([['topLeft', -1, -1], ['topRight', 1, -1],
+    ['bottomRight', 1, 1], ['bottomLeft', -1, 1]].map(([key, a, b]) =>
+    [key, { x: middle.x + c * (a * along - b * across), y: middle.y + c * (a * along + b * across) }]));
+  const level = (left, right, y = 200) => ({ topLeft: { x: left, y: y - 1 }, topRight: { x: right, y: y - 1 },
+    bottomRight: { x: right, y: y + 1 }, bottomLeft: { x: left, y: y + 1 } });
+  // The left half of EAN-13 5067751808601 spells UPC-E 0106100007755: number
+  // system 1, and the check digit of its expansion is the EAN's first digit.
+  const upce = { ...valid, format: 'UPCE', text: '0106100007755', bytes: digits('0106100007755'), position: level(125, 275) };
+  const ean = { ...valid, format: 'EAN13', text: '5067751808601', bytes: digits('5067751808601'), position: oriented(140, 70) };
+  // A 150-pixel scan at 45 degrees to the bars covers the UPC-E's 51 modules.
+  const scale = Math.min(2, 4 / (150 * c / 51));
+  // Where a source point lands in the reread image, whose rows follow the bars' normal.
+  const placed = (record, candidate) => ({ ...record, position: Object.fromEntries(Object.entries(record.position).map(([key, point]) => {
+    const dx = point.x - center.x, dy = point.y - center.y, middle = (candidate.width - 1) / 2;
+    return [key, { x: middle + scale * c * (dx + dy), y: middle + scale * c * (dy - dx) }];
+  })) });
+  return { input, upce, ean, oriented, level, digits, placed };
+}
+
+test('a lone oblique UPC-E that is the left half of an EAN-13 is replaced after one small EAN-13 reread', async () => {
+  const { input, upce, ean, placed } = leftHalfAlias();
+  const worker = harness((candidate, options, call) => call === 1 ? [upce, upce] : [
+    placed(ean, candidate), { ...valid, format: 'QRCode', text: 'new candidate' },
+  ]);
+  const response = await worker.send({ image: input, mode: 'live' });
+  assert.deepEqual(response.results.map(({ text, format }) => ({ text, format })), [{ text: '5067751808601', format: 'EAN13' }]);
+  assert.deepEqual(response.results[0].bytes, Array.from(ean.bytes));
+  assert.deepEqual(response.diagnostics, { passes: 2, strategy: 'retail-left-half-reread' });
+  assert.equal(worker.calls.length, 2);
+  const [firstOptions, rereadOptions] = worker.calls.map(call => JSON.parse(JSON.stringify(call.options)));
+  assert.deepEqual(rereadOptions, { ...firstOptions, formats: ['EAN13'] }, 'the same native request, for EAN-13 alone');
+  const reread = worker.calls[1].image;
+  assert.ok(reread.width === reread.height && reread.width <= 801, 'the reread is bounded by the symbol, not by the photograph');
+  for (const [key, point] of Object.entries(response.results[0].position)) {
+    assert.ok(Math.abs(point.x - ean.position[key].x) < 1e-6 && Math.abs(point.y - ean.position[key].y) < 1e-6, key);
+  }
+});
+
+test('an unconfirmed left-half reread keeps the UPC-E for the existing checks', async () => {
+  for (const scenario of ['nothing', 'other-number', 'separate-label', 'across-the-bars', 'two-numbers', 'exception']) {
+    const { input, upce, ean, oriented, digits, placed } = leftHalfAlias();
+    const worker = harness((candidate, options, call) => {
+      if (call === 1) return [upce];
+      if (scenario === 'exception') throw new Error('optional reread failed');
+      if (scenario === 'nothing') return [];
+      // 4006381333931 is a readable EAN-13 whose left half spells no UPC-E.
+      if (scenario === 'other-number') return [placed({ ...ean, text: '4006381333931', bytes: digits('4006381333931') }, candidate)];
+      if (scenario === 'separate-label') return [placed({ ...ean, position: oriented(40, 20, { x: 260, y: 300 }) }, candidate)];
+      if (scenario === 'two-numbers') return [placed(ean, candidate), placed({ ...ean, text: '5067751808618', bytes: digits('5067751808618') }, candidate)];
+      // The right digits, reported along the bars: such a scan cannot have read them.
+      const { topLeft, topRight, bottomRight, bottomLeft } = ean.position;
+      return [placed({ ...ean, position: { topLeft: topRight, topRight: bottomRight, bottomRight: bottomLeft, bottomLeft: topLeft } }, candidate)];
+    });
+    const response = await worker.send({ image: input, mode: 'live' });
+    assert.equal(response.type, 'result', scenario);
+    assert.deepEqual(response.results.map(value => value.text), ['0106100007755'], scenario);
+    assert.equal(response.diagnostics.strategy, 'original', scenario);
+    assert.equal(worker.calls.length, 2, scenario);
+  }
+});
+
+test('left-half reread is not attempted without an oblique number-system-1 UPC-E on its own', async () => {
+  for (const scenario of ['number-system-0', 'two-values', 'level-bars', 'flat', 'tiny', 'deadline']) {
+    const { input, upce, level, digits } = leftHalfAlias();
+    let now = 0;
+    const original = scenario === 'number-system-0' ? [{ ...upce, text: '0042100005264', bytes: digits('0042100005264') }] :
+      scenario === 'two-values' ? [upce, { ...upce, text: '0100100000754', bytes: digits('0100100000754') }] :
+        scenario === 'tiny' ? [{ ...upce, position: level(180, 220) }] : [upce];
+    const worker = harness(() => { if (scenario === 'deadline') now = 350; return original; }, { now: () => now });
+    const response = await worker.send({ image: scenario === 'flat' ? image(400, 400) : scenario === 'level-bars' ? verticalBars(400, 400) : input, mode: 'live' });
+    assert.deepEqual(response.results.map(value => value.text), original.map(value => value.text), scenario);
+    assert.equal(worker.calls.length, 1, scenario);
+  }
+});
+
+test('a UPC-E reported with an EAN-13 still goes to the full-format corroboration', async () => {
+  const { input, upce, ean } = leftHalfAlias();
+  const worker = harness((candidate, options, call) => call === 1 ? [upce, ean] : []);
+  const response = await worker.send({ image: input, mode: 'live' });
+  assert.deepEqual(response.results.map(value => value.text), [upce.text, ean.text]);
+  assert.equal(worker.calls.length, 2);
+  assert.deepEqual(worker.calls[1].options, worker.calls[0].options);
+  assert.equal(response.diagnostics.strategy, 'retail-corroboration');
+});
+
+test('time spent on an unconfirmed left-half reread is not taken from the source check that follows', async () => {
+  const { input, upce } = leftHalfAlias();
+  let now = 0;
+  const budgets = [];
+  const worker = harness((candidate, options, call) => { now += call === 1 ? 10 : 400; return call === 1 ? [upce] : []; }, { now: () => now });
+  worker.context.LinearSignal = { async recover(source, options) { budgets.push(options.timeBudgetMs); return { results: [], passes: 1 }; } };
+  const response = await worker.send({ image: input, mode: 'live' });
+  assert.deepEqual(response.results.map(value => value.text), ['0106100007755']);
+  assert.deepEqual(budgets, [80], 'the 350 ms live allowance is counted from the first pass, as before');
+});

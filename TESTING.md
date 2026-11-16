@@ -1,5 +1,56 @@
 # Verification
 
+## Left-half UPC-E fix (16 November 2026)
+
+The native reader can cross a tilted EAN-13 from its start guard to its centre
+guard only. For about one EAN-13 number in ten those bars are a checksum-valid
+number-system-1 UPC-E, and both readers returned that UPC-E alone at roughly
+30° to 60° of tilt. Each now makes one source-aligned EAN-13 reread of such a
+result, the browser of only the region around it, and returns the complete
+EAN-13 when its own left half spells exactly the reported UPC-E; [RECOVERY-UPDATE.md](RECOVERY-UPDATE.md)
+states the rule. The API change is commit `5ea67db`. The browser change follows
+it with offline cache **1.13.1**.
+
+`tests/fixtures/ean-left-half-alias.json` is a new development regression set
+of 19 generated images: 16 such labels at -45°, 30°, 45° and 60°, and three
+real number-system-1 UPC-E labels. Its SHA256 is
+`2c940722c59ef4b15f50874b04e069e7ff5e90f8a32c9a2309f331cb8e08be5f`. Before the
+fix the browser and API readers each read 3/19 exactly and returned 16 wrong
+UPC-E values. Both now read 19/19 with none. It is not held-out evidence.
+
+Larger generated checks were run outside the repository. Rotating six affected
+numbers in 15° steps gave 72 wrong UPC-E values in 144 browser reads before and
+none after. Forty affected numbers at eleven angles from 0° to 90° gave 200
+wrong values in 440 API reads before and none after. With blur, noise, low
+contrast or JPEG compression at 25° to 65°, 258 of 384 affected reads returned
+a wrong UPC-E before and 3 after, on both readers. Those three return the
+correct EAN-13 together with the UPC-E, a first-pass conflict that the existing
+two-result check leaves unresolved. Real UPC-E labels in both number systems
+and unaffected EAN-13 controls read the same before and after. An EAN-13 whose
+right half is exactly hidden still reads as UPC-E: the image then holds a
+complete UPC-E symbol and nothing in it contradicts that.
+
+Across the 2,400 previously published corpus images, API totals are unchanged
+at 1,756/1,919 exact reads, 481/481 negatives rejected and the one known wrong
+extra value. The browser reader had 1,755/1,919 exact reads before, with the
+same negatives and known extra, and in the browser run the new reread decided
+no result in those corpora. Paired before-and-after runs made under concurrent
+load differed in eight API cases, four each way, and in four browser cases.
+All twelve are `small-in-frame` images, among them QR and Code 128 labels the
+change cannot reach. Rerun alone three times, all twelve read on both versions,
+apart from two single misses on the unchanged API code.
+
+The full Python suite passes **616 tests**. The JavaScript suite has **753
+tests**; the 24 new ones pass. Of three full local JavaScript runs, one passed
+all 753 and two each had one failure in a different unchanged
+wall-clock-budget test, the `qr-geometry` tiny finder and the frame-fusion
+worker test; both pass when rerun. TypeScript declarations, the OpenAPI export
+check, the React production build and the four workflow benchmark commands
+pass.
+This is validation in a two-core Linux sandbox on Python 3.14 and Node 22, not
+a GitHub Actions result. Physical phones, cameras and printed labels were not
+tested.
+
 ## CI deadline regression fix (14 November 2026)
 
 GitHub's Python job for `f7bccbc` missed

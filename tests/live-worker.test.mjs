@@ -300,6 +300,31 @@ for (const fixture of JSON.parse(readFileSync(new URL('fixtures/upce-controls.js
   });
 }
 
+// EAN-13 labels whose left half is, bar for bar, a checksum-valid UPC-E. At
+// these angles the native reader crosses only that half and reports the UPC-E
+// alone. A real number-system-1 UPC-E in the same set must stay a UPC-E.
+for (const fixture of JSON.parse(readFileSync(new URL('fixtures/ean-left-half-alias.json', import.meta.url))).cases) {
+  test(`left half of an EAN-13 read as UPC-E: ${fixture.name}`, async () => {
+    const [truth] = fixture.expected, alias = fixture.parameters.leftHalfUpce;
+    for (const posOptions of [undefined, { allowedFormats: ['ean13', 'upce'] }]) {
+      const response = await actual.send({ image: imageFor(fixture), mode: 'image', ...(posOptions && { posOptions }) });
+      assert.equal(response.type, 'result', response.message);
+      const found = response.results.map(({ text, format }) => ({ text, format }));
+      assert.ok(found.length > 0 && found.every(result => result.text === truth.text && truth.formats.includes(result.format)), JSON.stringify(found));
+      for (const point of response.results.flatMap(result => Object.values(result.position))) {
+        assert.ok(point.x >= 0 && point.x <= fixture.width && point.y >= 0 && point.y <= fixture.height);
+      }
+      if (alias) assert.deepEqual([found.length, response.diagnostics], [1, { passes: 2, strategy: 'retail-left-half-reread' }]);
+    }
+    if (alias) {
+      // With EAN-13 excluded there is nothing to compare the UPC-E against.
+      const only = await actual.send({ image: imageFor(fixture), mode: 'image', posOptions: { allowedFormats: ['upce'] } });
+      assert.equal(only.type, 'result', only.message);
+      assert.ok(only.results.length > 0 && only.results.every(result => result.format === 'UPCE' && result.text === alias));
+    }
+  });
+}
+
 test('enhanced real decoding keeps invalid-checksum damage as a miss', async () => {
   const fixture = caseFrom('damage-regressions.json', 'regression/invalid-ean13-oblique-upce');
   const response = await actual.send({ image: imageFor(fixture), mode: 'image', enhanceLive: true,

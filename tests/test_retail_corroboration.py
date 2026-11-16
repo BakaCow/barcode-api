@@ -173,3 +173,13 @@ def test_left_half_replacement_needs_a_reread_that_spells_the_same_upce(reader, 
 ])
 def test_left_half_alias_follows_the_upce_expansion_rules(reader, value, alias):
     assert reader._ean_left_half_alias(value.encode()) == (alias.encode() if alias else None)
+
+
+def test_reader_reads_the_left_half_fixture_set_shared_with_the_camera_app(reader):
+    document = json.loads((ROOT / 'tests/fixtures/ean-left-half-alias.json').read_text())
+    assert len(document['cases']) == 19
+    for case in document['cases']:
+        with Image.frombytes('RGBA', (case['width'], case['height']),
+                             zlib.decompress(base64.b64decode(case['rgba_zlib_base64']))) as rgba, rgba.convert('RGB') as image:
+            found = {(code.format.name, code.text) for code in reader.read_barcodes(image)}
+        assert found == {(truth['formats'][0], truth['text']) for truth in case['expected']}, case['name']

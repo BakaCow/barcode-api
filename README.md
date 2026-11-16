@@ -151,7 +151,7 @@ The JSON response contains:
 
 Corner positions use the EXIF-normalized image's pixel coordinates. UPC-A may be returned as the equivalent leading-zero EAN-13 representation by the decoder.
 
-On a tilted EAN-13, the decoder can cross only the left half and report those bars as a checksum-valid but wrong UPC-E. With generated labels this happened for about one EAN-13 number in ten, at 30° to 60° of tilt. The reader rereads such a result upright and returns the complete EAN-13 when that reread spells the same left half. A real UPC-E label is unaffected. If EAN-13 is excluded from a POS format allowlist, the UPC-E is returned as before.
+On a tilted EAN-13, the decoder can cross only the left half and report those bars as a checksum-valid but wrong UPC-E. With generated labels this happened for about one EAN-13 number in ten, at 30° to 60° of tilt. The reader rereads such a result upright and returns the complete EAN-13 when that reread spells the same left half. A real UPC-E label is unaffected. If EAN-13 is excluded from a POS format allowlist, the UPC-E is returned as before. The camera app applies the same check to its own decoder, in live scanning and on imported images.
 
 Invalid images return 400, missing or wrong keys return 401, oversized inputs return 413, unsupported image types return 415, and invalid generation parameters return 422. Requests are bounded before multipart parsing. Uploaded images are processed for the request; the application does not archive them. The framework may spool multipart uploads to temporary disk storage during processing.
 

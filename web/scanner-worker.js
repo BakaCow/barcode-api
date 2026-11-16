@@ -264,7 +264,129 @@ function sameSymbolSegment(position, footprint) {
   });
 }
 
+// The UPC-E value spelled by the left half of an EAN-13, as ZXing reports it.
+// A scanline that leaves an EAN-13 through its top or bottom edge at the centre
+// guard has crossed a start guard, six digits and what passes for a UPC-E end
+// guard. Those bars are a number-system-1 UPC-E whose check digit is the EAN's
+// first digit, so about one EAN-13 in ten gives a checksum-valid wrong value.
+function eanLeftHalfAlias(bytes) {
+  if (!Array.isArray(bytes) || bytes.length !== 13 || bytes[0] === 48 ||
+      bytes.some(value => !Number.isInteger(value) || value < 48 || value > 57)) return null;
+  const [first, a, b, c, d, e, f] = bytes.slice(0, 7).map(value => String.fromCharCode(value));
+  const body = '1' + (f <= '2' ? a + b + f + '0000' + c + d + e : f === '3' ? a + b + c + '00000' + d + e :
+    f === '4' ? a + b + c + d + '00000' + e : a + b + c + d + e + '0000' + f);
+  let total = 0;
+  for (let index = 0; index < 11; index++) total += Number(body[10 - index]) * (index % 2 ? 1 : 3);
+  return (10 - total % 10) % 10 === Number(first) ? '0' + body + first : null;
+}
+
+// Luminance of the pixels around a reported position, with the margin that
+// sourceTensor samples. The returned position is relative to that rectangle.
+function grayAround(image, position, margin = 34) {
+  const corners = position && [position.topLeft, position.topRight, position.bottomRight, position.bottomLeft];
+  if (!corners || corners.some(point => !point || !Number.isFinite(point.x) || !Number.isFinite(point.y))) return null;
+  const x = Math.max(0, Math.floor(Math.min(...corners.map(point => point.x))) - margin);
+  const y = Math.max(0, Math.floor(Math.min(...corners.map(point => point.y))) - margin);
+  const width = Math.min(image.width, Math.ceil(Math.max(...corners.map(point => point.x))) + margin + 1) - x;
+  const height = Math.min(image.height, Math.ceil(Math.max(...corners.map(point => point.y))) + margin + 1) - y;
+  if (width < 3 || height < 3) return null;
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let row = 0; row < height; row++) {
+    const start = ((y + row) * image.width + x) * 4;
+    data.set(image.data.subarray(start, start + width * 4), row * width * 4);
+  }
+  const [topLeft, topRight, bottomRight, bottomLeft] = corners.map(point => ({ x: point.x - x, y: point.y - y }));
+  return { gray: luminance({ width, height, data }), width, height, position: { topLeft, topRight, bottomRight, bottomLeft } };
+}
+
+// Resample a square of the image around `center` as luminance on white, turned
+// so that the direction `angle` (degrees) runs along the output's rows. The
+// work depends on the output size alone, not on the size of the photograph.
+function deskewedRegion(image, center, angle, radius, scale) {
+  const { width, data } = image, maxX = width - 1, maxY = image.height - 1;
+  const side = Math.max(1, Math.ceil(2 * radius * scale)), middle = (side - 1) / 2;
+  const radians = angle * Math.PI / 180, ux = Math.cos(radians) / scale, uy = Math.sin(radians) / scale;
+  const inverse = ({ x, y }) => ({ x: center.x + (x - middle) * ux - (y - middle) * uy,
+    y: center.y + (x - middle) * uy + (y - middle) * ux });
+  const tap = (index) => {
+    const alpha = data[index + 3], value = (306 * data[index] + 601 * data[index + 1] + 117 * data[index + 2]) / 1024;
+    return alpha === 255 ? value : (value * alpha + 255 * (255 - alpha)) / 255;
+  };
+  const gray = new Uint8Array(side * side).fill(255);
+  for (let y = 0; y < side; y++) {
+    let sx = center.x - middle * ux - (y - middle) * uy, sy = center.y - middle * uy + (y - middle) * ux;
+    for (let x = 0; x < side; x++, sx += ux, sy += uy) {
+      if (!(sx >= 0 && sy >= 0 && sx <= maxX && sy <= maxY)) continue;
+      // Bilinear sampling without per-pixel library calls; the array assignment truncates.
+      const x0 = sx | 0, y0 = sy | 0, fx = sx - x0, fy = sy - y0;
+      const first = (y0 * width + x0) * 4, right = x0 < maxX ? 4 : 0, below = y0 < maxY ? width * 4 : 0;
+      const top = tap(first), bottom = tap(first + below);
+      const upper = top + fx * (tap(first + right) - top), lower = bottom + fx * (tap(first + below + right) - bottom);
+      gray[y * side + x] = upper + fy * (lower - upper) + 0.5;
+    }
+  }
+  return { image: rgba(gray, side, side), gray, side, inverse };
+}
+
+// Replace an oblique UPC-E that is only the left half of an EAN-13. The first
+// pass can cross a tilted EAN-13 from its start guard to its centre guard and
+// report those bars alone, never seeing the whole symbol. One source-aligned
+// reread decides: it must read an EAN-13 whose own left half spells exactly the
+// reported UPC-E, over a footprint that contains the UPC-E's scan segment and
+// agrees with the bars it was read from. Both decodes then agree on seven
+// digits of one symbol, so the complete value is returned. A genuine UPC-E has
+// no such EAN-13 around it and is never replaced; an unreadable or unmatched
+// reread leaves the evidence for the checks in corroborateRetailOverlap.
+// Returns null when nothing was replaced.
+async function replaceLeftHalfAlias(results, image, options, permitted, started, budgetMs) {
+  const upce = results.filter(result => result.format === 'UPCE');
+  const identity = result => JSON.stringify([result.format, result.text, result.bytes]);
+  const value = upce.length && Array.isArray(upce[0].bytes) && upce[0].bytes.length === 13 ? String.fromCharCode(...upce[0].bytes) : '';
+  if (!/^01\d{11}$/.test(value) || results.some(result => ['EAN13', 'UPCA'].includes(result.format)) ||
+      upce.some(result => identity(result) !== identity(upce[0])) ||
+      (options.formats && !options.formats.includes('EAN13')) || performance.now() - started >= budgetMs) return null;
+  const local = grayAround(image, upce[0].position);
+  const tensor = local && sourceTensor(local.position, local.gray, local.width, local.height);
+  if (!tensor || !tensor.energy || tensor.anisotropy / tensor.energy < 0.7) return null;
+  const angle = Math.atan2(2 * tensor.xy, tensor.xx - tensor.yy) * 90 / Math.PI;
+  if (Math.abs(angle) <= 3 || Math.abs(angle) >= 87 || performance.now() - started >= budgetMs) return null;
+  // A UPC-E is 51 modules across its bars. Measured from the middle of those
+  // modules, an EAN-13 and its quiet zones end within 77 modules, so a square
+  // reaching 100 modules holds the whole symbol wherever it sits in the frame.
+  // Four pixels a module keep the reread at 800 by 800 pixels or less.
+  const radians = angle * Math.PI / 180, { topLeft, topRight, bottomRight, bottomLeft } = upce[0].position;
+  const module = Math.abs(tensor.vx * Math.cos(radians) + tensor.vy * Math.sin(radians)) / 51;
+  if (!(module >= 1)) return null;
+  const center = { x: (topLeft.x + topRight.x + bottomRight.x + bottomLeft.x) / 4, y: (topLeft.y + topRight.y + bottomRight.y + bottomLeft.y) / 4 };
+  const region = deskewedRegion(image, center, angle, 100 * module, Math.min(2, 4 / module));
+  if (performance.now() - started >= budgetMs) return null;
+  let checked;
+  try {
+    // Check each result against the bars it was read from, then place it in the photograph.
+    checked = permitted(validResults(await ZXingWASM.readBarcodes(region.image, { ...options, formats: ['EAN13'] }),
+      undefined, region.side, region.side, true, region.gray).filter(result => result.position).map(result => ({ ...result,
+      position: Object.fromEntries(Object.entries(result.position).map(([key, point]) => {
+        const { x, y } = region.inverse(point);
+        return [key, { x: Math.max(0, Math.min(image.width, x)), y: Math.max(0, Math.min(image.height, y)) }];
+      })) })));
+  } catch { return null; }
+  const sources = checked.filter(result => result.format === 'EAN13' && eanLeftHalfAlias(result.bytes) === value &&
+    upce.every(alias => sameSymbolSegment(alias.position, result.position)));
+  if (new Set(sources.map(identity)).size !== 1) return null;
+  const replaced = [];
+  for (const result of results) {
+    if (result.format !== 'UPCE') replaced.push(result);
+    else if (!replaced.includes(sources[0])) replaced.push(sources[0]);
+  }
+  return { results: replaced, diagnostics: { passes: 2, strategy: 'retail-left-half-reread' } };
+}
+
 async function corroborateRetailOverlap(results, image, options, permitted, started, budgetMs) {
+  const rereadStarted = performance.now();
+  const replaced = await replaceLeftHalfAlias(results, image, options, permitted, started, budgetMs);
+  if (replaced) return replaced;
+  // That reread is extra work. The checks below keep the time they had before it existed.
+  started += performance.now() - rereadStarted;
   const original = { results, diagnostics: { passes: 1, strategy: 'original' } };
   const upce = results.find(result => result.format === 'UPCE');
   const ean = results.filter(result => ['EAN13', 'UPCA'].includes(result.format));
